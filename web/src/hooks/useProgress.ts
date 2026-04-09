@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface ReadingProgress {
   chapterIdx: number;
@@ -22,11 +22,11 @@ export function useProgress(slug: string) {
     }
   }, [key]);
 
-  const save = (chapterIdx: number) => {
+  const save = useCallback((chapterIdx: number) => {
     const p: ReadingProgress = { chapterIdx, timestamp: Date.now() };
     localStorage.setItem(key, JSON.stringify(p));
     setProgress(p);
-  };
+  }, [key]);
 
   return { progress, save };
 }

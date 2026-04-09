@@ -62,7 +62,7 @@ export default function ReaderClient({
 
   return (
     <>
-      <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
+      <main className="max-w-3xl mx-auto px-6 py-6 pb-32">
         <div ref={topRef} />
 
         <div className="mb-6">
