@@ -1,0 +1,16 @@
+{
+  "volume": 1,
+  "chapterRange": [1, 2],
+  "chapters": [
+    {
+      "title": "Chương 01: Test chapter one",
+      "paragraphs": ["Đoạn văn thứ nhất.", "Đoạn văn thứ hai."],
+      "index": 0
+    },
+    {
+      "title": "Chương 02: Test chapter two",
+      "paragraphs": ["Đoạn văn thứ ba.", "Đoạn văn thứ tư."],
+      "index": 1
+    }
+  ]
+}
