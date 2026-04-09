@@ -113,11 +113,14 @@ export default function ReaderClient({
         rate={tts.rate}
         currentIdx={tts.currentIdx}
         totalParagraphs={paragraphs.length}
+        voices={tts.voices}
+        selectedVoice={tts.selectedVoice}
         onPlay={() => tts.play(paragraphs)}
         onPause={tts.pause}
         onResume={tts.resume}
         onStop={tts.stop}
         onRateChange={tts.setRate}
+        onVoiceChange={tts.setVoice}
       />
     </>
   );

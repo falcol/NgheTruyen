@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 export function useTTS() {
   const [playing, setPlaying] = useState(false);
@@ -9,8 +9,34 @@ export function useTTS() {
   const [rate, setRateState] = useState(1);
   const [onComplete, setOnComplete] = useState<(() => void) | null>(null);
 
+  // Voice management
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoice, setSelectedVoice] =
+    useState<SpeechSynthesisVoice | null>(null);
+
   const paragraphsRef = useRef<string[]>([]);
   const rateRef = useRef(1);
+  const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
+
+  // Load available Vietnamese voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const all = window.speechSynthesis.getVoices();
+      const viVoices = all.filter((v) => v.lang.startsWith("vi"));
+      setVoices(viVoices);
+
+      // Auto-select first Vietnamese voice if none selected
+      if (!voiceRef.current && viVoices.length > 0) {
+        voiceRef.current = viVoices[0];
+        setSelectedVoice(viVoices[0]);
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    return () =>
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+  }, []);
 
   const speakNext = useCallback(
     (idx: number) => {
@@ -29,6 +55,7 @@ export function useTTS() {
       const u = new SpeechSynthesisUtterance(paragraphsRef.current[idx]);
       u.lang = "vi-VN";
       u.rate = rateRef.current;
+      if (voiceRef.current) u.voice = voiceRef.current;
 
       u.onend = () => speakNext(idx + 1);
       u.onerror = () => {
@@ -75,6 +102,11 @@ export function useTTS() {
     setRateState(newRate);
   }, []);
 
+  const setVoice = useCallback((voice: SpeechSynthesisVoice) => {
+    voiceRef.current = voice;
+    setSelectedVoice(voice);
+  }, []);
+
   const setOnChapterComplete = useCallback((cb: () => void) => {
     setOnComplete(() => cb);
   }, []);
@@ -84,11 +116,14 @@ export function useTTS() {
     paused,
     currentIdx,
     rate,
+    voices,
+    selectedVoice,
     play,
     pause,
     resume,
     stop,
     setRate,
+    setVoice,
     setOnChapterComplete,
   };
 }
