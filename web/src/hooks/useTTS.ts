@@ -18,17 +18,43 @@ export function useTTS() {
   const rateRef = useRef(1);
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
 
-  // Load available Vietnamese voices
+  // Load available Vietnamese voices, auto-pick best female voice
   useEffect(() => {
+    const STORAGE_KEY = "tts-voice-name";
+
+    const pickBestVoice = (viVoices: SpeechSynthesisVoice[]) => {
+      // 1. Restore saved preference
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const found = viVoices.find((v) => v.name === saved);
+        if (found) return found;
+      }
+
+      // 2. Prefer female/natural Vietnamese voices (priority order)
+      const prefer = [
+        "Google Tiếng Việt",    // Chrome — good quality
+        "Microsoft An Online",  // Edge — natural female
+        "Microsoft An",         // Windows local
+        "vi-VN",                // Any labeled vi-VN
+      ];
+      for (const name of prefer) {
+        const found = viVoices.find((v) => v.name.includes(name));
+        if (found) return found;
+      }
+
+      // 3. First available
+      return viVoices[0];
+    };
+
     const loadVoices = () => {
       const all = window.speechSynthesis.getVoices();
       const viVoices = all.filter((v) => v.lang.startsWith("vi"));
       setVoices(viVoices);
 
-      // Auto-select first Vietnamese voice if none selected
       if (!voiceRef.current && viVoices.length > 0) {
-        voiceRef.current = viVoices[0];
-        setSelectedVoice(viVoices[0]);
+        const best = pickBestVoice(viVoices);
+        voiceRef.current = best;
+        setSelectedVoice(best);
       }
     };
 
@@ -105,6 +131,7 @@ export function useTTS() {
   const setVoice = useCallback((voice: SpeechSynthesisVoice) => {
     voiceRef.current = voice;
     setSelectedVoice(voice);
+    localStorage.setItem("tts-voice-name", voice.name);
   }, []);
 
   const setOnChapterComplete = useCallback((cb: () => void) => {
