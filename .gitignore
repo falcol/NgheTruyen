@@ -1,5 +1,5 @@
-crawler/data/*
-!crawler/data/.gitkeep
+# crawler/data is committed for Vercel deployment
+# crawler/data/*
 __pycache__/
 *.pyc
 .env
