@@ -12,6 +12,12 @@ class TruyenQQCrawler(BaseCrawler):
     def __init__(self):
         super().__init__(site_name="truyenqq")
 
+    NOISE_PATTERNS = [
+        re.compile(r"^Ng.+i đăng:"),           # "Nguoi dang: <user>"
+        re.compile(r"^Bạn đang đọc truyện"),    # Site attribution
+        re.compile(r"\.com\.vn$|\.com$|\.net$"), # Domain names
+    ]
+
     def _extract_chapter(self, soup) -> dict:
         """Extract chapter title and paragraphs from a chapter page."""
         # Title from h2
@@ -23,12 +29,18 @@ class TruyenQQCrawler(BaseCrawler):
         if not noidung:
             raise ValueError("Could not find #noidungchap")
 
+        # Remove recommendation divs before extracting text
+        for div in noidung.find_all("div"):
+            div.decompose()
+
         text = noidung.get_text(separator="\n").strip()
         lines = [line.strip() for line in text.split("\n") if line.strip()]
 
-        # Strip noise: first line "Nguoi dang: ..." and trailing recommendation lines
-        if lines and re.match(r"^Ng.+i đăng:", lines[0]):
-            lines = lines[1:]
+        # Strip noise lines from start and end
+        while lines and any(p.search(lines[0]) for p in self.NOISE_PATTERNS):
+            lines.pop(0)
+        while lines and any(p.search(lines[-1]) for p in self.NOISE_PATTERNS):
+            lines.pop()
 
         return {"title": title, "paragraphs": lines}
 
