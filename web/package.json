@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "data:copy": "rm -rf public/data && mkdir -p public && cp -r ../crawler/data public/data",
+    "prebuild": "npm run data:copy"
   },
   "dependencies": {
     "next": "16.2.3",
