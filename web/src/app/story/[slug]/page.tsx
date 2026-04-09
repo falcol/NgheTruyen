@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { getChapterIndex } from "@/lib/data";
+import { getChapterIndex, listStories } from "@/lib/data";
 import ChapterList from "@/components/ChapterList";
+
+export function generateStaticParams() {
+  return listStories().map((slug) => ({ slug }));
+}
 
 export default async function StoryPage({
   params,

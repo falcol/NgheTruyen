@@ -1,6 +1,17 @@
 import { notFound } from "next/navigation";
-import { getChapter, getTotalChapters } from "@/lib/data";
+import { getChapter, getTotalChapters, listStories, getChapterIndex } from "@/lib/data";
 import ReaderClient from "@/components/ReaderClient";
+
+export function generateStaticParams() {
+  const params: { slug: string; chapterIdx: string }[] = [];
+  for (const slug of listStories()) {
+    const chapters = getChapterIndex(slug);
+    for (const ch of chapters) {
+      params.push({ slug, chapterIdx: String(ch.index) });
+    }
+  }
+  return params;
+}
 
 export default async function ReaderPage({
   params,
