@@ -1,0 +1,5 @@
+crawler/data/*
+!crawler/data/.gitkeep
+__pycache__/
+*.pyc
+.env
