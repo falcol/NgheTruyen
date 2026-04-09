@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useProgress } from "@/hooks/useProgress";
+import { useTTS } from "@/hooks/useTTS";
+import Player from "@/components/Player";
 
 export default function ReaderClient({
   slug,
@@ -21,7 +23,7 @@ export default function ReaderClient({
   const router = useRouter();
   const { save } = useProgress(slug);
   const topRef = useRef<HTMLDivElement>(null);
-  const [speakingIdx, setSpeakingIdx] = useState(-1);
+  const tts = useTTS();
 
   useEffect(() => {
     save(chapterIdx);
@@ -39,6 +41,14 @@ export default function ReaderClient({
     };
   }, []);
 
+  useEffect(() => {
+    tts.setOnChapterComplete(() => {
+      if (chapterIdx < totalChapters - 1) {
+        router.push(`/read/${slug}/${chapterIdx + 1}`);
+      }
+    });
+  }, [chapterIdx, totalChapters, slug, router, tts.setOnChapterComplete]);
+
   const hasPrev = chapterIdx > 0;
   const hasNext = chapterIdx < totalChapters - 1;
 
@@ -51,49 +61,64 @@ export default function ReaderClient({
   };
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
-      <div ref={topRef} />
+    <>
+      <main className="max-w-2xl mx-auto px-4 py-6 pb-32">
+        <div ref={topRef} />
 
-      <div className="mb-6">
-        <Link
-          href={`/story/${slug}`}
-          className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
-        >
-          ← Danh sách chương
-        </Link>
-        <h1 className="text-xl font-bold mt-2">{title}</h1>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          Chương {chapterIdx + 1} / {totalChapters}
-        </p>
-      </div>
-
-      <div className="space-y-0">
-        {paragraphs.map((p, i) => (
-          <p
-            key={i}
-            className={`reader-paragraph ${i === speakingIdx ? "speaking" : ""}`}
+        <div className="mb-6">
+          <Link
+            href={`/story/${slug}`}
+            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
           >
-            {p}
+            ← Danh s\u00E1ch ch\u01B0\u01A1ng
+          </Link>
+          <h1 className="text-xl font-bold mt-2">{title}</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">
+            Ch\u01B0\u01A1ng {chapterIdx + 1} / {totalChapters}
           </p>
-        ))}
-      </div>
+        </div>
 
-      <div className="flex justify-between items-center mt-8 pt-4 border-t border-[var(--color-surface)]">
-        <button
-          onClick={goPrev}
-          disabled={!hasPrev}
-          className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
-        >
-          ← Trước
-        </button>
-        <button
-          onClick={goNext}
-          disabled={!hasNext}
-          className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
-        >
-          Sau →
-        </button>
-      </div>
-    </main>
+        <div className="space-y-0">
+          {paragraphs.map((p, i) => (
+            <p
+              key={i}
+              className={`reader-paragraph ${i === tts.currentIdx ? "speaking" : ""}`}
+            >
+              {p}
+            </p>
+          ))}
+        </div>
+
+        <div className="flex justify-between items-center mt-8 pt-4 border-t border-[var(--color-surface)]">
+          <button
+            onClick={goPrev}
+            disabled={!hasPrev}
+            className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
+          >
+            ← Tr\u01B0\u1EDBc
+          </button>
+          <button
+            onClick={goNext}
+            disabled={!hasNext}
+            className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
+          >
+            Sau →
+          </button>
+        </div>
+      </main>
+
+      <Player
+        playing={tts.playing}
+        paused={tts.paused}
+        rate={tts.rate}
+        currentIdx={tts.currentIdx}
+        totalParagraphs={paragraphs.length}
+        onPlay={() => tts.play(paragraphs)}
+        onPause={tts.pause}
+        onResume={tts.resume}
+        onStop={tts.stop}
+        onRateChange={tts.setRate}
+      />
+    </>
   );
 }
