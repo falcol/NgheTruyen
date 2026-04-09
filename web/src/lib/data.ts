@@ -32,7 +32,13 @@ export function makeDataDir(baseDir: string) {
   }
 
   function getChapter(slug: string, chapterIdx: number): Chapter | null {
-    const volNum = Math.floor(chapterIdx / 50) + 1;
+    // Find position in index first — chapter indices may not start at 0
+    const index = getChapterIndex(slug);
+    const position = index.findIndex((ch) => ch.index === chapterIdx);
+    if (position === -1) return null;
+
+    // Calculate volume from position, not from index
+    const volNum = Math.floor(position / 50) + 1;
     const storyDir = path.join(dataDir, slug);
     if (!fs.existsSync(storyDir)) return null;
 
