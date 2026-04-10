@@ -24,7 +24,7 @@ export default function ChapterList({
           href={`/read/${slug}/${progress.chapterIdx}`}
           className="block p-3 mb-4 rounded-lg bg-[var(--color-accent-dim)] text-white font-medium"
         >
-          Tiếp tục đọc: {chapters[progress.chapterIdx]?.title || `Chương ${progress.chapterIdx + 1}`}
+          Tiếp tục đọc: {chapters.find((ch) => ch.index === progress.chapterIdx)?.title || `Chương ${progress.chapterIdx + 1}`}
         </Link>
       )}
 

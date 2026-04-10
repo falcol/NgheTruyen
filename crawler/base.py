@@ -66,12 +66,14 @@ class BaseCrawler(abc.ABC):
         for vol_start in range(0, len(chapters), chapters_per_vol):
             vol_end = min(vol_start + chapters_per_vol, len(chapters))
             vol_num = vol_start // chapters_per_vol + 1
+            ch_first = chapters[vol_start]["index"] + 1
+            ch_last = chapters[vol_end - 1]["index"] + 1
             vol_data = {
                 "volume": vol_num,
-                "chapterRange": [vol_start + 1, vol_end],
+                "chapterRange": [ch_first, ch_last],
                 "chapters": chapters[vol_start:vol_end],
             }
-            filename = f"vol-{vol_num:03d}-ch{vol_start+1:03d}-{vol_end:03d}.json"
+            filename = f"vol-{vol_num:03d}-ch{ch_first:03d}-{ch_last:03d}.json"
             self.save_json(vol_data, out / filename)
 
     @abc.abstractmethod

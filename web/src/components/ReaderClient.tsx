@@ -34,14 +34,6 @@ export default function ReaderClient({
   }, [chapterIdx]);
 
   useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined" && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     tts.setOnChapterComplete(() => {
       if (chapterIdx < totalChapters - 1) {
         router.push(`/read/${slug}/${chapterIdx + 1}`);
@@ -60,6 +52,15 @@ export default function ReaderClient({
     if (hasPrev) router.push(`/read/${slug}/${chapterIdx - 1}`);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [goNext, goPrev]);
+
   return (
     <>
       <main className="max-w-3xl mx-auto px-6 py-6 pb-32">
@@ -70,11 +71,11 @@ export default function ReaderClient({
             href={`/story/${slug}`}
             className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
           >
-            ← Danh s\u00E1ch ch\u01B0\u01A1ng
+            ← Danh sách chương
           </Link>
           <h1 className="text-xl font-bold mt-2">{title}</h1>
           <p className="text-sm text-[var(--color-text-muted)]">
-            Ch\u01B0\u01A1ng {chapterIdx + 1} / {totalChapters}
+            Chương {chapterIdx + 1} / {totalChapters}
           </p>
         </div>
 
@@ -95,7 +96,7 @@ export default function ReaderClient({
             disabled={!hasPrev}
             className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
           >
-            ← Tr\u01B0\u1EDBc
+            ← Trước
           </button>
           <button
             onClick={goNext}
@@ -110,17 +111,15 @@ export default function ReaderClient({
       <Player
         playing={tts.playing}
         paused={tts.paused}
+        loading={tts.loading}
         rate={tts.rate}
         currentIdx={tts.currentIdx}
         totalParagraphs={paragraphs.length}
-        voices={tts.voices}
-        selectedVoice={tts.selectedVoice}
         onPlay={() => tts.play(paragraphs)}
         onPause={tts.pause}
         onResume={tts.resume}
         onStop={tts.stop}
         onRateChange={tts.setRate}
-        onVoiceChange={tts.setVoice}
       />
     </>
   );
