@@ -2,21 +2,32 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 
-const PREFETCH_AHEAD = 2;
-
-async function fetchAudioBuffer(
-  ctx: AudioContext,
-  text: string,
-  rate: number
-): Promise<AudioBuffer> {
+async function fetchAudioBlob(
+  paragraphs: string[],
+  rate: number,
+  signal?: AbortSignal,
+): Promise<Blob> {
   const res = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, rate }),
+    body: JSON.stringify({ paragraphs, rate }),
+    signal,
   });
-  if (!res.ok) throw new Error("TTS API error");
-  const arrayBuffer = await res.arrayBuffer();
-  return ctx.decodeAudioData(arrayBuffer);
+
+  if (!res.ok) {
+    throw new Error("TTS API error");
+  }
+
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("audio/")) {
+    throw new Error(`Unexpected TTS content type: ${contentType}`);
+  }
+
+  return res.blob();
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof Error && error.name === "AbortError";
 }
 
 export function useTTS() {
@@ -25,195 +36,227 @@ export function useTTS() {
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [rate, setRateState] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [activeRange, setActiveRange] = useState<{ start: number; end: number } | null>(null);
 
   const paragraphsRef = useRef<string[]>([]);
   const rateRef = useRef(1);
   const stoppedRef = useRef(false);
   const onCompleteRef = useRef<(() => void) | null>(null);
-
-  // Web Audio API refs
-  const ctxRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const pausedAtRef = useRef(0);
-  const startedAtRef = useRef(0);
-  const currentBufferRef = useRef<AudioBuffer | null>(null);
-
-  // Prefetch cache: idx -> Promise<AudioBuffer>
-  const cacheRef = useRef<Map<number, Promise<AudioBuffer>>>(new Map());
-
-  const speakNextRef = useRef<(idx: number) => Promise<void>>(undefined);
-
-  const getCtx = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
-    }
-    return ctxRef.current;
-  }, []);
-
-  const stopSource = useCallback(() => {
-    if (sourceRef.current) {
-      try { sourceRef.current.stop(); } catch {}
-      sourceRef.current.disconnect();
-      sourceRef.current = null;
-    }
-  }, []);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const pendingFetchRef = useRef<AbortController | null>(null);
+  const cacheRef = useRef<Map<string, Promise<Blob | null>>>(new Map());
 
   const clearCache = useCallback(() => {
+    pendingFetchRef.current?.abort();
+    pendingFetchRef.current = null;
     cacheRef.current.clear();
   }, []);
 
+  const revokeCurrentUrl = useCallback(() => {
+    if (!objectUrlRef.current) return;
+    URL.revokeObjectURL(objectUrlRef.current);
+    objectUrlRef.current = null;
+  }, []);
+
+  const resetAudioElement = useCallback(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.pause();
+      audio.onended = null;
+      audio.onerror = null;
+      audio.ontimeupdate = null;
+      audio.removeAttribute("src");
+      audio.load();
+      audioRef.current = null;
+    }
+
+    revokeCurrentUrl();
+  }, [revokeCurrentUrl]);
+
+  const resetState = useCallback(() => {
+    resetAudioElement();
+    setCurrentIdx(-1);
+    setActiveRange(null);
+    setLoading(false);
+  }, [resetAudioElement]);
+
   const cleanup = useCallback(() => {
-    stopSource();
+    resetState();
     clearCache();
-    currentBufferRef.current = null;
-    pausedAtRef.current = 0;
-    startedAtRef.current = 0;
-  }, [stopSource, clearCache]);
+    paragraphsRef.current = [];
+  }, [clearCache, resetState]);
 
-  const prefetch = useCallback((idx: number) => {
-    const cache = cacheRef.current;
-    if (cache.has(idx) || idx >= paragraphsRef.current.length) return;
-    const ctx = getCtx();
-    cache.set(idx, fetchAudioBuffer(ctx, paragraphsRef.current[idx], rateRef.current));
-  }, [getCtx]);
+  const prepare = useCallback(
+    (contentKey: string, paragraphs: string[]) => {
+      if (!paragraphs.length) return;
 
-  const playBuffer = useCallback((buffer: AudioBuffer, offset = 0) => {
-    const ctx = getCtx();
-    if (ctx.state === "suspended") ctx.resume();
+      const cacheKey = `${contentKey}:${rateRef.current}`;
 
-    stopSource();
+      paragraphsRef.current = paragraphs;
 
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(ctx.destination);
-    sourceRef.current = source;
-    currentBufferRef.current = buffer;
-    startedAtRef.current = ctx.currentTime - offset;
-    pausedAtRef.current = 0;
-
-    source.start(0, offset);
-    return source;
-  }, [getCtx, stopSource]);
-
-  // Core playback logic
-  useEffect(() => {
-    speakNextRef.current = async (idx: number) => {
-      if (stoppedRef.current) return;
-
-      if (idx >= paragraphsRef.current.length) {
-        cleanup();
-        setPlaying(false);
-        setCurrentIdx(-1);
-        setLoading(false);
-        const cb = onCompleteRef.current;
-        onCompleteRef.current = null;
-        if (cb) cb();
+      if (cacheRef.current.has(cacheKey)) {
         return;
       }
 
-      setCurrentIdx(idx);
+      const controller = new AbortController();
+      pendingFetchRef.current = controller;
 
-      // Prefetch current + upcoming
-      for (let i = idx; i < Math.min(idx + PREFETCH_AHEAD + 1, paragraphsRef.current.length); i++) {
-        prefetch(i);
-      }
+      const promise = fetchAudioBlob(paragraphs, rateRef.current, controller.signal)
+        .catch((error) => {
+          cacheRef.current.delete(cacheKey);
+          if (isAbortError(error)) {
+            return null;
+          }
+          throw error;
+        })
+        .finally(() => {
+          if (pendingFetchRef.current === controller) {
+            pendingFetchRef.current = null;
+          }
+        });
+
+      cacheRef.current.set(cacheKey, promise);
+    },
+    [],
+  );
+
+  const play = useCallback(
+    async (contentKey: string, paragraphs: string[]) => {
+      if (!paragraphs.length) return;
+
+      const cacheKey = `${contentKey}:${rateRef.current}`;
+      stoppedRef.current = false;
+      paragraphsRef.current = paragraphs;
+      prepare(contentKey, paragraphs);
 
       setLoading(true);
+      setPlaying(true);
+      setPaused(false);
 
       try {
-        const buffer = await cacheRef.current.get(idx);
-        if (stoppedRef.current || !buffer) return;
+        const blob = await cacheRef.current.get(cacheKey);
+        if (stoppedRef.current || !blob) return;
 
-        setLoading(false);
+        resetAudioElement();
+        const objectUrl = URL.createObjectURL(blob);
+        objectUrlRef.current = objectUrl;
+        const audio = new Audio(objectUrl);
+        audio.preload = "auto";
+        audioRef.current = audio;
+        audio.currentTime = 0;
+        audio.playbackRate = rateRef.current;
 
-        // Evict old cache entries
-        for (const key of cacheRef.current.keys()) {
-          if (key < idx) cacheRef.current.delete(key);
-        }
+        audio.ontimeupdate = () => {
+          if (!Number.isFinite(audio.duration) || audio.duration <= 0) {
+            return;
+          }
 
-        const source = playBuffer(buffer);
+          const progress = Math.min(audio.currentTime / audio.duration, 0.999);
+          const paragraphIdx = Math.min(
+            paragraphsRef.current.length - 1,
+            Math.floor(progress * paragraphsRef.current.length),
+          );
 
-        source.onended = () => {
-          // Only advance if not paused/stopped (onended also fires on stop())
-          if (!stoppedRef.current && !pausedAtRef.current) {
-            speakNextRef.current?.(idx + 1);
+          setCurrentIdx(paragraphIdx);
+          setActiveRange({ start: paragraphIdx, end: paragraphIdx });
+        };
+
+        audio.onended = () => {
+          if (stoppedRef.current) return;
+
+          resetAudioElement();
+          setPlaying(false);
+          setPaused(false);
+          setLoading(false);
+          setCurrentIdx(-1);
+          setActiveRange(null);
+
+          const callback = onCompleteRef.current;
+          onCompleteRef.current = null;
+          if (callback) {
+            callback();
           }
         };
-      } catch {
-        // Skip failed paragraph
-        if (!stoppedRef.current && idx < paragraphsRef.current.length - 1) {
-          cacheRef.current.delete(idx);
-          speakNextRef.current?.(idx + 1);
-        } else {
-          cleanup();
+
+        audio.onerror = () => {
+          resetAudioElement();
           setPlaying(false);
-          setCurrentIdx(-1);
+          setPaused(false);
+          setLoading(false);
+        };
+
+        setCurrentIdx(0);
+        setActiveRange({ start: 0, end: 0 });
+        await audio.play();
+        setLoading(false);
+      } catch {
+        if (!stoppedRef.current) {
+          resetAudioElement();
+          setPlaying(false);
+          setPaused(false);
           setLoading(false);
         }
       }
-    };
-  }, [cleanup, prefetch, playBuffer]);
-
-  const play = useCallback(
-    (texts: string[], startIdx = 0) => {
-      cleanup();
-      stoppedRef.current = false;
-      paragraphsRef.current = texts;
-      setPlaying(true);
-      setPaused(false);
-      speakNextRef.current?.(startIdx);
     },
-    [cleanup]
+    [prepare, resetAudioElement],
   );
 
   const pause = useCallback(() => {
-    const ctx = ctxRef.current;
-    if (ctx && sourceRef.current) {
-      pausedAtRef.current = ctx.currentTime - startedAtRef.current;
-      stopSource();
-      setPaused(true);
-    }
-  }, [stopSource]);
+    const audio = audioRef.current;
+    if (!audio) return;
 
-  const resume = useCallback(() => {
-    if (currentBufferRef.current && pausedAtRef.current) {
-      const source = playBuffer(currentBufferRef.current, pausedAtRef.current);
-      const idx = currentIdx;
-      source.onended = () => {
-        if (!stoppedRef.current && !pausedAtRef.current) {
-          speakNextRef.current?.(idx + 1);
-        }
-      };
-      setPaused(false);
-    }
-  }, [playBuffer, currentIdx]);
+    audio.pause();
+    setPaused(true);
+  }, []);
+
+  const resume = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    await audio.play();
+    setPaused(false);
+  }, []);
 
   const stop = useCallback(() => {
     stoppedRef.current = true;
-    cleanup();
+    resetAudioElement();
     setPlaying(false);
     setPaused(false);
-    setCurrentIdx(-1);
     setLoading(false);
-    paragraphsRef.current = [];
-  }, [cleanup]);
+    setCurrentIdx(-1);
+    setActiveRange(null);
+  }, [resetAudioElement]);
 
-  const setRate = useCallback((newRate: number) => {
-    rateRef.current = newRate;
-    setRateState(newRate);
-  }, []);
+  const setRate = useCallback(
+    (newRate: number) => {
+      if (rateRef.current === newRate) return;
+
+      rateRef.current = newRate;
+      if (audioRef.current) {
+        audioRef.current.playbackRate = newRate;
+      }
+      clearCache();
+      setRateState(newRate);
+    },
+    [clearCache],
+  );
 
   const setOnChapterComplete = useCallback((cb: () => void) => {
     onCompleteRef.current = cb;
   }, []);
+
+  useEffect(() => cleanup, [cleanup]);
 
   return {
     playing,
     paused,
     loading,
     currentIdx,
+    activeRange,
     rate,
     play,
+    prepare,
     pause,
     resume,
     stop,

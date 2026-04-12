@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useProgress } from "@/hooks/useProgress";
@@ -24,6 +24,15 @@ export default function ReaderClient({
   const { save } = useProgress(slug);
   const topRef = useRef<HTMLDivElement>(null);
   const tts = useTTS();
+  const chapterKey = useMemo(() => `${slug}:${chapterIdx}`, [slug, chapterIdx]);
+  const prevHref = useMemo(
+    () => `/read/${slug}/${chapterIdx - 1}`,
+    [chapterIdx, slug],
+  );
+  const nextHref = useMemo(
+    () => `/read/${slug}/${chapterIdx + 1}`,
+    [chapterIdx, slug],
+  );
 
   useEffect(() => {
     save(chapterIdx);
@@ -36,21 +45,35 @@ export default function ReaderClient({
   useEffect(() => {
     tts.setOnChapterComplete(() => {
       if (chapterIdx < totalChapters - 1) {
-        router.push(`/read/${slug}/${chapterIdx + 1}`);
+        router.push(nextHref);
       }
     });
-  }, [chapterIdx, totalChapters, slug, router, tts.setOnChapterComplete]);
+  }, [chapterIdx, totalChapters, nextHref, router, tts.setOnChapterComplete]);
 
   const hasPrev = chapterIdx > 0;
   const hasNext = chapterIdx < totalChapters - 1;
 
-  const goNext = () => {
-    if (hasNext) router.push(`/read/${slug}/${chapterIdx + 1}`);
-  };
+  useEffect(() => {
+    if (hasPrev) {
+      router.prefetch(prevHref);
+    }
 
-  const goPrev = () => {
-    if (hasPrev) router.push(`/read/${slug}/${chapterIdx - 1}`);
-  };
+    if (hasNext) {
+      router.prefetch(nextHref);
+    }
+  }, [hasNext, hasPrev, nextHref, prevHref, router]);
+
+  useEffect(() => {
+    tts.prepare(chapterKey, paragraphs);
+  }, [chapterKey, paragraphs, tts.prepare]);
+
+  const goNext = useCallback(() => {
+    if (hasNext) router.push(nextHref);
+  }, [hasNext, nextHref, router]);
+
+  const goPrev = useCallback(() => {
+    if (hasPrev) router.push(prevHref);
+  }, [hasPrev, prevHref, router]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,12 +92,12 @@ export default function ReaderClient({
         <div className="mb-6">
           <Link
             href={`/story/${slug}`}
-            className="text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
+            className="text-sm text-(--color-text-muted) hover:text-(--color-accent)"
           >
             ← Danh sách chương
           </Link>
           <h1 className="text-xl font-bold mt-2">{title}</h1>
-          <p className="text-sm text-[var(--color-text-muted)]">
+          <p className="text-sm text-(--color-text-muted)">
             Chương {chapterIdx + 1} / {totalChapters}
           </p>
         </div>
@@ -83,25 +106,31 @@ export default function ReaderClient({
           {paragraphs.map((p, i) => (
             <p
               key={i}
-              className={`reader-paragraph ${i === tts.currentIdx ? "speaking" : ""}`}
+              className={`reader-paragraph ${
+                tts.activeRange &&
+                i >= tts.activeRange.start &&
+                i <= tts.activeRange.end
+                  ? "speaking"
+                  : ""
+              }`}
             >
               {p}
             </p>
           ))}
         </div>
 
-        <div className="flex justify-between items-center mt-8 pt-4 border-t border-[var(--color-surface)]">
+        <div className="flex justify-between items-center mt-8 pt-4 border-t border-(--color-surface)">
           <button
             onClick={goPrev}
             disabled={!hasPrev}
-            className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
+            className="px-4 py-2 rounded-lg bg-(--color-surface) disabled:opacity-30 hover:bg-(--color-surface)/80"
           >
             ← Trước
           </button>
           <button
             onClick={goNext}
             disabled={!hasNext}
-            className="px-4 py-2 rounded-lg bg-[var(--color-surface)] disabled:opacity-30 hover:bg-[var(--color-surface)]/80"
+            className="px-4 py-2 rounded-lg bg-(--color-surface) disabled:opacity-30 hover:bg-(--color-surface)/80"
           >
             Sau →
           </button>
@@ -115,7 +144,7 @@ export default function ReaderClient({
         rate={tts.rate}
         currentIdx={tts.currentIdx}
         totalParagraphs={paragraphs.length}
-        onPlay={() => tts.play(paragraphs)}
+        onPlay={() => tts.play(chapterKey, paragraphs)}
         onPause={tts.pause}
         onResume={tts.resume}
         onStop={tts.stop}
