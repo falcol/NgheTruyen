@@ -4,6 +4,7 @@ import { buildTTSChunks } from "@/lib/tts-chunks";
 const VOICE = "vi-VN-HoaiMyNeural";
 const AUDIO_CACHE_TTL_MS = 1000 * 60 * 30;
 const AUDIO_CACHE_MAX_ITEMS = 200;
+const SYNTHESIS_CONCURRENCY = 3;
 
 const audioCache = new Map<string, { audio: Buffer; expiresAt: number }>();
 const inflightAudio = new Map<string, Promise<Buffer>>();
@@ -39,6 +40,15 @@ function cacheAudio(cacheKey: string, audio: Buffer) {
   }
 }
 
+function escapeXml(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
 async function synthesizeAudio(text: string, rate: number) {
   const cacheKey = getCacheKey(text, rate);
 
@@ -55,8 +65,9 @@ async function synthesizeAudio(text: string, rate: number) {
       try {
         await tts.setMetadata(VOICE, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 
+        const safeText = escapeXml(text);
         const prosody = rate !== 1 ? { rate } : undefined;
-        const { audioStream } = tts.toStream(text, prosody);
+        const { audioStream } = tts.toStream(safeText, prosody);
 
         const chunks: Buffer[] = [];
         for await (const chunk of audioStream) {
@@ -79,9 +90,41 @@ async function synthesizeAudio(text: string, rate: number) {
   return audio;
 }
 
+async function synthesizeTexts(texts: string[], rate: number) {
+  const normalizedTexts = texts.map((text) => text.trim()).filter(Boolean);
+  if (normalizedTexts.length === 0) {
+    return Buffer.alloc(0);
+  }
+
+  const audioParts = new Array<Buffer>(normalizedTexts.length);
+  let nextIndex = 0;
+
+  await Promise.all(
+    Array.from(
+      { length: Math.min(SYNTHESIS_CONCURRENCY, normalizedTexts.length) },
+      async () => {
+        while (true) {
+          const currentIndex = nextIndex;
+          nextIndex += 1;
+          if (currentIndex >= normalizedTexts.length) {
+            return;
+          }
+
+          audioParts[currentIndex] = await synthesizeAudio(
+            normalizedTexts[currentIndex],
+            rate,
+          );
+        }
+      },
+    ),
+  );
+
+  return Buffer.concat(audioParts);
+}
+
 export async function POST(req: Request) {
   const { text, paragraphs, rate } = await req.json();
-
+  const normalizedText = typeof text === "string" ? text.trim() : "";
   const normalizedParagraphs =
     Array.isArray(paragraphs)
       ? paragraphs
@@ -89,8 +132,6 @@ export async function POST(req: Request) {
           .map((paragraph) => paragraph.trim())
           .filter(Boolean)
       : [];
-
-  const normalizedText = typeof text === "string" ? text.trim() : "";
 
   if (!normalizedText && normalizedParagraphs.length === 0) {
     return new Response("Missing text", { status: 400 });
@@ -101,13 +142,7 @@ export async function POST(req: Request) {
     normalizedParagraphs.length > 0
       ? buildTTSChunks(normalizedParagraphs).map((chunk) => chunk.text)
       : [normalizedText];
-
-  const audioParts: Buffer[] = [];
-  for (const chunkText of texts) {
-    audioParts.push(await synthesizeAudio(chunkText, normalizedRate));
-  }
-
-  const audio = Buffer.concat(audioParts);
+  const audio = await synthesizeTexts(texts, normalizedRate);
 
   return new Response(new Uint8Array(audio), {
     headers: {

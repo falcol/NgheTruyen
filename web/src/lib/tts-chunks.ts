@@ -4,8 +4,8 @@ export interface TTSChunk {
   endParagraphIdx: number;
 }
 
-const MIN_CHUNK_CHARS = 120;
-const MAX_CHUNK_CHARS = 260;
+const MIN_CHUNK_CHARS = 450;
+const MAX_CHUNK_CHARS = 1400;
 
 function normalizeText(text: string) {
   return text.replace(/\s+/g, " ").trim();
@@ -24,39 +24,60 @@ function splitSentences(text: string) {
 
 export function buildTTSChunks(paragraphs: string[]) {
   const chunks: TTSChunk[] = [];
+  let currentText = "";
+  let currentStartParagraphIdx = -1;
+  let currentEndParagraphIdx = -1;
+
+  function pushCurrentChunk() {
+    if (!currentText) return;
+
+    chunks.push({
+      text: currentText.trim(),
+      startParagraphIdx: currentStartParagraphIdx,
+      endParagraphIdx: currentEndParagraphIdx,
+    });
+
+    currentText = "";
+    currentStartParagraphIdx = -1;
+    currentEndParagraphIdx = -1;
+  }
 
   paragraphs.forEach((paragraph, paragraphIdx) => {
     const sentences = splitSentences(paragraph);
-    let currentText = "";
 
     sentences.forEach((sentence) => {
-      const nextText = currentText ? `${currentText} ${sentence}` : sentence;
+      const separator =
+        currentText.length === 0
+          ? ""
+          : currentEndParagraphIdx === paragraphIdx
+            ? " "
+            : "\n\n";
+      const nextText = `${currentText}${separator}${sentence}`;
 
       if (
         currentText &&
         nextText.length > MAX_CHUNK_CHARS &&
         currentText.length >= MIN_CHUNK_CHARS
       ) {
-        chunks.push({
-          text: currentText.trim(),
-          startParagraphIdx: paragraphIdx,
-          endParagraphIdx: paragraphIdx,
-        });
-        currentText = "";
+        pushCurrentChunk();
       }
 
-      currentText = currentText ? `${currentText} ${sentence}` : sentence;
-    });
+      if (!currentText) {
+        currentStartParagraphIdx = paragraphIdx;
+      }
 
-    if (currentText) {
-      chunks.push({
-        text: currentText.trim(),
-        startParagraphIdx: paragraphIdx,
-        endParagraphIdx: paragraphIdx,
-      });
-    }
+      const nextSeparator =
+        currentText.length === 0
+          ? ""
+          : currentEndParagraphIdx === paragraphIdx
+            ? " "
+            : "\n\n";
+      currentText = `${currentText}${nextSeparator}${sentence}`;
+      currentEndParagraphIdx = paragraphIdx;
+    });
   });
 
+  pushCurrentChunk();
   return chunks;
 }
 

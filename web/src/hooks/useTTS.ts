@@ -1,28 +1,22 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import { buildTTSChunks, type TTSChunk } from "@/lib/tts-chunks";
 
-async function fetchAudioBlob(
-  paragraphs: string[],
+const PREFETCH_AHEAD = 2;
+
+async function fetchChunkAudio(
+  text: string,
   rate: number,
   signal?: AbortSignal,
 ): Promise<Blob> {
   const res = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ paragraphs, rate }),
+    body: JSON.stringify({ text, rate }),
     signal,
   });
-
-  if (!res.ok) {
-    throw new Error("TTS API error");
-  }
-
-  const contentType = res.headers.get("content-type") ?? "";
-  if (!contentType.includes("audio/")) {
-    throw new Error(`Unexpected TTS content type: ${contentType}`);
-  }
-
+  if (!res.ok) throw new Error("TTS API error");
   return res.blob();
 }
 
@@ -36,217 +30,233 @@ export function useTTS() {
   const [currentIdx, setCurrentIdx] = useState(-1);
   const [rate, setRateState] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [activeRange, setActiveRange] = useState<{ start: number; end: number } | null>(null);
+  const [activeRange, setActiveRange] = useState<{
+    start: number;
+    end: number;
+  } | null>(null);
 
-  const paragraphsRef = useRef<string[]>([]);
   const rateRef = useRef(1);
   const stoppedRef = useRef(false);
   const onCompleteRef = useRef<(() => void) | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
-  const pendingFetchRef = useRef<AbortController | null>(null);
-  const cacheRef = useRef<Map<string, Promise<Blob | null>>>(new Map());
+  const chunksRef = useRef<TTSChunk[]>([]);
+  const currentChunkIdxRef = useRef(-1);
+  const sessionAbortRef = useRef<AbortController | null>(null);
+  const blobCacheRef = useRef<Map<string, Promise<Blob | null>>>(new Map());
+  const playChunkAtRef = useRef<(idx: number) => Promise<void>>(async () => {});
 
-  const clearCache = useCallback(() => {
-    pendingFetchRef.current?.abort();
-    pendingFetchRef.current = null;
-    cacheRef.current.clear();
+  function blobCacheKey(text: string, r: number) {
+    return `${r}:${text}`;
+  }
+
+  const revokeUrl = useCallback(() => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
   }, []);
 
-  const revokeCurrentUrl = useCallback(() => {
-    if (!objectUrlRef.current) return;
-    URL.revokeObjectURL(objectUrlRef.current);
-    objectUrlRef.current = null;
-  }, []);
-
-  const resetAudioElement = useCallback(() => {
+  const cleanupAudio = useCallback(() => {
     const audio = audioRef.current;
     if (audio) {
       audio.pause();
       audio.onended = null;
       audio.onerror = null;
-      audio.ontimeupdate = null;
       audio.removeAttribute("src");
       audio.load();
       audioRef.current = null;
     }
+    revokeUrl();
+  }, [revokeUrl]);
 
-    revokeCurrentUrl();
-  }, [revokeCurrentUrl]);
-
-  const resetState = useCallback(() => {
-    resetAudioElement();
-    setCurrentIdx(-1);
-    setActiveRange(null);
-    setLoading(false);
-  }, [resetAudioElement]);
-
-  const cleanup = useCallback(() => {
-    resetState();
-    clearCache();
-    paragraphsRef.current = [];
-  }, [clearCache, resetState]);
-
-  const prepare = useCallback(
-    (contentKey: string, paragraphs: string[]) => {
-      if (!paragraphs.length) return;
-
-      const cacheKey = `${contentKey}:${rateRef.current}`;
-
-      paragraphsRef.current = paragraphs;
-
-      if (cacheRef.current.has(cacheKey)) {
-        return;
-      }
-
-      const controller = new AbortController();
-      pendingFetchRef.current = controller;
-
-      const promise = fetchAudioBlob(paragraphs, rateRef.current, controller.signal)
-        .catch((error) => {
-          cacheRef.current.delete(cacheKey);
-          if (isAbortError(error)) {
-            return null;
-          }
-          throw error;
-        })
-        .finally(() => {
-          if (pendingFetchRef.current === controller) {
-            pendingFetchRef.current = null;
-          }
-        });
-
-      cacheRef.current.set(cacheKey, promise);
-    },
-    [],
-  );
-
-  const play = useCallback(
-    async (contentKey: string, paragraphs: string[]) => {
-      if (!paragraphs.length) return;
-
-      const cacheKey = `${contentKey}:${rateRef.current}`;
-      stoppedRef.current = false;
-      paragraphsRef.current = paragraphs;
-      prepare(contentKey, paragraphs);
-
-      setLoading(true);
-      setPlaying(true);
-      setPaused(false);
-
-      try {
-        const blob = await cacheRef.current.get(cacheKey);
-        if (stoppedRef.current || !blob) return;
-
-        resetAudioElement();
-        const objectUrl = URL.createObjectURL(blob);
-        objectUrlRef.current = objectUrl;
-        const audio = new Audio(objectUrl);
-        audio.preload = "auto";
-        audioRef.current = audio;
-        audio.currentTime = 0;
-        audio.playbackRate = rateRef.current;
-
-        audio.ontimeupdate = () => {
-          if (!Number.isFinite(audio.duration) || audio.duration <= 0) {
-            return;
-          }
-
-          const progress = Math.min(audio.currentTime / audio.duration, 0.999);
-          const paragraphIdx = Math.min(
-            paragraphsRef.current.length - 1,
-            Math.floor(progress * paragraphsRef.current.length),
-          );
-
-          setCurrentIdx(paragraphIdx);
-          setActiveRange({ start: paragraphIdx, end: paragraphIdx });
-        };
-
-        audio.onended = () => {
-          if (stoppedRef.current) return;
-
-          resetAudioElement();
-          setPlaying(false);
-          setPaused(false);
-          setLoading(false);
-          setCurrentIdx(-1);
-          setActiveRange(null);
-
-          const callback = onCompleteRef.current;
-          onCompleteRef.current = null;
-          if (callback) {
-            callback();
-          }
-        };
-
-        audio.onerror = () => {
-          resetAudioElement();
-          setPlaying(false);
-          setPaused(false);
-          setLoading(false);
-        };
-
-        setCurrentIdx(0);
-        setActiveRange({ start: 0, end: 0 });
-        await audio.play();
-        setLoading(false);
-      } catch {
-        if (!stoppedRef.current) {
-          resetAudioElement();
-          setPlaying(false);
-          setPaused(false);
-          setLoading(false);
-        }
-      }
-    },
-    [prepare, resetAudioElement],
-  );
-
-  const pause = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    audio.pause();
-    setPaused(true);
+  const abortSession = useCallback(() => {
+    sessionAbortRef.current?.abort();
+    sessionAbortRef.current = null;
   }, []);
 
-  const resume = useCallback(async () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    await audio.play();
-    setPaused(false);
-  }, []);
-
-  const stop = useCallback(() => {
+  const fullReset = useCallback(() => {
     stoppedRef.current = true;
-    resetAudioElement();
+    abortSession();
+    cleanupAudio();
+    blobCacheRef.current.clear();
+    chunksRef.current = [];
+    currentChunkIdxRef.current = -1;
     setPlaying(false);
     setPaused(false);
     setLoading(false);
     setCurrentIdx(-1);
     setActiveRange(null);
-  }, [resetAudioElement]);
+  }, [abortSession, cleanupAudio]);
+
+  const getOrFetchChunk = useCallback(
+    (chunkIdx: number): Promise<Blob | null> | null => {
+      const chunk = chunksRef.current[chunkIdx];
+      if (!chunk) return null;
+
+      const key = blobCacheKey(chunk.text, rateRef.current);
+      const existing = blobCacheRef.current.get(key);
+      if (existing) return existing;
+
+      const signal = sessionAbortRef.current?.signal;
+      const promise: Promise<Blob | null> = fetchChunkAudio(
+        chunk.text,
+        rateRef.current,
+        signal,
+      ).catch((err) => {
+        blobCacheRef.current.delete(key);
+        if (isAbortError(err)) return null;
+        throw err;
+      });
+
+      blobCacheRef.current.set(key, promise);
+      return promise;
+    },
+    [],
+  );
+
+  const prefetchAhead = useCallback(
+    (fromIdx: number) => {
+      const end = Math.min(fromIdx + PREFETCH_AHEAD, chunksRef.current.length);
+      for (let i = fromIdx; i < end; i++) {
+        getOrFetchChunk(i);
+      }
+    },
+    [getOrFetchChunk],
+  );
+
+  const playChunkAt = useCallback(
+    async (idx: number) => {
+      if (stoppedRef.current) return;
+
+      if (idx >= chunksRef.current.length) {
+        cleanupAudio();
+        setPlaying(false);
+        setPaused(false);
+        setLoading(false);
+        setCurrentIdx(-1);
+        setActiveRange(null);
+        currentChunkIdxRef.current = -1;
+        const cb = onCompleteRef.current;
+        onCompleteRef.current = null;
+        if (cb) cb();
+        return;
+      }
+
+      currentChunkIdxRef.current = idx;
+      const chunk = chunksRef.current[idx];
+
+      setCurrentIdx(chunk.startParagraphIdx);
+      setActiveRange({
+        start: chunk.startParagraphIdx,
+        end: chunk.endParagraphIdx,
+      });
+
+      prefetchAhead(idx + 1);
+
+      const blobPromise = getOrFetchChunk(idx);
+      if (!blobPromise) return;
+
+      try {
+        const blob = await blobPromise;
+        if (stoppedRef.current || !blob) return;
+
+        cleanupAudio();
+        const url = URL.createObjectURL(blob);
+        objectUrlRef.current = url;
+
+        const audio = new Audio(url);
+        audio.preload = "auto";
+        audioRef.current = audio;
+
+        audio.onended = () => {
+          if (stoppedRef.current) return;
+          playChunkAtRef.current(idx + 1);
+        };
+
+        audio.onerror = () => {
+          if (!stoppedRef.current) fullReset();
+        };
+
+        await audio.play();
+        setLoading(false);
+      } catch {
+        if (!stoppedRef.current) fullReset();
+      }
+    },
+    [cleanupAudio, fullReset, getOrFetchChunk, prefetchAhead],
+  );
+
+  useEffect(() => {
+    playChunkAtRef.current = playChunkAt;
+  }, [playChunkAt]);
+
+  // --- Public API ---
+
+  const prepare = useCallback((_key: string, paragraphs: string[]) => {
+    if (!paragraphs.length) return;
+    chunksRef.current = buildTTSChunks(paragraphs);
+  }, []);
+
+  const play = useCallback(
+    (_key: string, paragraphs: string[]) => {
+      if (!paragraphs.length) return;
+
+      stoppedRef.current = false;
+      abortSession();
+      cleanupAudio();
+      blobCacheRef.current.clear();
+
+      sessionAbortRef.current = new AbortController();
+      chunksRef.current = buildTTSChunks(paragraphs);
+
+      setPlaying(true);
+      setPaused(false);
+      setLoading(true);
+
+      playChunkAt(0);
+    },
+    [abortSession, cleanupAudio, playChunkAt],
+  );
+
+  const pause = useCallback(() => {
+    audioRef.current?.pause();
+    setPaused(true);
+  }, []);
+
+  const resume = useCallback(async () => {
+    await audioRef.current?.play();
+    setPaused(false);
+  }, []);
+
+  const stop = useCallback(() => {
+    fullReset();
+  }, [fullReset]);
 
   const setRate = useCallback(
     (newRate: number) => {
       if (rateRef.current === newRate) return;
-
       rateRef.current = newRate;
-      if (audioRef.current) {
-        audioRef.current.playbackRate = newRate;
-      }
-      clearCache();
+      fullReset();
+      stoppedRef.current = false;
       setRateState(newRate);
     },
-    [clearCache],
+    [fullReset],
   );
 
   const setOnChapterComplete = useCallback((cb: () => void) => {
     onCompleteRef.current = cb;
   }, []);
 
-  useEffect(() => cleanup, [cleanup]);
+  useEffect(() => {
+    const cache = blobCacheRef.current;
+    return () => {
+      stoppedRef.current = true;
+      abortSession();
+      cleanupAudio();
+      cache.clear();
+    };
+  }, [abortSession, cleanupAudio]);
 
   return {
     playing,

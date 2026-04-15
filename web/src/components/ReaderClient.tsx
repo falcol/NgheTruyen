@@ -9,12 +9,14 @@ import Player from "@/components/Player";
 
 export default function ReaderClient({
   slug,
+  storyTitle,
   chapterIdx,
   totalChapters,
   title,
   paragraphs,
 }: {
   slug: string;
+  storyTitle: string;
   chapterIdx: number;
   totalChapters: number;
   title: string;
@@ -53,20 +55,6 @@ export default function ReaderClient({
   const hasPrev = chapterIdx > 0;
   const hasNext = chapterIdx < totalChapters - 1;
 
-  useEffect(() => {
-    if (hasPrev) {
-      router.prefetch(prevHref);
-    }
-
-    if (hasNext) {
-      router.prefetch(nextHref);
-    }
-  }, [hasNext, hasPrev, nextHref, prevHref, router]);
-
-  useEffect(() => {
-    tts.prepare(chapterKey, paragraphs);
-  }, [chapterKey, paragraphs, tts.prepare]);
-
   const goNext = useCallback(() => {
     if (hasNext) router.push(nextHref);
   }, [hasNext, nextHref, router]);
@@ -96,6 +84,7 @@ export default function ReaderClient({
           >
             ← Danh sách chương
           </Link>
+          <p className="text-sm text-(--color-text-muted) mt-2">{storyTitle}</p>
           <h1 className="text-xl font-bold mt-2">{title}</h1>
           <p className="text-sm text-(--color-text-muted)">
             Chương {chapterIdx + 1} / {totalChapters}

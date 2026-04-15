@@ -6,6 +6,10 @@ export interface ChapterMeta {
   title: string;
 }
 
+export interface StoryMetadata {
+  story_title: string;
+}
+
 export interface Chapter extends ChapterMeta {
   paragraphs: string[];
 }
@@ -29,6 +33,16 @@ export function makeDataDir(baseDir: string) {
   function getChapterIndex(slug: string): ChapterMeta[] {
     const filePath = path.join(dataDir, slug, "chapters_index.json");
     return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  }
+
+  function getStoryMetadata(slug: string): StoryMetadata | null {
+    const filePath = path.join(dataDir, slug, "metadata.json");
+    if (!fs.existsSync(filePath)) return null;
+    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+  }
+
+  function getStoryTitle(slug: string): string {
+    return getStoryMetadata(slug)?.story_title || slug;
   }
 
   function getChapter(slug: string, chapterIdx: number): Chapter | null {
@@ -59,7 +73,14 @@ export function makeDataDir(baseDir: string) {
     return getChapterIndex(slug).length;
   }
 
-  return { listStories, getChapterIndex, getChapter, getTotalChapters };
+  return {
+    listStories,
+    getChapterIndex,
+    getStoryMetadata,
+    getStoryTitle,
+    getChapter,
+    getTotalChapters,
+  };
 }
 
 // Default instance for production use
@@ -69,5 +90,7 @@ const defaultData = makeDataDir(
 
 export const listStories = defaultData.listStories;
 export const getChapterIndex = defaultData.getChapterIndex;
+export const getStoryMetadata = defaultData.getStoryMetadata;
+export const getStoryTitle = defaultData.getStoryTitle;
 export const getChapter = defaultData.getChapter;
 export const getTotalChapters = defaultData.getTotalChapters;

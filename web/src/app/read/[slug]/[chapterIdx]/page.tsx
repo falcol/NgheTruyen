@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
-import { getChapter, getTotalChapters, listStories, getChapterIndex } from "@/lib/data";
+import {
+  getChapter,
+  getChapterIndex,
+  getStoryTitle,
+  getTotalChapters,
+  listStories,
+} from "@/lib/data";
 import ReaderClient from "@/components/ReaderClient";
 
 export function generateStaticParams() {
@@ -26,11 +32,13 @@ export default async function ReaderPage({
   const chapter = getChapter(slug, chapterIdx);
   if (!chapter) return notFound();
 
+  const storyTitle = getStoryTitle(slug);
   const totalChapters = getTotalChapters(slug);
 
   return (
     <ReaderClient
       slug={slug}
+      storyTitle={storyTitle}
       chapterIdx={chapterIdx}
       totalChapters={totalChapters}
       title={chapter.title}

@@ -24,6 +24,16 @@ describe("data layer", () => {
     expect(chapter).toBeNull();
   });
 
+  it("getStoryMetadata returns story metadata", () => {
+    expect(data.getStoryMetadata("test-story")).toEqual({
+      story_title: "Test Story Title",
+    });
+  });
+
+  it("getStoryTitle returns story title from metadata", () => {
+    expect(data.getStoryTitle("test-story")).toBe("Test Story Title");
+  });
+
   it("getTotalChapters returns correct count", () => {
     expect(data.getTotalChapters("test-story")).toBe(2);
   });

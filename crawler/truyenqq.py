@@ -44,6 +44,19 @@ class TruyenQQCrawler(BaseCrawler):
 
         return {"title": title, "paragraphs": lines}
 
+    def _extract_story_title(self, soup) -> str | None:
+        """Extract the story title from the page header."""
+        title_node = soup.select_one(
+            "body > div.page-container > div.page-content-wrapper > div > div > div > "
+            "div.portlet.box.blue-soft > div.portlet-title > div > h1"
+        ) or soup.select_one("div.caption > h1.read")
+
+        if not title_node:
+            return None
+
+        title = title_node.get_text(" ", strip=True)
+        return re.sub(r"^Đọc truyện\s+", "", title).strip()
+
     def _next_chapter_url(self, soup) -> str | None:
         """Find the 'Sau' (Next) navigation link."""
         for a in soup.find_all("a"):
@@ -72,6 +85,7 @@ class TruyenQQCrawler(BaseCrawler):
         chapters = []
         url = start_url
         index = start_index
+        story_title = None
 
         logger.info(f"Starting crawl: {slug}")
         logger.info(f"First URL: {url}")
@@ -81,6 +95,10 @@ class TruyenQQCrawler(BaseCrawler):
 
             try:
                 soup = self.fetch(url)
+                if story_title is None:
+                    story_title = self._extract_story_title(soup)
+                    if story_title:
+                        logger.info(f"Story title: {story_title}")
                 chapter = self._extract_chapter(soup)
                 chapter["index"] = index
                 chapters.append(chapter)
@@ -97,5 +115,8 @@ class TruyenQQCrawler(BaseCrawler):
             index += 1
 
         logger.info(f"Crawl complete: {len(chapters)} chapters")
+        if story_title:
+            out = self.output_dir(slug)
+            self.save_json({"story_title": story_title}, out / "metadata.json")
         self.save_volumes(chapters, slug)
         return chapters
