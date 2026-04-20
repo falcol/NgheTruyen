@@ -93,14 +93,19 @@ export default function ReaderClient({
     if (hasPrev) router.push(prevHref);
   }, [hasPrev, prevHref, router]);
 
+  const navRef = useRef({ goNext, goPrev });
+  useEffect(() => {
+    navRef.current = { goNext, goPrev };
+  });
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") goPrev();
-      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") navRef.current.goPrev();
+      if (e.key === "ArrowRight") navRef.current.goNext();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [goNext, goPrev]);
+  }, []);
 
   return (
     <>
