@@ -70,7 +70,9 @@ export function makeDataDir(baseDir: string) {
   }
 
   function getTotalChapters(slug: string): number {
-    return getChapterIndex(slug).length;
+    const index = getChapterIndex(slug);
+    if (index.length === 0) return 0;
+    return index[index.length - 1].index + 1;
   }
 
   return {

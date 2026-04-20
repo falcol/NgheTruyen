@@ -34,6 +34,7 @@ export default async function ReaderPage({
 
   const storyTitle = getStoryTitle(slug);
   const totalChapters = getTotalChapters(slug);
+  const chapters = getChapterIndex(slug);
 
   return (
     <ReaderClient
@@ -43,6 +44,7 @@ export default async function ReaderPage({
       totalChapters={totalChapters}
       title={chapter.title}
       paragraphs={chapter.paragraphs}
+      chapters={chapters}
     />
   );
 }
