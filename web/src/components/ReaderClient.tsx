@@ -210,6 +210,8 @@ export default function ReaderClient({
         onPause={tts.pause}
         onResume={tts.resume}
         onStop={tts.stop}
+        onSkipForward={tts.skipForward}
+        onSkipBackward={tts.skipBackward}
         onRateChange={tts.setRate}
       />
     </>

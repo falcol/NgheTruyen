@@ -29,7 +29,7 @@ function StoryCard({ slug }: { slug: string }) {
 
   try {
     const index = getChapterIndex(slug);
-    chapterCount = index.length;
+    if (index) chapterCount = index.length;
     title = getStoryTitle(slug);
   } catch {
     // fallback to slug

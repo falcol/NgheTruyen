@@ -15,6 +15,8 @@ export default function Player({
   onPause,
   onResume,
   onStop,
+  onSkipForward,
+  onSkipBackward,
   onRateChange,
 }: {
   playing: boolean;
@@ -27,6 +29,8 @@ export default function Player({
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
+  onSkipForward: () => void;
+  onSkipBackward: () => void;
   onRateChange: (rate: number) => void;
 }) {
   const [showSettings, setShowSettings] = useState(false);
@@ -47,7 +51,6 @@ export default function Player({
       {/* Settings panel */}
       {showSettings && (
         <div className="px-4 py-3 border-t border-gray-800 space-y-3">
-          {/* Speed control */}
           <div>
             <label className="text-xs text-[var(--color-text-muted)] block mb-1">
               Tốc độ
@@ -77,7 +80,19 @@ export default function Player({
 
       {/* Main controls */}
       <div className="flex items-center justify-between max-w-3xl mx-auto px-4 py-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Skip backward */}
+          {playing && (
+            <button
+              onClick={onSkipBackward}
+              className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-sm hover:bg-gray-600"
+              aria-label="Quay lại đoạn trước"
+            >
+              {"⏮"}
+            </button>
+          )}
+
+          {/* Play / Pause */}
           <button
             onClick={
               playing && !paused
@@ -91,21 +106,33 @@ export default function Player({
             aria-label={playing && !paused ? "Tạm dừng" : "Phát"}
           >
             {loading ? (
-              <span className="animate-spin text-base">{"\u23F3"}</span>
+              <span className="animate-spin text-base">{"⏳"}</span>
             ) : playing && !paused ? (
-              "\u23F8"
+              "⏸"
             ) : (
-              "\u25B6"
+              "▶"
             )}
           </button>
 
+          {/* Skip forward */}
+          {playing && (
+            <button
+              onClick={onSkipForward}
+              className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-sm hover:bg-gray-600"
+              aria-label="Chuyển đoạn tiếp"
+            >
+              {"⏭"}
+            </button>
+          )}
+
+          {/* Stop */}
           {playing && (
             <button
               onClick={onStop}
-              className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg"
+              className="w-9 h-9 rounded-full bg-gray-700 flex items-center justify-center text-sm hover:bg-gray-600"
               aria-label="Dừng"
             >
-              {"\u23F9"}
+              {"⏹"}
             </button>
           )}
         </div>
@@ -127,7 +154,7 @@ export default function Player({
           }`}
           aria-label="Cài đặt"
         >
-          {"\u2699"}
+          {"⚙"}
         </button>
       </div>
     </div>

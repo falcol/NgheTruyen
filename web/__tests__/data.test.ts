@@ -6,9 +6,14 @@ describe("data layer", () => {
 
   it("getChapterIndex returns array of chapter metadata", () => {
     const index = data.getChapterIndex("test-story");
-    expect(index).toHaveLength(2);
-    expect(index[0]).toEqual({ index: 0, title: "Chương 01: Test chapter one" });
-    expect(index[1]).toEqual({ index: 1, title: "Chương 02: Test chapter two" });
+    expect(index).not.toBeNull();
+    expect(index!).toHaveLength(2);
+    expect(index![0]).toEqual({ index: 0, title: "Chương 01: Test chapter one" });
+    expect(index![1]).toEqual({ index: 1, title: "Chương 02: Test chapter two" });
+  });
+
+  it("getChapterIndex returns null for non-existent slug", () => {
+    expect(data.getChapterIndex("non-existent")).toBeNull();
   });
 
   it("getChapter returns chapter paragraphs from volume file", () => {

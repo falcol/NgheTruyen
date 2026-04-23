@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NgheTruyen Web
 
-## Getting Started
+Web app đọc truyện tiếng Việt với TTS (text-to-speech).
 
-First, run the development server:
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev          # Dev server (http://localhost:3000)
+npm run build        # Production build (auto copy data trước)
+npm run start        # Chạy production server
+npm run test         # Run tests
+npm run test:watch   # Tests ở watch mode
+npm run lint         # ESLint
+npm run data:copy    # Copy data từ crawler vào web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Import truyện đã crawl
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Web app đọc dữ liệu trực tiếp từ thư mục `public/data/` — không cần database hay API.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Cách hoạt động
 
-## Learn More
+- **Dev**: `public/data` là symlink → `../../crawler/data`
+- **Build**: `prebuild` tự động copy `../crawler/data` → `public/data/`
 
-To learn more about Next.js, take a look at the following resources:
+### Cấu trúc data cần có
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+public/data/truyenqq/
+└── <slug-truyen>/
+    ├── metadata.json           # { "story_title": "Tên truyện" }
+    ├── chapters_index.json     # [{ "index": 0, "title": "Chương 1" }, ...]
+    ├── vol-001-ch001-050.json  # 50 chương/volume
+    ├── vol-002-ch051-100.json
+    └── ...
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Crawl truyện mới
 
-## Deploy on Vercel
+```bash
+# Từ thư mục crawler
+cd ../crawler
+python -m crawler.run truyenqq "https://truyenqq.com/..."
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Sau khi crawl xong, data tự động xuất hiện ở web (qua symlink). Refresh browser để thấy truyện mới.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Build production
+
+```bash
+npm run build   # prebuild tự chạy data:copy trước
+```
+
+### Lưu ý
+
+- Data layer (`src/lib/data.ts`) tự động quét tất cả nguồn trong `public/data/` (truyenqq, metruyenchu, metruyencv, ...)
+- Thêm thư mục nguồn mới vào `crawler/data/` → web tự nhận

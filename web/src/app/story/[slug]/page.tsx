@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getChapterIndex, getStoryTitle, listStories } from "@/lib/data";
 import ChapterList from "@/components/ChapterList";
 
@@ -13,6 +14,7 @@ export default async function StoryPage({
 }) {
   const { slug } = await params;
   const chapters = getChapterIndex(slug);
+  if (!chapters) return notFound();
   const storyTitle = getStoryTitle(slug);
 
   return (

@@ -18,6 +18,10 @@ function unauthorizedResponse() {
 }
 
 export function proxy(request: NextRequest) {
+  if (process.env.NODE_ENV !== "production") {
+    return NextResponse.next();
+  }
+
   if (!isSiteBasicAuthConfigured()) {
     return new NextResponse(
       `Missing ${SITE_BASIC_AUTH_USER_ENV_KEY} or ${SITE_BASIC_AUTH_PASSWORD_ENV_KEY}.`,

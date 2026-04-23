@@ -12,6 +12,7 @@ export function generateStaticParams() {
   const params: { slug: string; chapterIdx: string }[] = [];
   for (const slug of listStories()) {
     const chapters = getChapterIndex(slug);
+    if (!chapters) continue;
     for (const ch of chapters) {
       params.push({ slug, chapterIdx: String(ch.index) });
     }
@@ -35,6 +36,7 @@ export default async function ReaderPage({
   const storyTitle = getStoryTitle(slug);
   const totalChapters = getTotalChapters(slug);
   const chapters = getChapterIndex(slug);
+  if (!chapters) return notFound();
 
   return (
     <ReaderClient

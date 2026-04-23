@@ -3,78 +3,68 @@ from urllib.parse import urljoin
 
 from .base import BaseCrawler, logger
 
-BASE_URL = "https://truyenqq.vn/"
+BASE_URL = "https://metruyencv.xyz/"
 
 
-class TruyenQQCrawler(BaseCrawler):
-    """Crawler for truyenqq.vn doc-convert (text novel) pages."""
+class MetruyencvCrawler(BaseCrawler):
+    """Crawler for metruyencv.xyz chapter pages."""
 
     def __init__(self, dest_dir: str | None = None):
-        super().__init__(site_name="truyenqq", dest_dir=dest_dir)
-
-    NOISE_PATTERNS = [
-        re.compile(r"^Ng.+i đăng:"),           # "Nguoi dang: <user>"
-        re.compile(r"^Bạn đang đọc truyện"),    # Site attribution
-        re.compile(r"\.com\.vn$|\.com$|\.net$"), # Domain names
-    ]
+        super().__init__(site_name="metruyencv", dest_dir=dest_dir)
 
     def _extract_chapter(self, soup) -> dict:
         """Extract chapter title and paragraphs from a chapter page."""
-        # Title from h2
-        h2 = soup.find("h2")
-        title = h2.get_text(strip=True) if h2 else "Unknown"
+        # Title from breadcrumb active li
+        active_li = soup.select_one("div.c-breadcrumb-wrapper li.active")
+        title = active_li.get_text(strip=True) if active_li else "Unknown"
+        title = re.sub(r"^Chương\s+\d+[:.]\s*", "", title).strip() or title
 
-        # Content from #noidungchap
-        noidung = soup.find(id="noidungchap")
-        if not noidung:
-            raise ValueError("Could not find #noidungchap")
+        content = soup.select_one("div.reading-content")
+        if not content:
+            raise ValueError("Could not find div.reading-content")
 
-        # Remove recommendation divs before extracting text
-        for div in noidung.find_all("div"):
-            div.decompose()
-
-        text = noidung.get_text(separator="\n").strip()
+        text = content.get_text(separator="\n").strip()
         lines = [line.strip() for line in text.split("\n") if line.strip()]
 
-        # Strip noise lines from start and end
-        while lines and any(p.search(lines[0]) for p in self.NOISE_PATTERNS):
-            lines.pop(0)
-        while lines and any(p.search(lines[-1]) for p in self.NOISE_PATTERNS):
-            lines.pop()
+        # First line is usually "Chương X: title" - skip it
+        if lines and re.match(r"^Chương\s+\d+", lines[0]):
+            lines = lines[1:]
 
         return {"title": title, "paragraphs": lines}
 
     def _extract_story_title(self, soup) -> str | None:
-        """Extract the story title from the page header."""
-        title_node = soup.select_one(
-            "body > div.page-container > div.page-content-wrapper > div > div > div > "
-            "div.portlet.box.blue-soft > div.portlet-title > div > h1"
-        ) or soup.select_one("div.caption > h1.read")
-
-        if not title_node:
+        """Extract the story title from breadcrumb."""
+        bc = soup.select_one("div.c-breadcrumb-wrapper")
+        if not bc:
             return None
-
-        title = title_node.get_text(" ", strip=True)
-        return re.sub(r"^Đọc truyện\s+", "", title).strip()
+        a = bc.find("a")
+        return a.get_text(strip=True) if a else None
 
     def _next_chapter_url(self, soup) -> str | None:
-        """Find the 'Sau' (Next) navigation link."""
-        for a in soup.find_all("a"):
-            if a.get_text(strip=True) == "Sau":
-                href = a.get("href", "")
-                if href:
-                    return urljoin(BASE_URL, href)
-        return None
+        """Find the next chapter link from div.nav-next."""
+        nav_next = soup.select_one("div.nav-next")
+        if not nav_next:
+            return None
+        a = nav_next.find("a")
+        if not a:
+            return None
+        href = a.get("href", "")
+        if not href:
+            return None
+        return urljoin(BASE_URL, href)
 
     def _extract_slug(self, url: str) -> str:
-        """Extract story slug from URL for output directory naming."""
-        # URL: .../doc-convert-<slug>-<storyID>/<chapterID>-<index>/
-        match = re.search(r"doc-convert-(.+?)/", url)
+        """Extract story slug from URL: /truyen/{slug}/chuong-..."""
+        match = re.search(r"metruyencv\.xyz/truyen/(.+?)/chuong-", url)
+        if match:
+            return match.group(1)
+        # Fallback: try without chuong-
+        match = re.search(r"metruyencv\.xyz/truyen/(.+?)/", url)
         return match.group(1) if match else "unknown"
 
     def crawl(self, start_url: str, start_index: int = 0, max_chapters: int = 0) -> list[dict]:
         """
-        Crawl all chapters starting from start_url by following 'Sau' links.
+        Crawl all chapters starting from start_url by following nav-next links.
         Saves each volume to disk as soon as it's complete.
         Auto-saves buffer on crash/interrupt. Resumes from last saved progress.
 
@@ -155,7 +145,7 @@ class TruyenQQCrawler(BaseCrawler):
                 self.save_volume(buffer, vol_num, slug)
                 logger.info(f"Saved partial vol {vol_num} ({len(buffer)} chapters)")
 
-            # Rebuild index from all saved volumes
+            # Rebuild index from all saved volumes (with dedup)
             all_index = self._rebuild_index(slug)
             if all_index:
                 self.save_index(all_index, slug)
