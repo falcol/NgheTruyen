@@ -3,30 +3,39 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { buildTTSChunks, type TTSChunk } from "@/lib/tts-chunks";
 
-const PREFETCH_AHEAD = 5;
+const VOICE_STORAGE_KEY = "nghetruyen-tts-voice";
 
-interface PreloadedAudio {
-  audio: HTMLAudioElement;
-  objectUrl: string;
+function getVietnameseVoices(): SpeechSynthesisVoice[] {
+  if (typeof window === "undefined" || !window.speechSynthesis) return [];
+
+  const voices = window.speechSynthesis.getVoices();
+  const viVoices = voices.filter((v) => v.lang === "vi-VN");
+  if (viVoices.length > 0) return viVoices;
+
+  return voices.filter((v) => v.lang.startsWith("vi"));
 }
 
-async function fetchChunkAudio(
-  text: string,
-  rate: number,
-  signal?: AbortSignal,
-): Promise<Blob> {
-  const res = await fetch("/api/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, rate }),
-    signal,
-  });
-  if (!res.ok) throw new Error("TTS API error");
-  return res.blob();
+function getSavedVoiceName(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(VOICE_STORAGE_KEY);
 }
 
-function isAbortError(error: unknown) {
-  return error instanceof Error && error.name === "AbortError";
+function selectVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  if (voices.length === 0) return null;
+
+  const savedName = getSavedVoiceName();
+  if (savedName) {
+    const saved = voices.find((v) => v.name === savedName);
+    if (saved) return saved;
+  }
+
+  const google = voices.find((v) => v.name.includes("Google"));
+  if (google) return google;
+
+  const ms = voices.find((v) => v.name.includes("Microsoft"));
+  if (ms) return ms;
+
+  return voices[0];
 }
 
 export function useTTS() {
@@ -40,6 +49,8 @@ export function useTTS() {
     end: number;
   } | null>(null);
   const [totalChunks, setTotalChunks] = useState(0);
+  const [viVoices, setViVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceName, setSelectedVoiceName] = useState<string | null>(null);
 
   const rateRef = useRef(1);
   const stoppedRef = useRef(false);
@@ -47,238 +58,130 @@ export function useTTS() {
   const onCompleteRef = useRef<(() => void) | null>(null);
   const chunksRef = useRef<TTSChunk[]>([]);
   const currentChunkIdxRef = useRef(-1);
-  const sessionAbortRef = useRef<AbortController | null>(null);
-  const preloadedRef = useRef<Map<number, PreloadedAudio>>(new Map());
-  const preloadingRef = useRef<Map<number, Promise<PreloadedAudio | null>>>(
-    new Map(),
-  );
+  const preparedKeyRef = useRef<string | null>(null);
+  const preparedRateRef = useRef(1);
+  const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const playChunkAtRef = useRef<
-    (idx: number, playId: number) => Promise<void>
-  >(async () => {});
+    (idx: number, playId: number) => void
+  >(() => {});
 
-  // --- Helpers ---
-
-  const abortSession = useCallback(() => {
-    sessionAbortRef.current?.abort();
-    sessionAbortRef.current = null;
+  const refreshVoices = useCallback(() => {
+    const voices = getVietnameseVoices();
+    setViVoices(voices);
+    const chosen = selectVoice(voices);
+    voiceRef.current = chosen;
+    if (chosen) setSelectedVoiceName(chosen.name);
   }, []);
 
-  const cleanupAllAudio = useCallback(() => {
-    for (const [, entry] of preloadedRef.current) {
-      entry.audio.pause();
-      entry.audio.onended = null;
-      entry.audio.onerror = null;
-      entry.audio.removeAttribute("src");
-      entry.audio.load();
-      URL.revokeObjectURL(entry.objectUrl);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+
+    refreshVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", refreshVoices);
+    };
+  }, [refreshVoices]);
+
+  const playChunkAt = useCallback((idx: number, playId: number) => {
+    if (playIdRef.current !== playId || stoppedRef.current) return;
+
+    if (idx >= chunksRef.current.length) {
+      setPlaying(false);
+      setPaused(false);
+      setLoading(false);
+      setCurrentIdx(-1);
+      setActiveRange(null);
+      currentChunkIdxRef.current = -1;
+      const cb = onCompleteRef.current;
+      onCompleteRef.current = null;
+      if (cb) cb();
+      return;
     }
-    preloadedRef.current.clear();
-    preloadingRef.current.clear();
-  }, []);
 
-  const abortAndCleanup = useCallback(() => {
-    stoppedRef.current = true;
-    abortSession();
-    cleanupAllAudio();
-    chunksRef.current = [];
-    currentChunkIdxRef.current = -1;
-    setPlaying(false);
-    setPaused(false);
-    setLoading(false);
-    setCurrentIdx(-1);
-    setActiveRange(null);
-    setTotalChunks(0);
-  }, [abortSession, cleanupAllAudio]);
+    currentChunkIdxRef.current = idx;
+    const chunk = chunksRef.current[idx];
 
-  // --- Pre-load Audio elements ---
+    setCurrentIdx(chunk.startParagraphIdx);
+    setActiveRange({
+      start: chunk.startParagraphIdx,
+      end: chunk.endParagraphIdx,
+    });
 
-  const preloadChunk = useCallback(
-    async (idx: number): Promise<PreloadedAudio | null> => {
-      // Already preloaded
-      const existing = preloadedRef.current.get(idx);
-      if (existing) return existing;
+    const utterance = new SpeechSynthesisUtterance(chunk.text);
+    utterance.voice = voiceRef.current;
+    utterance.lang = "vi-VN";
+    utterance.rate = rateRef.current;
+    utterance.pitch = 1;
 
-      // Already preloading
-      const inFlight = preloadingRef.current.get(idx);
-      if (inFlight) return inFlight;
+    utterance.onstart = () => {
+      setLoading(false);
+    };
 
-      const chunk = chunksRef.current[idx];
-      if (!chunk) return null;
-
-      const signal = sessionAbortRef.current?.signal;
-
-      const promise: Promise<PreloadedAudio | null> = (async () => {
-        try {
-          const blob = await fetchChunkAudio(
-            chunk.text,
-            rateRef.current,
-            signal,
-          );
-          if (stoppedRef.current) return null;
-
-          const objectUrl = URL.createObjectURL(blob);
-          const audio = new Audio();
-          audio.preload = "auto";
-          audio.src = objectUrl;
-
-          let loadOk = false;
-          try {
-            await new Promise<void>((resolve, reject) => {
-              audio.oncanplay = () => resolve();
-              audio.onerror = () => reject(new Error("Audio load failed"));
-            });
-            loadOk = true;
-          } catch {
-            URL.revokeObjectURL(objectUrl);
-            audio.removeAttribute("src");
-          }
-
-          if (stoppedRef.current || !loadOk) {
-            if (loadOk) URL.revokeObjectURL(objectUrl);
-            return null;
-          }
-
-          const entry: PreloadedAudio = { audio, objectUrl };
-          preloadedRef.current.set(idx, entry);
-          return entry;
-        } catch (err) {
-          if (isAbortError(err)) return null;
-          throw err;
-        } finally {
-          preloadingRef.current.delete(idx);
-        }
-      })();
-
-      preloadingRef.current.set(idx, promise);
-      return promise;
-    },
-    [],
-  );
-
-  const prefetchAhead = useCallback(
-    (fromIdx: number) => {
-      const end = Math.min(fromIdx + PREFETCH_AHEAD, chunksRef.current.length);
-      for (let i = fromIdx; i < end; i++) {
-        if (
-          !preloadedRef.current.has(i) &&
-          !preloadingRef.current.has(i)
-        ) {
-          preloadChunk(i).catch(() => {});
-        }
-      }
-      // Evict old entries
-      for (const key of preloadedRef.current.keys()) {
-        if (key < fromIdx - 1) {
-          const entry = preloadedRef.current.get(key)!;
-          entry.audio.pause();
-          URL.revokeObjectURL(entry.objectUrl);
-          preloadedRef.current.delete(key);
-        }
-      }
-    },
-    [preloadChunk],
-  );
-
-  // --- Core Playback ---
-
-  const stopCurrentAudio = useCallback(() => {
-    const entry = preloadedRef.current.get(currentChunkIdxRef.current);
-    if (entry) {
-      entry.audio.onended = null;
-      entry.audio.onerror = null;
-      entry.audio.pause();
-      entry.audio.currentTime = 0;
-    }
-  }, []);
-
-  const playChunkAt = useCallback(
-    async (idx: number, playId: number) => {
-      if (playIdRef.current !== playId) return;
-      if (stoppedRef.current) return;
-
-      // All chunks done
-      if (idx >= chunksRef.current.length) {
-        stopCurrentAudio();
-        setPlaying(false);
-        setPaused(false);
-        setLoading(false);
-        setCurrentIdx(-1);
-        setActiveRange(null);
-        currentChunkIdxRef.current = -1;
-        const cb = onCompleteRef.current;
-        onCompleteRef.current = null;
-        if (cb) cb();
-        return;
-      }
-
-      currentChunkIdxRef.current = idx;
-      const chunk = chunksRef.current[idx];
-
-      setCurrentIdx(chunk.startParagraphIdx);
-      setActiveRange({
-        start: chunk.startParagraphIdx,
-        end: chunk.endParagraphIdx,
-      });
-
-      prefetchAhead(idx + 1);
-
-      const preloaded = await preloadChunk(idx);
+    utterance.onend = () => {
       if (playIdRef.current !== playId || stoppedRef.current) return;
+      playChunkAtRef.current(idx + 1, playId);
+    };
 
-      // Failed to preload — skip
-      if (!preloaded) {
-        playChunkAtRef.current(idx + 1, playId);
+    utterance.onerror = (e) => {
+      if (
+        e.error === "canceled" ||
+        playIdRef.current !== playId ||
+        stoppedRef.current
+      )
         return;
-      }
+      playChunkAtRef.current(idx + 1, playId);
+    };
 
-      // Stop other playing audio, reset this one to start
-      stopCurrentAudio();
-      preloaded.audio.currentTime = 0;
-
-      preloaded.audio.onended = () => {
-        if (playIdRef.current !== playId) return;
-        if (stoppedRef.current) return;
-        playChunkAtRef.current(idx + 1, playId);
-      };
-
-      preloaded.audio.onerror = () => {
-        if (playIdRef.current !== playId) return;
-        if (!stoppedRef.current) playChunkAtRef.current(idx + 1, playId);
-      };
-
-      try {
-        await preloaded.audio.play();
-        setLoading(false);
-      } catch {
-        if (!stoppedRef.current) abortAndCleanup();
-      }
-    },
-    [stopCurrentAudio, abortAndCleanup, prefetchAhead, preloadChunk],
-  );
+    window.speechSynthesis.speak(utterance);
+  }, []);
 
   useEffect(() => {
     playChunkAtRef.current = playChunkAt;
   }, [playChunkAt]);
 
-  // --- Public API ---
+  const prepare = useCallback(
+    (key: string, paragraphs: string[]) => {
+      if (!paragraphs.length) return;
+      if (
+        preparedKeyRef.current === key &&
+        preparedRateRef.current === rateRef.current
+      ) {
+        return;
+      }
 
-  const prepare = useCallback((_key: string, paragraphs: string[]) => {
-    if (!paragraphs.length) return;
-    chunksRef.current = buildTTSChunks(paragraphs);
-  }, []);
+      stoppedRef.current = false;
+      window.speechSynthesis.cancel();
+      chunksRef.current = buildTTSChunks(paragraphs);
+      currentChunkIdxRef.current = -1;
+      preparedKeyRef.current = key;
+      preparedRateRef.current = rateRef.current;
+      setTotalChunks(chunksRef.current.length);
+    },
+    [],
+  );
 
   const play = useCallback(
-    (_key: string, paragraphs: string[]) => {
+    (key: string, paragraphs: string[]) => {
       if (!paragraphs.length) return;
+      if (typeof window === "undefined" || !window.speechSynthesis) return;
 
       stoppedRef.current = false;
       const newPlayId = ++playIdRef.current;
-      stopCurrentAudio();
-      abortSession();
-      cleanupAllAudio();
 
-      sessionAbortRef.current = new AbortController();
-      chunksRef.current = buildTTSChunks(paragraphs);
+      window.speechSynthesis.cancel();
+
+      const hasPrepared =
+        preparedKeyRef.current === key &&
+        preparedRateRef.current === rateRef.current &&
+        chunksRef.current.length > 0;
+
+      if (!hasPrepared) {
+        chunksRef.current = buildTTSChunks(paragraphs);
+        preparedKeyRef.current = key;
+        preparedRateRef.current = rateRef.current;
+      }
+
       currentChunkIdxRef.current = -1;
 
       setPlaying(true);
@@ -288,68 +191,100 @@ export function useTTS() {
 
       playChunkAt(0, newPlayId);
     },
-    [stopCurrentAudio, abortSession, cleanupAllAudio, playChunkAt],
+    [playChunkAt],
   );
 
   const pause = useCallback(() => {
-    const entry = preloadedRef.current.get(currentChunkIdxRef.current);
-    if (entry) entry.audio.pause();
+    window.speechSynthesis.pause();
     setPaused(true);
   }, []);
 
-  const resume = useCallback(async () => {
-    const entry = preloadedRef.current.get(currentChunkIdxRef.current);
-    if (entry) await entry.audio.play();
+  const resume = useCallback(() => {
+    window.speechSynthesis.resume();
     setPaused(false);
   }, []);
 
   const stop = useCallback(() => {
-    abortAndCleanup();
-  }, [abortAndCleanup]);
+    stoppedRef.current = true;
+    window.speechSynthesis.cancel();
+    chunksRef.current = [];
+    currentChunkIdxRef.current = -1;
+    preparedKeyRef.current = null;
+    preparedRateRef.current = rateRef.current;
+    setPlaying(false);
+    setPaused(false);
+    setLoading(false);
+    setCurrentIdx(-1);
+    setActiveRange(null);
+    setTotalChunks(0);
+  }, []);
 
   const skipForward = useCallback(() => {
     if (currentChunkIdxRef.current < 0) return;
     const newPlayId = ++playIdRef.current;
     const nextIdx = currentChunkIdxRef.current + 1;
     if (nextIdx >= chunksRef.current.length) return;
+    window.speechSynthesis.cancel();
     playChunkAt(nextIdx, newPlayId);
   }, [playChunkAt]);
 
   const skipBackward = useCallback(() => {
     if (currentChunkIdxRef.current < 0) return;
     const newPlayId = ++playIdRef.current;
-    const entry = preloadedRef.current.get(currentChunkIdxRef.current);
-    const elapsed = entry ? entry.audio.currentTime : 0;
-    const targetIdx =
-      elapsed > 3
-        ? currentChunkIdxRef.current
-        : Math.max(0, currentChunkIdxRef.current - 1);
+    const targetIdx = Math.max(0, currentChunkIdxRef.current - 1);
+    window.speechSynthesis.cancel();
     playChunkAt(targetIdx, newPlayId);
   }, [playChunkAt]);
 
-  const setRate = useCallback(
-    (newRate: number) => {
-      if (rateRef.current === newRate) return;
-      rateRef.current = newRate;
-      abortAndCleanup();
-      stoppedRef.current = false;
-      setRateState(newRate);
-    },
-    [abortAndCleanup],
-  );
+  const setRate = useCallback((newRate: number) => {
+    if (rateRef.current === newRate) return;
+    rateRef.current = newRate;
+    window.speechSynthesis.cancel();
+    chunksRef.current = [];
+    currentChunkIdxRef.current = -1;
+    preparedKeyRef.current = null;
+    preparedRateRef.current = newRate;
+    setRateState(newRate);
+    setPlaying(false);
+    setPaused(false);
+    setLoading(false);
+    setCurrentIdx(-1);
+    setActiveRange(null);
+  }, []);
+
+  const setVoice = useCallback((voiceName: string) => {
+    const voices = getVietnameseVoices();
+    const found = voices.find((v) => v.name === voiceName);
+    if (!found) return;
+
+    voiceRef.current = found;
+    setSelectedVoiceName(voiceName);
+    localStorage.setItem(VOICE_STORAGE_KEY, voiceName);
+
+    // Reset playback with new voice
+    window.speechSynthesis.cancel();
+    chunksRef.current = [];
+    currentChunkIdxRef.current = -1;
+    preparedKeyRef.current = null;
+    setPlaying(false);
+    setPaused(false);
+    setLoading(false);
+    setCurrentIdx(-1);
+    setActiveRange(null);
+  }, []);
 
   const setOnChapterComplete = useCallback((cb: () => void) => {
     onCompleteRef.current = cb;
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stoppedRef.current = true;
-      abortSession();
-      cleanupAllAudio();
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, [abortSession, cleanupAllAudio]);
+  }, []);
 
   return {
     playing,
@@ -360,6 +295,8 @@ export function useTTS() {
     rate,
     totalChunks,
     currentChunkIdx: currentChunkIdxRef.current,
+    viVoices,
+    selectedVoiceName,
     play,
     prepare,
     pause,
@@ -368,6 +305,7 @@ export function useTTS() {
     skipForward,
     skipBackward,
     setRate,
+    setVoice,
     setOnChapterComplete,
   };
 }

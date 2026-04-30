@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildTTSChunks, findChunkIndexForParagraph } from "@/lib/tts-chunks";
 
 describe("tts chunking", () => {
-  it("can merge neighboring paragraphs into larger chunks", () => {
+  it("keeps chunks small for low-latency playback", () => {
     const chunks = buildTTSChunks([
       "Xin chao.",
       "Day la doan ngan.",
@@ -12,9 +12,8 @@ describe("tts chunking", () => {
 
     expect(chunks[0]).toMatchObject({
       startParagraphIdx: 0,
-      endParagraphIdx: 3,
     });
-    expect(chunks).toHaveLength(1);
+    expect(Math.max(...chunks.map((chunk) => chunk.text.length))).toBeLessThanOrEqual(250);
   });
 
   it("finds the chunk containing a paragraph", () => {

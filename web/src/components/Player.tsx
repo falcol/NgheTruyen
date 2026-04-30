@@ -11,6 +11,8 @@ export default function Player({
   rate,
   currentIdx,
   totalParagraphs,
+  viVoices,
+  selectedVoiceName,
   onPlay,
   onPause,
   onResume,
@@ -18,6 +20,7 @@ export default function Player({
   onSkipForward,
   onSkipBackward,
   onRateChange,
+  onVoiceChange,
 }: {
   playing: boolean;
   paused: boolean;
@@ -25,6 +28,8 @@ export default function Player({
   rate: number;
   currentIdx: number;
   totalParagraphs: number;
+  viVoices: SpeechSynthesisVoice[];
+  selectedVoiceName: string | null;
   onPlay: () => void;
   onPause: () => void;
   onResume: () => void;
@@ -32,10 +37,13 @@ export default function Player({
   onSkipForward: () => void;
   onSkipBackward: () => void;
   onRateChange: (rate: number) => void;
+  onVoiceChange: (voiceName: string) => void;
 }) {
   const [showSettings, setShowSettings] = useState(false);
   const progress =
     currentIdx >= 0 ? Math.round((currentIdx / totalParagraphs) * 100) : 0;
+
+  const noVoice = viVoices.length === 0;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-gray-800 z-50">
@@ -51,6 +59,40 @@ export default function Player({
       {/* Settings panel */}
       {showSettings && (
         <div className="px-4 py-3 border-t border-gray-800 space-y-3">
+          {/* Voice selector */}
+          <div>
+            <label className="text-xs text-[var(--color-text-muted)] block mb-1">
+              Giọng đọc
+            </label>
+            {noVoice ? (
+              <div className="text-xs text-red-400 space-y-1">
+                <p>Browser không có giọng tiếng Việt.</p>
+                <p>Dùng Chrome hoặc Edge để có giọng đọc tốt nhất.</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1">
+                {viVoices.map((v) => (
+                  <button
+                    key={v.name}
+                    onClick={() => onVoiceChange(v.name)}
+                    className={`px-3 py-1.5 text-xs rounded-full ${
+                      selectedVoiceName === v.name
+                        ? "bg-[var(--color-accent)] text-black font-bold"
+                        : "bg-gray-700 text-[var(--color-text-muted)] hover:bg-gray-600"
+                    }`}
+                  >
+                    {v.name.includes("Google")
+                      ? "Google"
+                      : v.name.includes("Microsoft")
+                        ? "Microsoft"
+                        : v.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Rate selector */}
           <div>
             <label className="text-xs text-[var(--color-text-muted)] block mb-1">
               Tốc độ
@@ -73,7 +115,7 @@ export default function Player({
           </div>
 
           <p className="text-xs text-[var(--color-text-muted)]">
-            Edge TTS - vi-VN-HoaiMyNeural
+            Browser TTS - Vietnamese ({viVoices.length} giọng)
           </p>
         </div>
       )}
@@ -101,7 +143,7 @@ export default function Player({
                   ? onResume
                   : onPlay
             }
-            disabled={loading}
+            disabled={loading || noVoice}
             className="w-12 h-12 rounded-full bg-[var(--color-accent)] text-black flex items-center justify-center text-xl font-bold disabled:opacity-50"
             aria-label={playing && !paused ? "Tạm dừng" : "Phát"}
           >
@@ -138,11 +180,13 @@ export default function Player({
         </div>
 
         <div className="text-sm text-[var(--color-text-muted)]">
-          {loading
-            ? "Đang tải..."
-            : currentIdx >= 0
-              ? `${currentIdx + 1} / ${totalParagraphs}`
-              : "Sẵn sàng"}
+          {noVoice
+            ? "Không có giọng VN"
+            : loading
+              ? "Đang tải..."
+              : currentIdx >= 0
+                ? `${currentIdx + 1} / ${totalParagraphs}`
+                : "Sẵn sàng"}
         </div>
 
         <button

@@ -4,8 +4,10 @@ export interface TTSChunk {
   endParagraphIdx: number;
 }
 
-const MIN_CHUNK_CHARS = 450;
-const MAX_CHUNK_CHARS = 1400;
+const MIN_CHUNK_CHARS = 60;
+const MAX_CHUNK_CHARS = 250;
+const SENTENCE_SEPARATOR = " ";
+const BOUNDARY_PATTERN = /[^.!?。！？…;；:：]+(?:[.!?。！？…;；:：]+["')\]”’」』）]*|$)/g;
 
 function normalizeText(text: string) {
   return text.replace(/\s+/g, " ").trim();
@@ -16,10 +18,34 @@ function splitSentences(text: string) {
   if (!normalized) return [];
 
   const matches =
-    normalized.match(/[^.!?]+(?:[.!?]+["')\]]*|$)/g)?.map((part) => part.trim()) ??
-    [];
+    normalized.match(BOUNDARY_PATTERN)?.map((part) => part.trim()) ?? [];
 
-  return matches.filter(Boolean).length > 0 ? matches.filter(Boolean) : [normalized];
+  const parts = matches.filter(Boolean).length > 0 ? matches.filter(Boolean) : [normalized];
+  return parts.flatMap(splitLongSegment);
+}
+
+function splitLongSegment(text: string) {
+  if (text.length <= MAX_CHUNK_CHARS) return [text];
+
+  const chunks: string[] = [];
+  let remaining = text.trim();
+
+  while (remaining.length > MAX_CHUNK_CHARS) {
+    const windowText = remaining.slice(0, MAX_CHUNK_CHARS + 1);
+    const splitAt = Math.max(
+      windowText.lastIndexOf(" "),
+      windowText.lastIndexOf("-"),
+      windowText.lastIndexOf("—"),
+    );
+    const safeSplitAt =
+      splitAt >= MIN_CHUNK_CHARS ? splitAt : MAX_CHUNK_CHARS;
+
+    chunks.push(remaining.slice(0, safeSplitAt).trim());
+    remaining = remaining.slice(safeSplitAt).trim();
+  }
+
+  if (remaining) chunks.push(remaining);
+  return chunks;
 }
 
 export function buildTTSChunks(paragraphs: string[]) {
@@ -46,18 +72,12 @@ export function buildTTSChunks(paragraphs: string[]) {
     const sentences = splitSentences(paragraph);
 
     sentences.forEach((sentence) => {
-      const separator =
-        currentText.length === 0
-          ? ""
-          : currentEndParagraphIdx === paragraphIdx
-            ? " "
-            : "\n\n";
+      const separator = currentText.length === 0 ? "" : SENTENCE_SEPARATOR;
       const nextText = `${currentText}${separator}${sentence}`;
 
       if (
         currentText &&
-        nextText.length > MAX_CHUNK_CHARS &&
-        currentText.length >= MIN_CHUNK_CHARS
+        nextText.length > MAX_CHUNK_CHARS
       ) {
         pushCurrentChunk();
       }
@@ -66,12 +86,7 @@ export function buildTTSChunks(paragraphs: string[]) {
         currentStartParagraphIdx = paragraphIdx;
       }
 
-      const nextSeparator =
-        currentText.length === 0
-          ? ""
-          : currentEndParagraphIdx === paragraphIdx
-            ? " "
-            : "\n\n";
+      const nextSeparator = currentText.length === 0 ? "" : SENTENCE_SEPARATOR;
       currentText = `${currentText}${nextSeparator}${sentence}`;
       currentEndParagraphIdx = paragraphIdx;
     });

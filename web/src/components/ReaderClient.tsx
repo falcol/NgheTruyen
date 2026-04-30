@@ -33,6 +33,7 @@ export default function ReaderClient({
   const { save } = useProgress(slug);
   const topRef = useRef<HTMLDivElement>(null);
   const tts = useTTS();
+  const { prepare, setOnChapterComplete } = tts;
   const chapterKey = useMemo(() => `${slug}:${chapterIdx}`, [slug, chapterIdx]);
   const prevHref = useMemo(
     () => `/read/${slug}/${chapterIdx - 1}`,
@@ -75,12 +76,16 @@ export default function ReaderClient({
   }, [chapterIdx]);
 
   useEffect(() => {
-    tts.setOnChapterComplete(() => {
+    prepare(chapterKey, paragraphs);
+  }, [chapterKey, paragraphs, prepare]);
+
+  useEffect(() => {
+    setOnChapterComplete(() => {
       if (chapterIdx < totalChapters - 1) {
         router.push(nextHref);
       }
     });
-  }, [chapterIdx, totalChapters, nextHref, router, tts.setOnChapterComplete]);
+  }, [chapterIdx, totalChapters, nextHref, router, setOnChapterComplete]);
 
   const hasPrev = chapterIdx > 0;
   const hasNext = chapterIdx < totalChapters - 1;
@@ -206,6 +211,8 @@ export default function ReaderClient({
         rate={tts.rate}
         currentIdx={tts.currentIdx}
         totalParagraphs={paragraphs.length}
+        viVoices={tts.viVoices}
+        selectedVoiceName={tts.selectedVoiceName}
         onPlay={() => tts.play(chapterKey, paragraphs)}
         onPause={tts.pause}
         onResume={tts.resume}
@@ -213,6 +220,7 @@ export default function ReaderClient({
         onSkipForward={tts.skipForward}
         onSkipBackward={tts.skipBackward}
         onRateChange={tts.setRate}
+        onVoiceChange={tts.setVoice}
       />
     </>
   );
