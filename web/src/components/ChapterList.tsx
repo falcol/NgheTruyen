@@ -11,17 +11,22 @@ interface ChapterMeta {
 export default function ChapterList({
   slug,
   chapters,
+  readHref,
 }: {
   slug: string;
   chapters: ChapterMeta[];
+  readHref?: string;
 }) {
   const { progress } = useProgress(slug);
+
+  const href = (idx: number) =>
+    readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`;
 
   return (
     <div className="space-y-1">
       {progress && (
         <Link
-          href={`/read/${slug}/${progress.chapterIdx}`}
+          href={href(progress.chapterIdx)}
           className="block p-3 mb-4 rounded-lg bg-[var(--color-accent-dim)] text-white font-medium"
         >
           Tiếp tục đọc: {chapters.find((ch) => ch.index === progress.chapterIdx)?.title || `Chương ${progress.chapterIdx + 1}`}
@@ -35,7 +40,7 @@ export default function ChapterList({
         return (
           <Link
             key={ch.index}
-            href={`/read/${slug}/${ch.index}`}
+            href={href(ch.index)}
             className={`block p-3 rounded-lg transition-colors ${
               isCurrent
                 ? "bg-[var(--color-accent)]/20 text-[var(--color-accent)]"

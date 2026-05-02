@@ -20,6 +20,8 @@ export default function ReaderClient({
   title,
   paragraphs,
   chapters,
+  backHref,
+  readHref,
 }: {
   slug: string;
   storyTitle: string;
@@ -28,6 +30,8 @@ export default function ReaderClient({
   title: string;
   paragraphs: string[];
   chapters: ChapterMeta[];
+  backHref?: string;
+  readHref?: string;
 }) {
   const router = useRouter();
   const { save } = useProgress(slug);
@@ -35,13 +39,17 @@ export default function ReaderClient({
   const tts = useTTS();
   const { prepare, setOnChapterComplete } = tts;
   const chapterKey = useMemo(() => `${slug}:${chapterIdx}`, [slug, chapterIdx]);
+
+  const href = (idx: number) =>
+    readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`;
+
   const prevHref = useMemo(
-    () => `/read/${slug}/${chapterIdx - 1}`,
-    [chapterIdx, slug],
+    () => href(chapterIdx - 1),
+    [chapterIdx, slug, readHref],
   );
   const nextHref = useMemo(
-    () => `/read/${slug}/${chapterIdx + 1}`,
-    [chapterIdx, slug],
+    () => href(chapterIdx + 1),
+    [chapterIdx, slug, readHref],
   );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -119,7 +127,7 @@ export default function ReaderClient({
 
         <div className="mb-6">
           <Link
-            href={`/story/${slug}`}
+            href={backHref ?? `/story/${slug}`}
             className="text-sm text-(--color-text-muted) hover:text-(--color-accent)"
           >
             ← Danh sách chương
@@ -148,7 +156,7 @@ export default function ReaderClient({
                 {filtered.map((ch) => (
                   <Link
                     key={ch.index}
-                    href={`/read/${slug}/${ch.index}`}
+                    href={href(ch.index)}
                     onClick={() => setPickerOpen(false)}
                     className={`block px-3 py-2 text-sm truncate hover:bg-[var(--color-surface)] ${
                       ch.index === chapterIdx

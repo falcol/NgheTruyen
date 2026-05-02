@@ -19,6 +19,15 @@ export default function HomePage() {
           <StoryCard key={slug} slug={slug} />
         ))}
       </div>
+
+      <div className="mt-8">
+        <Link
+          href="/epub"
+          className="inline-block px-5 py-3 rounded-lg bg-(--color-surface) hover:bg-(--color-surface)/80 transition-colors font-medium"
+        >
+          📚 Đọc EPUB
+        </Link>
+      </div>
     </main>
   );
 }
