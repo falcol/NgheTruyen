@@ -62,6 +62,24 @@ class MetruyencvCrawler(BaseCrawler):
         match = re.search(r"metruyencv\.xyz/truyen/(.+?)/", url)
         return match.group(1) if match else "unknown"
 
+    def _predict_urls(self, start_url: str, start_index: int, max_chapters: int) -> list[tuple[int, str]] | None:
+        """Predict URLs for metruyencv: /truyen/{slug}/chuong-{N}/"""
+        slug = self._extract_slug(start_url)
+        match = re.search(r"chuong-(\d+)", start_url)
+        if not match:
+            return None
+
+        start_ch = int(match.group(1))
+        limit = max_chapters if max_chapters > 0 else 2000
+        urls = []
+
+        for i in range(limit):
+            ch_num = start_ch + i
+            url = f"{BASE_URL}truyen/{slug}/chuong-{ch_num}/"
+            urls.append((start_index + i, url))
+
+        return urls
+
     def crawl(self, start_url: str, start_index: int = 0, max_chapters: int = 0) -> list[dict]:
         """
         Crawl all chapters starting from start_url by following nav-next links.
