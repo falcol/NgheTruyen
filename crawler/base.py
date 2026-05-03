@@ -216,6 +216,10 @@ class BaseCrawler(abc.ABC):
         if failed:
             logger.warning(f"{failed} chapters failed or not found (404)")
 
+        if not results:
+            logger.error("No chapters fetched successfully, skipping save")
+            return []
+
         sorted_chapters = sorted(results.values(), key=lambda x: x["index"])
         self._save_chapters(sorted_chapters, slug, story_title)
         return self._rebuild_index(slug)
