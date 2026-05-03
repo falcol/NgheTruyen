@@ -31,6 +31,15 @@ python -m crawler.run <site> "URL_CHƯƠNG_N" --start N
 
 # Cross-source append: crawl từ site A, ghi vào thư mục data của site B
 python -m crawler.run <site_A> "URL" --start N --dest <site_B>
+
+# Crawl song song (parallel) — nhanh hơn 5-6x
+python -m crawler.run <site> "URL" --parallel
+
+# Parallel với số workers tùy chỉnh (default: 3)
+python -m crawler.run <site> "URL" --parallel --workers 5
+
+# Parallel + giới hạn số chương
+python -m crawler.run <site> "URL" --parallel --max 100 --workers 3
 ```
 
 ## Ví dụ
@@ -54,6 +63,16 @@ python -m crawler.run metruyenchu \
 python -m crawler.run metruyencv \
   "https://metruyencv.xyz/truyen/cao-vo-vo-han-phan-than-bat-dau-cho-an-be-bung-s-di-thu/chuong-696-lao-bang-huu/" \
   --start 695 --dest metruyenchu
+
+# Parallel: crawl metruyencv 1000 chương trong ~8 phút (thay vì ~50 phút sequential)
+python -m crawler.run metruyencv \
+  "https://metruyencv.xyz/truyen/ta-moi-ngay-tuy-co-mot-cai-tan-he-thong/chuong-1/" \
+  --parallel --workers 3
+
+# Parallel: crawl metruyenchu — tự fetch danh sách chương qua API, rồi parallel fetch
+python -m crawler.run metruyenchu \
+  "https://metruyenchu.com.vn/ta-moi-ngay-tuy-co-mot-cai-tan-he-thong/chuong-1-abc123/" \
+  --parallel --workers 3 --max 100
 ```
 
 ## Tính năng
@@ -63,6 +82,10 @@ python -m crawler.run metruyencv \
 - **Resume**: Tự động tiếp tục từ chương cuối cùng qua `_progress.json`
 - **Cross-source append**: `--dest` cho phép crawl từ site này, ghi vào data site khác
 - **Dedup index**: Khi rebuild index, chương trùng index sẽ lấy bản mới nhất
+- **Parallel crawl** (`--parallel`): Fetch song song với ThreadPoolExecutor, nhanh 5-6x
+  - metruyencv: URL prediction thuần — 0 overhead, generate URLs từ pattern
+  - metruyenchu: API discovery — fetch danh sách chương qua `/get/listchap/{id}`, rồi parallel fetch
+  - truyenqq: Fallback sequential với delay giảm (1.5s thay vì 3s)
 
 ## Output
 

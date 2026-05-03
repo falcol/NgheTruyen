@@ -1,9 +1,12 @@
 import re
 from urllib.parse import urljoin
 
+from bs4 import BeautifulSoup
+
 from .base import BaseCrawler, logger
 
 BASE_URL = "https://metruyenchu.com.vn/"
+CHAPTER_LIST_API = "https://metruyenchu.com.vn/get/listchap/"
 
 
 class MetruyenchuCrawler(BaseCrawler):
@@ -11,6 +14,11 @@ class MetruyenchuCrawler(BaseCrawler):
 
     def __init__(self, dest_dir: str | None = None):
         super().__init__(site_name="metruyenchu", dest_dir=dest_dir)
+        self._api_headers = {
+            "X-Requested-With": "XMLHttpRequest",
+            "Accept": "application/json, text/html",
+            "Referer": BASE_URL,
+        }
 
     def _extract_chapter(self, soup) -> dict:
         """Extract chapter title and paragraphs from a chapter page."""
@@ -51,6 +59,75 @@ class MetruyenchuCrawler(BaseCrawler):
         """Extract story slug from URL: /{slug}/chuong-{num}-{id}"""
         match = re.search(r"metruyenchu\.com\.vn/(.+?)/chuong-", url)
         return match.group(1) if match else "unknown"
+
+    def _get_story_id(self, slug: str) -> int | None:
+        """Fetch story page and extract story_id from onclick='page(ID,N)'."""
+        resp = self.session.get(
+            f"{BASE_URL}{slug}",
+            headers={"Accept": "text/html"},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        match = re.search(r"page\((\d+),\s*\d+\)", resp.text)
+        return int(match.group(1)) if match else None
+
+    def _fetch_chapter_list(self, story_id: int, max_chapters: int = 0) -> list[str]:
+        """Fetch all chapter URLs via AJAX pagination API."""
+        urls: list[str] = []
+        page_num = 1
+
+        while True:
+            resp = self.session.get(
+                f"{CHAPTER_LIST_API}{story_id}",
+                params={"page": page_num},
+                headers=self._api_headers,
+                timeout=15,
+            )
+            resp.raise_for_status()
+            data = resp.json().get("data", "")
+            if not data:
+                break
+
+            soup = BeautifulSoup(data, "html.parser")
+            chapter_links = [
+                a for a in soup.select("a")
+                if a.get("href", "").startswith("/")
+            ]
+
+            if not chapter_links:
+                break
+
+            for a in chapter_links:
+                full_url = urljoin(BASE_URL, a["href"])
+                urls.append(full_url)
+                if max_chapters and len(urls) >= max_chapters:
+                    return urls
+
+            logger.info(f"Chapter list page {page_num}: +{len(chapter_links)} URLs (total: {len(urls)})")
+            page_num += 1
+
+            # Safety: if page returned fewer than 100, it's the last page
+            if len(chapter_links) < 100:
+                break
+
+        return urls
+
+    def _predict_urls(self, start_url: str, start_index: int, max_chapters: int) -> list[tuple[int, str]] | None:
+        """Fetch full chapter list via API, then return indexed URLs."""
+        slug = self._extract_slug(start_url)
+
+        story_id = self._get_story_id(slug)
+        if not story_id:
+            logger.warning("Could not extract story_id, falling back to sequential")
+            return None
+
+        logger.info(f"Story ID: {story_id}, fetching chapter list...")
+        chapter_urls = self._fetch_chapter_list(story_id, max_chapters=max_chapters)
+        if not chapter_urls:
+            return None
+
+        logger.info(f"Collected {len(chapter_urls)} chapter URLs from API")
+        return [(start_index + i, url) for i, url in enumerate(chapter_urls)]
 
     def crawl(self, start_url: str, start_index: int = 0, max_chapters: int = 0) -> list[dict]:
         """

@@ -181,10 +181,11 @@ class BaseCrawler(abc.ABC):
                 self.delay = old_delay
 
     def _parallel_fetch(self, url_list: list[tuple[int, str]], slug: str, workers: int) -> list[dict]:
-        """Fetch chapters in parallel using ThreadPoolExecutor."""
-        results: dict[int, dict] = {}
+        """Fetch chapters in parallel, chunk by chunk to bound memory usage."""
+        chunk_size = self.CHAPTERS_PER_VOL
+        all_failed: list[tuple[int, str]] = []
         story_title = None
-        failed = 0
+        vol_num = self._get_next_vol_num(slug)
 
         def worker(idx: int, url: str) -> tuple[dict | None, str | None]:
             soup = self.fetch_parallel(url)
@@ -195,34 +196,75 @@ class BaseCrawler(abc.ABC):
             title = self._extract_story_title(soup)
             return chapter, title
 
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            futures = {pool.submit(worker, idx, url): idx for idx, url in url_list}
+        chunks = [url_list[i:i + chunk_size] for i in range(0, len(url_list), chunk_size)]
+        logger.info(f"Fetching {len(url_list)} chapters in {len(chunks)} chunks of {chunk_size}")
 
-            for f in as_completed(futures):
-                idx = futures[f]
-                try:
-                    chapter, title = f.result()
-                    if chapter is None:
-                        failed += 1
-                    else:
-                        results[idx] = chapter
-                        if title and not story_title:
-                            story_title = title
-                        logger.info(f"  Ch {idx + 1}: {chapter['title']} ({len(chapter['paragraphs'])} para)")
-                except Exception as e:
-                    failed += 1
-                    logger.error(f"  Ch {idx + 1} failed: {e}")
+        for chunk_num, chunk in enumerate(chunks, 1):
+            results: dict[int, dict] = {}
+            failed_urls: list[tuple[int, str]] = []
 
-        if failed:
-            logger.warning(f"{failed} chapters failed or not found (404)")
+            logger.info(f"Chunk {chunk_num}/{len(chunks)}: {len(chunk)} chapters")
 
-        if not results:
-            logger.error("No chapters fetched successfully, skipping save")
-            return []
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {pool.submit(worker, idx, url): (idx, url) for idx, url in chunk}
 
-        sorted_chapters = sorted(results.values(), key=lambda x: x["index"])
-        self._save_chapters(sorted_chapters, slug, story_title)
-        return self._rebuild_index(slug)
+                for f in as_completed(futures):
+                    idx, url = futures[f]
+                    try:
+                        chapter, title = f.result()
+                        if chapter is None:
+                            failed_urls.append((idx, url))
+                        else:
+                            results[idx] = chapter
+                            if title and not story_title:
+                                story_title = title
+                                logger.info(f"Story title: {story_title}")
+                            logger.info(f"  Ch {idx + 1}: {chapter['title']} ({len(chapter['paragraphs'])} para)")
+                    except Exception as e:
+                        failed_urls.append((idx, url))
+                        logger.error(f"  Ch {idx + 1} failed: {e}")
+
+            # Retry failed chapters in this chunk
+            if failed_urls:
+                logger.info(f"Retrying {len(failed_urls)} failed chapters...")
+                for idx, url in failed_urls:
+                    try:
+                        soup = self.fetch_parallel(url)
+                        if soup is not None:
+                            chapter = self._extract_chapter(soup)
+                            chapter["index"] = idx
+                            results[idx] = chapter
+                            title = self._extract_story_title(soup)
+                            if title and not story_title:
+                                story_title = title
+                            logger.info(f"  Retry Ch {idx + 1}: OK - {chapter['title']}")
+                            continue
+                    except Exception as e:
+                        logger.error(f"  Retry Ch {idx + 1} failed again: {e}")
+                    all_failed.append((idx, url))
+
+            # Save this chunk as a volume, release memory
+            if results:
+                sorted_chunk = sorted(results.values(), key=lambda x: x["index"])
+                self.save_volume(sorted_chunk, vol_num, slug)
+                logger.info(f"Saved vol {vol_num} ({len(sorted_chunk)} chapters)")
+                vol_num += 1
+
+        # Final: index + metadata
+        if all_failed:
+            logger.warning(f"{len(all_failed)} chapters could not be fetched:")
+            for idx, url in all_failed:
+                logger.warning(f"  Ch {idx + 1}: {url}")
+
+        all_index = self._rebuild_index(slug)
+        if all_index:
+            self.save_index(all_index, slug)
+        if story_title:
+            out = self.output_dir(slug)
+            self.save_json({"story_title": story_title}, out / "metadata.json")
+
+        logger.info(f"Total: {len(all_index)} chapters saved")
+        return all_index
 
     def _save_chapters(self, chapters: list[dict], slug: str, story_title: str | None) -> None:
         """Sort chapters and save as volumes + index."""

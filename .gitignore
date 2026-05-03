@@ -5,3 +5,8 @@ __pycache__/
 .env
 node_modules/
 .venv/
+.cursor/
+.claude/
+.serena/
+.dual-graph/
+*.log
