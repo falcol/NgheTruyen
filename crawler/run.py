@@ -14,6 +14,8 @@ Options:
     --max COUNT     Max chapters to crawl, 0=unlimited (default: 0)
     --dest DIR      Destination directory name for cross-source append
                     (e.g. --dest metruyenchu to write into metruyenchu's data dir)
+    --parallel      Use parallel crawling with URL prediction
+    --workers N     Number of parallel workers (default: 3)
 
 Examples:
     # Crawl all chapters from truyenqq
@@ -27,6 +29,9 @@ Examples:
 
     # Cross-source append: crawl from metruyencv, save to metruyenchu's data dir
     python -m crawler.run metruyencv "https://metruyencv.xyz/truyen/..../chuong-696/" --start 695 --dest metruyenchu
+
+    # Parallel crawl with 5 workers
+    python -m crawler.run truyenqq "https://truyenqq.vn/doc-convert-..../12992985-0/" --parallel --workers 5
 """
 import argparse
 import sys
@@ -49,10 +54,15 @@ def main():
     parser.add_argument("--start", type=int, default=0, help="Starting chapter index (default: 0)")
     parser.add_argument("--max", type=int, default=0, help="Max chapters to crawl, 0=unlimited (default: 0)")
     parser.add_argument("--dest", type=str, default=None, help="Destination directory name (for cross-source append)")
+    parser.add_argument("--parallel", action="store_true", help="Use parallel crawling with URL prediction")
+    parser.add_argument("--workers", type=int, default=3, help="Number of parallel workers (default: 3)")
 
     args = parser.parse_args()
     crawler = CRAWLERS[args.site](dest_dir=args.dest)
-    crawler.crawl(args.url, start_index=args.start, max_chapters=args.max)
+    if args.parallel:
+        crawler.crawl_parallel(args.url, start_index=args.start, max_chapters=args.max, workers=args.workers)
+    else:
+        crawler.crawl(args.url, start_index=args.start, max_chapters=args.max)
 
 
 if __name__ == "__main__":
