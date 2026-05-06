@@ -64,21 +64,31 @@ export function makeDataDir(baseDir: string) {
     if (position === -1) return null;
 
     // Calculate volume from position, not from index
+    // Volumes may have fewer than 50 chapters, so search neighbors on miss
     const volNum = Math.floor(position / 50) + 1;
     const storyDir = path.join(dataDir, slug);
     if (!fs.existsSync(storyDir)) return null;
 
-    const files = fs.readdirSync(storyDir);
-    const prefix = `vol-${String(volNum).padStart(3, "0")}-`;
-    const volFile = files.find(
-      (f) => f.startsWith(prefix) && f.endsWith(".json")
-    );
-    if (!volFile) return null;
+    const files = fs
+      .readdirSync(storyDir)
+      .filter((f) => f.startsWith("vol-") && f.endsWith(".json"));
 
-    const volData: Volume = JSON.parse(
-      fs.readFileSync(path.join(storyDir, volFile), "utf-8")
-    );
-    return volData.chapters.find((c) => c.index === chapterIdx) || null;
+    for (let delta = 0; delta <= 2; delta++) {
+      const candidates =
+        delta === 0 ? [volNum] : [volNum + delta, volNum - delta];
+      for (const tryVol of candidates) {
+        if (tryVol < 1) continue;
+        const prefix = `vol-${String(tryVol).padStart(3, "0")}-`;
+        const volFile = files.find((f) => f.startsWith(prefix));
+        if (!volFile) continue;
+        const volData: Volume = JSON.parse(
+          fs.readFileSync(path.join(storyDir, volFile), "utf-8")
+        );
+        const chapter = volData.chapters.find((c) => c.index === chapterIdx);
+        if (chapter) return chapter;
+      }
+    }
+    return null;
   }
 
   function getTotalChapters(slug: string): number {
