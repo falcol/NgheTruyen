@@ -8,11 +8,27 @@ Usage:
     python -m crawler.delete --all-read        # Delete all stories (with confirm)
 """
 import argparse
+import gzip
 import json
 import shutil
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent / "data"
+
+
+def _read_json_any(filepath: Path) -> dict | list | None:
+    """Read .json or .json.gz; return None on missing/corrupt."""
+    gz = filepath.with_name(filepath.name + ".gz")
+    try:
+        if gz.exists():
+            with gzip.open(gz, "rt", encoding="utf-8") as f:
+                return json.load(f)
+        if filepath.exists():
+            with open(filepath, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+    return None
 
 
 def list_stories() -> list[dict]:
@@ -24,17 +40,10 @@ def list_stories() -> list[dict]:
         for story_dir in sorted(site_dir.iterdir()):
             if not story_dir.is_dir():
                 continue
-            meta_path = story_dir / "metadata.json"
-            title = story_dir.name
-            if meta_path.exists():
-                try:
-                    with open(meta_path, "r", encoding="utf-8") as f:
-                        meta = json.load(f)
-                    title = meta.get("story_title", title)
-                except (json.JSONDecodeError, OSError):
-                    pass
+            meta = _read_json_any(story_dir / "metadata.json") or {}
+            title = meta.get("story_title", story_dir.name) if isinstance(meta, dict) else story_dir.name
             size_mb = sum(f.stat().st_size for f in story_dir.rglob("*") if f.is_file()) / (1024 * 1024)
-            vol_count = len(list(story_dir.glob("vol-*.json")))
+            vol_count = len(list(story_dir.glob("vol-*.json"))) + len(list(story_dir.glob("vol-*.json.gz")))
             stories.append({
                 "slug": story_dir.name,
                 "site": site_dir.name,

@@ -12,6 +12,8 @@ CHAPTER_LIST_API = "https://metruyenchu.com.vn/get/listchap/"
 class MetruyenchuCrawler(BaseCrawler):
     """Crawler for metruyenchu.com.vn chapter pages."""
 
+    BASE_URL = BASE_URL
+
     def __init__(self, dest_dir: str | None = None):
         super().__init__(site_name="metruyenchu", dest_dir=dest_dir)
         self._api_headers = {
@@ -60,27 +62,73 @@ class MetruyenchuCrawler(BaseCrawler):
         match = re.search(r"metruyenchu\.com\.vn/(.+?)/chuong-", url)
         return match.group(1) if match else "unknown"
 
-    def _get_story_id(self, slug: str) -> int | None:
-        """Fetch story page and extract story_id from onclick='page(ID,N)'."""
+    def _get_story_meta(self, slug: str) -> tuple[int, int] | None:
+        """Fetch story page and extract (story_id, total_pages) from `page(ID, N)`.
+
+        The site renders pagination as multiple `onclick="page(STORY_ID, N)"`
+        buttons — one for each page number (1, 2, ..., 14). We need the MAX
+        of N across all matches (first match is often "page 2" / next button).
+        Returns None if no pattern found.
+        """
+        self._rate_limit(self.delay)
+        headers = self._pick_headers(referer=BASE_URL)
+        headers["Accept"] = "text/html,application/xhtml+xml"
         resp = self.session.get(
             f"{BASE_URL}{slug}",
-            headers={"Accept": "text/html"},
+            headers=headers,
             timeout=15,
         )
         resp.raise_for_status()
-        match = re.search(r"page\((\d+),\s*\d+\)", resp.text)
-        return int(match.group(1)) if match else None
+        # findall returns all (story_id, page_num) tuples. Multiple buttons
+        # share the same story_id; take max of N across them.
+        matches = re.findall(r"page\((\d+),\s*(\d+)\)", resp.text)
+        if not matches:
+            return None
+        story_id = int(matches[0][0])
+        # Filter to only matches for this story (defensive — same ID expected)
+        nums = [int(n) for sid, n in matches if int(sid) == story_id]
+        total_pages = max(nums) if nums else 1
+        return story_id, total_pages
 
-    def _fetch_chapter_list(self, story_id: int, max_chapters: int = 0) -> list[str]:
-        """Fetch all chapter URLs via AJAX pagination API."""
+    # Back-compat shim — older callers still use _get_story_id
+    def _get_story_id(self, slug: str) -> int | None:
+        meta = self._get_story_meta(slug)
+        return meta[0] if meta else None
+
+    def _fetch_chapter_list(
+        self,
+        story_id: int,
+        max_chapters: int = 0,
+        max_pages: int | None = None,
+    ) -> list[str]:
+        """Fetch all chapter URLs via AJAX pagination API.
+
+        Termination conditions (any one triggers stop):
+          1. `max_pages` reached (authoritative bound from `page(ID, N)` JS call)
+          2. Empty `data` field in JSON response
+          3. Zero chapter links extracted
+          4. Page returned fewer than 100 links (last page)
+          5. Dedup guard: page returned only duplicate URLs (API looped to page 1)
+
+        The dedup guard is kept as backup even when `max_pages` is known —
+        cheap insurance against off-by-one or unexpected API behavior.
+        """
         urls: list[str] = []
+        seen: set[str] = set()
         page_num = 1
+        story_url = BASE_URL
+        # Hard cap: authoritative `max_pages` if provided, else generous safety
+        cap = max_pages if max_pages else 200
 
-        while True:
+        while page_num <= cap:
+            self._rate_limit(self.delay)
+            # AJAX call: keep XHR markers but rotate UA/Accept-Language
+            base_headers = self._pick_headers(referer=story_url)
+            api_headers = {**base_headers, **self._api_headers}
             resp = self.session.get(
                 f"{CHAPTER_LIST_API}{story_id}",
                 params={"page": page_num},
-                headers=self._api_headers,
+                headers=api_headers,
                 timeout=15,
             )
             resp.raise_for_status()
@@ -97,31 +145,65 @@ class MetruyenchuCrawler(BaseCrawler):
             if not chapter_links:
                 break
 
-            for a in chapter_links:
-                full_url = urljoin(BASE_URL, a["href"])
-                urls.append(full_url)
+            page_urls = [urljoin(BASE_URL, a["href"]) for a in chapter_links]
+            new_urls = [u for u in page_urls if u not in seen]
+
+            # Dedup guard: API likely looping back to page 1 on invalid page numbers
+            if not new_urls:
+                logger.info(
+                    f"Chapter list page {page_num}: all {len(page_urls)} URLs are duplicates — "
+                    "API has stopped paginating (likely past last page)"
+                )
+                break
+
+            for u in new_urls:
+                urls.append(u)
+                seen.add(u)
                 if max_chapters and len(urls) >= max_chapters:
                     return urls
 
-            logger.info(f"Chapter list page {page_num}: +{len(chapter_links)} URLs (total: {len(urls)})")
+            dup_count = len(page_urls) - len(new_urls)
+            dup_note = f" ({dup_count} duplicates ignored)" if dup_count else ""
+            logger.info(
+                f"Chapter list page {page_num}: +{len(new_urls)} URLs"
+                f"{dup_note} (total: {len(urls)})"
+            )
             page_num += 1
 
             # Safety: if page returned fewer than 100, it's the last page
             if len(chapter_links) < 100:
                 break
 
+        if page_num > cap:
+            if max_pages:
+                logger.info(f"Reached authoritative max_pages={max_pages}")
+            else:
+                logger.warning(f"Hit safety cap={cap} — stopping. Story may have more chapters.")
+
         return urls
 
     def _predict_urls(self, start_url: str, start_index: int, max_chapters: int) -> list[tuple[int, str]] | None:
-        """Fetch full chapter list via API, then return indexed URLs."""
+        """Fetch full chapter list via API, then return indexed URLs.
+
+        Note: site uses "Trước 1 2 3 ... Tiếp" ellipsis pagination — total
+        page count is NOT exposed in HTML (only visible button numbers).
+        Rely on iterative fetch + dedup guard to detect end-of-list.
+        """
         slug = self._extract_slug(start_url)
 
-        story_id = self._get_story_id(slug)
-        if not story_id:
+        meta = self._get_story_meta(slug)
+        if not meta:
             logger.warning("Could not extract story_id, falling back to sequential")
             return None
 
-        logger.info(f"Story ID: {story_id}, fetching chapter list...")
+        story_id, hint = meta
+        # `hint` is the highest visible page button (e.g. 3 from "1 2 3 ... Tiếp").
+        # NOT total pages — informational only. Dedup guard does the real work.
+        logger.info(
+            f"Story ID: {story_id}, fetching chapter list... "
+            f"(visible-pagination hint: {hint}, real total detected via dedup)"
+        )
+
         chapter_urls = self._fetch_chapter_list(story_id, max_chapters=max_chapters)
         if not chapter_urls:
             return None
@@ -129,101 +211,3 @@ class MetruyenchuCrawler(BaseCrawler):
         logger.info(f"Collected {len(chapter_urls)} chapter URLs from API")
         return [(start_index + i, url) for i, url in enumerate(chapter_urls)]
 
-    def crawl(self, start_url: str, start_index: int = 0, max_chapters: int = 0) -> list[dict]:
-        """
-        Crawl all chapters starting from start_url by following 'next' links.
-        Saves each volume to disk as soon as it's complete.
-        Auto-saves buffer on crash/interrupt. Resumes from last saved progress.
-
-        Args:
-            start_url: URL of the first chapter to crawl.
-            start_index: Starting chapter index number (default 0).
-            max_chapters: Max chapters to crawl, 0 = unlimited.
-        """
-        slug = self._extract_slug(start_url)
-
-        # Resume from previous crawl if available
-        progress = self._load_progress(slug)
-        if progress and progress.get("next_url"):
-            url = progress["next_url"]
-            index = progress["next_index"]
-            story_title = progress.get("story_title")
-            logger.info(f"Resuming from chapter {index + 1}: {url}")
-        else:
-            url = start_url
-            index = start_index
-            story_title = None
-            logger.info(f"Starting crawl: {slug}")
-            logger.info(f"First URL: {url}")
-
-        vol_num = self._get_next_vol_num(slug)
-        buffer = []
-        session_count = 0
-        completed = False
-
-        try:
-            while url:
-                logger.info(f"Crawling chapter {index + 1}: {url}")
-
-                try:
-                    soup = self.fetch(url)
-                    if story_title is None:
-                        story_title = self._extract_story_title(soup)
-                        if story_title:
-                            logger.info(f"Story title: {story_title}")
-                    chapter = self._extract_chapter(soup)
-                    chapter["index"] = index
-                    buffer.append(chapter)
-                    session_count += 1
-                    logger.info(f"  -> {chapter['title']} ({len(chapter['paragraphs'])} paragraphs)")
-                except Exception as e:
-                    logger.error(f"Failed to crawl {url}: {e}")
-                    break
-
-                # Flush volume when buffer is full
-                if len(buffer) >= self.CHAPTERS_PER_VOL:
-                    self.save_volume(buffer, vol_num, slug)
-                    logger.info(f"Saved vol {vol_num} ({len(buffer)} chapters)")
-                    vol_num += 1
-                    buffer = []
-
-                # Save progress for resume
-                next_url = self._next_chapter_url(soup)
-                self._save_progress({
-                    "next_url": next_url,
-                    "next_index": index + 1,
-                    "story_title": story_title,
-                }, slug)
-
-                if max_chapters and session_count >= max_chapters:
-                    logger.info(f"Reached max_chapters limit ({max_chapters})")
-                    break
-
-                url = next_url
-                index += 1
-            else:
-                completed = True
-
-        except KeyboardInterrupt:
-            logger.info("Interrupted by user")
-        finally:
-            # Save remaining buffer (handles crash/interrupt)
-            if buffer:
-                self.save_volume(buffer, vol_num, slug)
-                logger.info(f"Saved partial vol {vol_num} ({len(buffer)} chapters)")
-
-            # Rebuild index from all saved volumes
-            all_index = self._rebuild_index(slug)
-            if all_index:
-                self.save_index(all_index, slug)
-            if story_title:
-                out = self.output_dir(slug)
-                self.save_json({"story_title": story_title}, out / "metadata.json")
-
-            if completed:
-                self._cleanup_progress(slug)
-                logger.info(f"Crawl complete: {len(all_index)} total chapters")
-            else:
-                logger.info(f"Saved {len(all_index)} chapters. Run again to resume.")
-
-        return self._rebuild_index(slug)

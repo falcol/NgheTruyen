@@ -1,5 +1,24 @@
 import fs from "fs";
 import path from "path";
+import zlib from "zlib";
+
+// Read .json or .json.gz transparently. Prefers .gz when both exist.
+function readJsonAny<T>(filePath: string): T | null {
+  const gzPath = filePath + ".gz";
+  if (fs.existsSync(gzPath)) {
+    const buf = fs.readFileSync(gzPath);
+    const text = zlib.gunzipSync(buf).toString("utf-8");
+    return JSON.parse(text) as T;
+  }
+  if (fs.existsSync(filePath)) {
+    return JSON.parse(fs.readFileSync(filePath, "utf-8")) as T;
+  }
+  return null;
+}
+
+function existsAny(filePath: string): boolean {
+  return fs.existsSync(filePath) || fs.existsSync(filePath + ".gz");
+}
 
 export interface ChapterMeta {
   index: number;
@@ -31,25 +50,24 @@ export function makeDataDir(baseDir: string) {
         const storyDir = path.join(dataDir, d);
         if (!fs.statSync(storyDir).isDirectory()) return false;
 
-        // Only expose story folders that contain expected story data files.
-        const hasChapterIndex = fs.existsSync(
-          path.join(storyDir, "chapters_index.json")
-        );
-        const hasMetadata = fs.existsSync(path.join(storyDir, "metadata.json"));
+        // Only expose story folders that contain expected story data files
+        // (either plain or gzipped variant).
+        const hasChapterIndex = existsAny(path.join(storyDir, "chapters_index.json"));
+        const hasMetadata = existsAny(path.join(storyDir, "metadata.json"));
         return hasChapterIndex || hasMetadata;
       });
   }
 
   function getChapterIndex(slug: string): ChapterMeta[] | null {
-    const filePath = path.join(dataDir, slug, "chapters_index.json");
-    if (!fs.existsSync(filePath)) return null;
-    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    return readJsonAny<ChapterMeta[]>(
+      path.join(dataDir, slug, "chapters_index.json")
+    );
   }
 
   function getStoryMetadata(slug: string): StoryMetadata | null {
-    const filePath = path.join(dataDir, slug, "metadata.json");
-    if (!fs.existsSync(filePath)) return null;
-    return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    return readJsonAny<StoryMetadata>(
+      path.join(dataDir, slug, "metadata.json")
+    );
   }
 
   function getStoryTitle(slug: string): string {
@@ -69,9 +87,14 @@ export function makeDataDir(baseDir: string) {
     const storyDir = path.join(dataDir, slug);
     if (!fs.existsSync(storyDir)) return null;
 
+    // Match both vol-NNN-*.json and vol-NNN-*.json.gz
     const files = fs
       .readdirSync(storyDir)
-      .filter((f) => f.startsWith("vol-") && f.endsWith(".json"));
+      .filter(
+        (f) =>
+          f.startsWith("vol-") &&
+          (f.endsWith(".json") || f.endsWith(".json.gz"))
+      );
 
     for (let delta = 0; delta <= 2; delta++) {
       const candidates =
@@ -81,9 +104,12 @@ export function makeDataDir(baseDir: string) {
         const prefix = `vol-${String(tryVol).padStart(3, "0")}-`;
         const volFile = files.find((f) => f.startsWith(prefix));
         if (!volFile) continue;
-        const volData: Volume = JSON.parse(
-          fs.readFileSync(path.join(storyDir, volFile), "utf-8")
-        );
+        // Strip .gz suffix so readJsonAny can probe both variants
+        const logicalPath = path
+          .join(storyDir, volFile)
+          .replace(/\.gz$/, "");
+        const volData = readJsonAny<Volume>(logicalPath);
+        if (!volData) continue;
         const chapter = volData.chapters.find((c) => c.index === chapterIdx);
         if (chapter) return chapter;
       }
