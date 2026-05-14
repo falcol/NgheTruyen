@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 
 DATA_DIR = Path(__file__).parent / "data"
-SKIP_NAMES = {"_progress.json"}
+SKIP_NAMES = {"_progress.json", ".cookies.json"}
 
 
 def find_targets() -> list[Path]:

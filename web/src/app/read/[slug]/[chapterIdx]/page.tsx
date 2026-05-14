@@ -4,21 +4,10 @@ import {
   getChapterIndex,
   getStoryTitle,
   getTotalChapters,
-  listStories,
 } from "@/lib/data";
 import ReaderClient from "@/components/ReaderClient";
 
-export function generateStaticParams() {
-  const params: { slug: string; chapterIdx: string }[] = [];
-  for (const slug of listStories()) {
-    const chapters = getChapterIndex(slug);
-    if (!chapters) continue;
-    for (const ch of chapters) {
-      params.push({ slug, chapterIdx: String(ch.index) });
-    }
-  }
-  return params;
-}
+export const dynamic = "force-dynamic";
 
 export default async function ReaderPage({
   params,

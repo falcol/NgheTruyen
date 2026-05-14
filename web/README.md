@@ -25,15 +25,19 @@ Web app đọc dữ liệu trực tiếp từ thư mục `public/data/` — khô
 
 ### Cấu trúc data cần có
 
+Mặc định crawler ghi `.json.gz` (gzip + minify, giảm ~77% size). Reader hỗ trợ cả 2 định dạng:
+
 ```
 public/data/truyenqq/
 └── <slug-truyen>/
-    ├── metadata.json           # { "story_title": "Tên truyện" }
-    ├── chapters_index.json     # [{ "index": 0, "title": "Chương 1" }, ...]
-    ├── vol-001-ch001-050.json  # 50 chương/volume
-    ├── vol-002-ch051-100.json
+    ├── metadata.json.gz          # { "story_title": "Tên truyện" }
+    ├── chapters_index.json.gz    # [{ "index": 0, "title": "Chương 1" }, ...]
+    ├── vol-001-ch001-050.json.gz # 50 chương/volume
+    ├── vol-002-ch051-100.json.gz
     └── ...
 ```
+
+> Có thể trộn `.json` và `.json.gz` trong cùng thư mục — `data.ts` ưu tiên `.json.gz` nếu cả 2 cùng tồn tại.
 
 ### Crawl truyện mới
 
@@ -41,6 +45,9 @@ public/data/truyenqq/
 # Từ thư mục crawler
 cd ../crawler
 python -m crawler.run truyenqq "https://truyenqq.com/..."
+
+# Compress data đã có sẵn (one-time migration)
+python -m crawler.compress --apply
 ```
 
 Sau khi crawl xong, data tự động xuất hiện ở web (qua symlink). Refresh browser để thấy truyện mới.
@@ -51,7 +58,16 @@ Sau khi crawl xong, data tự động xuất hiện ở web (qua symlink). Refre
 npm run build   # prebuild tự chạy data:copy trước
 ```
 
+`data.ts` dùng `zlib.gunzipSync` để decompress `.json.gz` ở build time (Node side). SSG output chỉ là HTML thuần — browser không phải fetch JSON khi đọc trang đã pre-render.
+
+### Vercel deploy
+
+`vercel.json` đã cấu hình:
+- `/data/*.json.gz` serve với header `Content-Encoding: gzip` → browser auto-decompress nếu có client-side fetch
+- Cache `max-age=31536000, immutable` → CDN cache 1 năm (chương đã crawl không đổi)
+
 ### Lưu ý
 
 - Data layer (`src/lib/data.ts`) tự động quét tất cả nguồn trong `public/data/` (truyenqq, metruyenchu, metruyencv, ...)
 - Thêm thư mục nguồn mới vào `crawler/data/` → web tự nhận
+- Reader API nhất quán bất kể file là `.json` hay `.json.gz` (transparent qua `readJsonAny`)
