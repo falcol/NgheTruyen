@@ -111,6 +111,12 @@ export default function ReaderClient({
     navRef.current = { goNext, goPrev };
   });
 
+  // Prefetch adjacent chapters so navigation feels instant
+  useEffect(() => {
+    if (hasNext) router.prefetch(nextHref);
+    if (hasPrev) router.prefetch(prevHref);
+  }, [hasNext, hasPrev, nextHref, prevHref, router]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") navRef.current.goPrev();
