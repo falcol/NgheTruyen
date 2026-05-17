@@ -1,18 +1,42 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useProgress } from "@/hooks/useProgress";
+import { getChapterScrollY, loadProgress, useProgress } from "@/hooks/useProgress";
 import { useTTS } from "@/hooks/useTTS";
 import Player from "@/components/Player";
+import {
+  ReaderSettingsProvider,
+  useReaderSettingsContext,
+} from "@/context/ReaderSettingsContext";
 
 interface ChapterMeta {
   index: number;
   title: string;
 }
 
-export default function ReaderClient({
+export default function ReaderClient(
+  props: {
+    slug: string;
+    storyTitle: string;
+    chapterIdx: number;
+    totalChapters: number;
+    title: string;
+    paragraphs: string[];
+    chapters: ChapterMeta[];
+    backHref?: string;
+    readHref?: string;
+  },
+) {
+  return (
+    <ReaderSettingsProvider>
+      <ReaderClientInner {...props} />
+    </ReaderSettingsProvider>
+  );
+}
+
+function ReaderClientInner({
   slug,
   storyTitle,
   chapterIdx,
@@ -33,9 +57,11 @@ export default function ReaderClient({
   backHref?: string;
   readHref?: string;
 }) {
+  const { shellStyle } = useReaderSettingsContext();
   const router = useRouter();
-  const { save } = useProgress(slug);
+  const { saveChapter, saveScroll } = useProgress(slug);
   const topRef = useRef<HTMLDivElement>(null);
+  const scrollSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tts = useTTS();
   const { prepare, setOnChapterComplete } = tts;
   const chapterKey = useMemo(() => `${slug}:${chapterIdx}`, [slug, chapterIdx]);
@@ -76,12 +102,45 @@ export default function ReaderClient({
   }, [pickerOpen]);
 
   useEffect(() => {
-    save(chapterIdx);
-  }, [chapterIdx, save]);
+    if (typeof history !== "undefined") {
+      history.scrollRestoration = "manual";
+    }
+  }, []);
 
   useEffect(() => {
-    topRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chapterIdx]);
+    saveChapter(chapterIdx);
+  }, [chapterIdx, saveChapter]);
+
+  useLayoutEffect(() => {
+    const scrollY = getChapterScrollY(loadProgress(slug), chapterIdx);
+    window.scrollTo({ top: scrollY, left: 0 });
+  }, [slug, chapterIdx]);
+
+  useEffect(() => {
+    const flushScroll = () => {
+      if (scrollSaveTimer.current) {
+        clearTimeout(scrollSaveTimer.current);
+        scrollSaveTimer.current = null;
+      }
+      saveScroll(chapterIdx, window.scrollY);
+    };
+
+    const onScroll = () => {
+      if (scrollSaveTimer.current) clearTimeout(scrollSaveTimer.current);
+      scrollSaveTimer.current = setTimeout(
+        () => saveScroll(chapterIdx, window.scrollY),
+        200,
+      );
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("pagehide", flushScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("pagehide", flushScroll);
+      flushScroll();
+    };
+  }, [chapterIdx, saveScroll]);
 
   useEffect(() => {
     prepare(chapterKey, paragraphs);
@@ -127,23 +186,23 @@ export default function ReaderClient({
   }, []);
 
   return (
-    <>
-      <main className="max-w-3xl mx-auto px-6 py-6 pb-32">
+    <div className="reader-shell min-h-dvh" style={shellStyle}>
+      <main className="max-w-3xl mx-auto px-6 py-6 pb-32 reader-content">
         <div ref={topRef} />
 
         <div className="mb-6">
           <Link
             href={backHref ?? `/story/${slug}`}
-            className="text-sm text-(--color-text-muted) hover:text-(--color-accent)"
+            className="text-sm reader-muted"
           >
             ← Danh sách chương
           </Link>
-          <p className="text-sm text-(--color-text-muted) mt-2">{storyTitle}</p>
+          <p className="text-sm reader-muted mt-2">{storyTitle}</p>
           <h1 className="text-xl font-bold mt-2">{title}</h1>
           <div className="flex items-center gap-2 mt-2">
             <button
               onClick={() => { setPickerOpen((o) => !o); setFilter(""); }}
-              className="text-sm text-(--color-accent) hover:underline cursor-pointer"
+              className="text-sm reader-accent hover:underline cursor-pointer"
             >
               Chương {chapterIdx + 1} / {totalChapters} ▾
             </button>
@@ -200,18 +259,18 @@ export default function ReaderClient({
           ))}
         </div>
 
-        <div className="flex justify-between items-center mt-8 pt-4 border-t border-(--color-surface)">
+        <div className="flex justify-between items-center mt-8 pt-4 border-t reader-border">
           <button
             onClick={goPrev}
             disabled={!hasPrev}
-            className="px-4 py-2 rounded-lg bg-(--color-surface) disabled:opacity-30 hover:bg-(--color-surface)/80"
+            className="px-4 py-2 rounded-lg reader-surface disabled:opacity-30 hover:opacity-80"
           >
             ← Trước
           </button>
           <button
             onClick={goNext}
             disabled={!hasNext}
-            className="px-4 py-2 rounded-lg bg-(--color-surface) disabled:opacity-30 hover:bg-(--color-surface)/80"
+            className="px-4 py-2 rounded-lg reader-surface disabled:opacity-30 hover:opacity-80"
           >
             Sau →
           </button>
@@ -236,6 +295,6 @@ export default function ReaderClient({
         onRateChange={tts.setRate}
         onVoiceChange={tts.setVoice}
       />
-    </>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { listEpubFiles, warmAllEpubCaches } from "../src/lib/epub";
+import { listEpubFiles, warmAllEpubCaches } from "../src/lib/epub-parse";
 
 async function main() {
   const files = listEpubFiles();
@@ -6,9 +6,9 @@ async function main() {
     console.log("No EPUB files in ../epub/");
     return;
   }
-  console.log(`Warming metadata cache for ${files.length} EPUB(s)...`);
+  console.log(`Extracting metadata + chapters for ${files.length} EPUB(s)...`);
   await warmAllEpubCaches();
-  console.log("Done. Cache written to epub/.cache/");
+  console.log("Done. Cache: epub/.cache/");
 }
 
 main().catch((err) => {

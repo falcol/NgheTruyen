@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEpubMeta, listEpubFiles } from "@/lib/epub";
+import { getEpubMeta } from "@/lib/epub";
 import ChapterList from "@/components/ChapterList";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export default async function EpubBookPage({
   params,
@@ -12,7 +12,7 @@ export default async function EpubBookPage({
 }) {
   const { filename } = await params;
   const decodedFilename = decodeURIComponent(filename);
-  const meta = await getEpubMeta(decodedFilename);
+  const meta = getEpubMeta(decodedFilename);
   if (!meta) return notFound();
 
   const readHref = `/epub/${encodeURIComponent(decodedFilename)}/read`;

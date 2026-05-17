@@ -69,9 +69,10 @@ npm run build   # prebuild tự chạy data:copy trước
 
 ### EPUB
 
-- Trang `/epub` đọc metadata từ `epub/.cache/` (nhanh, không mở file .epub).
-- Sau khi thêm/sửa file `.epub`, chạy `npm run epub:cache` (hoặc `npm run build` — prebuild tự warm).
-- Lần đầu mở một cuốn (chưa cache) vẫn parse EPUB một lần rồi ghi cache.
+- **Runtime server không parse `.epub`** — chỉ đọc file đã extract trong `epub/.cache/`.
+- `npm run epub:cache`: extract metadata + từng chương (`{hash}/ch/00000.json.gz`).
+- Sau khi thêm/sửa `.epub`, chạy lại `epub:cache` (hoặc `npm run build` — prebuild tự chạy).
+- Deploy Vercel: nên commit `epub/.cache/` hoặc chấp nhận build lâu (~5000+ chương).
 
 ### Lưu ý
 

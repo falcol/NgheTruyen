@@ -4,7 +4,9 @@ import path from "path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   listSummariesFromCache,
+  readChapterCache,
   readMetaCache,
+  writeChapterCache,
   writeMetaCache,
 } from "@/lib/epub-cache";
 
@@ -71,5 +73,21 @@ describe("epub-cache", () => {
     expect(summaries).toEqual([
       { filename, title: "Cached Title", chapterCount: 2 },
     ]);
+  });
+
+  it("writes and reads chapter cache", () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "epub-ch-"));
+    const cacheDir = path.join(tmpDir, ".cache");
+    const filename = "book.epub";
+
+    writeChapterCache(cacheDir, filename, {
+      index: 2,
+      title: "Ch 3",
+      paragraphs: ["line one", "line two"],
+    });
+
+    const chapter = readChapterCache(cacheDir, filename, 2);
+    expect(chapter?.title).toBe("Ch 3");
+    expect(chapter?.paragraphs).toHaveLength(2);
   });
 });

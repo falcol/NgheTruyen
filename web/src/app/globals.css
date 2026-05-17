@@ -7,6 +7,9 @@
   --color-text-muted: #9ca3af;
   --color-accent: #60a5fa;
   --color-accent-dim: #3b82f6;
+  --color-border: #2d2d2d;
+  --reader-font-family: var(--font-literata), Georgia, serif;
+  --reader-font-size: 1.125rem;
 }
 
 html {
@@ -18,14 +21,45 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+.reader-shell {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.reader-content {
+  font-family: var(--reader-font-family);
+  color: var(--color-text);
+}
+
+.reader-muted {
+  color: var(--color-text-muted);
+}
+
+a.reader-muted:hover {
+  color: var(--color-accent);
+}
+
+.reader-accent {
+  color: var(--color-accent);
+}
+
+.reader-surface {
+  background-color: var(--color-surface);
+}
+
+.reader-border {
+  border-color: var(--color-border);
+}
+
 .reader-paragraph {
   line-height: 1.9;
-  font-size: 1.125rem;
+  font-size: var(--reader-font-size);
   margin-bottom: 1rem;
+  color: var(--color-text);
 }
 
 .reader-paragraph.speaking {
-  background-color: rgba(96, 165, 250, 0.15);
+  background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
   border-left: 3px solid var(--color-accent);
   padding-left: 0.75rem;
   border-radius: 0 0.25rem 0.25rem 0;

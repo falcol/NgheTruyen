@@ -1,7 +1,8 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import type { EpubBookMeta } from "./epub-types";
+import zlib from "zlib";
+import type { EpubBookMeta, EpubChapter } from "./epub-types";
 
 export const EPUB_META_CACHE_VERSION = 1;
 
@@ -19,9 +20,44 @@ export interface EpubListSummary {
   chapterCount: number | null;
 }
 
+export function bookCacheKey(filename: string): string {
+  return crypto.createHash("sha256").update(filename).digest("hex").slice(0, 32);
+}
+
 export function getMetaCachePath(cacheDir: string, filename: string): string {
-  const key = crypto.createHash("sha256").update(filename).digest("hex").slice(0, 32);
-  return path.join(cacheDir, `${key}.json`);
+  return path.join(cacheDir, `${bookCacheKey(filename)}.json`);
+}
+
+function chapterCachePath(
+  cacheDir: string,
+  filename: string,
+  chapterIdx: number,
+): string {
+  const idx = String(chapterIdx).padStart(5, "0");
+  return path.join(cacheDir, bookCacheKey(filename), "ch", `${idx}.json`);
+}
+
+export function clearBookChapterCache(cacheDir: string, filename: string): void {
+  const dir = path.join(cacheDir, bookCacheKey(filename), "ch");
+  if (fs.existsSync(dir)) {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+function readJsonGz<T>(basePath: string): T | null {
+  const gzPath = `${basePath}.gz`;
+  try {
+    if (fs.existsSync(gzPath)) {
+      const text = zlib.gunzipSync(fs.readFileSync(gzPath)).toString("utf-8");
+      return JSON.parse(text) as T;
+    }
+    if (fs.existsSync(basePath)) {
+      return JSON.parse(fs.readFileSync(basePath, "utf-8")) as T;
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 export function readMetaCache(
@@ -63,6 +99,7 @@ export function writeMetaCache(
   meta: EpubBookMeta,
   spineIds: string[],
 ): void {
+  clearBookChapterCache(cacheDir, filename);
   const stat = fs.statSync(epubPath);
   const payload: EpubMetaCachePayload = {
     version: EPUB_META_CACHE_VERSION,
@@ -72,8 +109,35 @@ export function writeMetaCache(
     spineIds,
   };
   fs.mkdirSync(cacheDir, { recursive: true });
-  const cachePath = getMetaCachePath(cacheDir, filename);
-  fs.writeFileSync(cachePath, JSON.stringify(payload));
+  fs.writeFileSync(getMetaCachePath(cacheDir, filename), JSON.stringify(payload));
+}
+
+export function hasChapterCache(
+  cacheDir: string,
+  filename: string,
+  chapterIdx: number,
+): boolean {
+  const base = chapterCachePath(cacheDir, filename, chapterIdx);
+  return fs.existsSync(`${base}.gz`) || fs.existsSync(base);
+}
+
+export function readChapterCache(
+  cacheDir: string,
+  filename: string,
+  chapterIdx: number,
+): EpubChapter | null {
+  return readJsonGz<EpubChapter>(chapterCachePath(cacheDir, filename, chapterIdx));
+}
+
+export function writeChapterCache(
+  cacheDir: string,
+  filename: string,
+  chapter: EpubChapter,
+): void {
+  const base = chapterCachePath(cacheDir, filename, chapter.index);
+  fs.mkdirSync(path.dirname(base), { recursive: true });
+  const json = JSON.stringify(chapter);
+  fs.writeFileSync(`${base}.gz`, zlib.gzipSync(json));
 }
 
 export function listSummariesFromCache(
