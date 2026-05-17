@@ -11,3 +11,4 @@ node_modules/
 .dual-graph/
 *.log
 epub/.cache/
+web/public/epub-cache/

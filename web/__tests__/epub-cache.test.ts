@@ -1,11 +1,13 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import zlib from "zlib";
 import { afterEach, describe, expect, it } from "vitest";
 import {
-  listSummariesFromCache,
-  readChapterCache,
+  isMetaCacheCurrent,
+  readCacheIndex,
   readMetaCache,
+  writeCacheIndex,
   writeChapterCache,
   writeMetaCache,
 } from "@/lib/epub-cache";
@@ -19,10 +21,10 @@ describe("epub-cache", () => {
     }
   });
 
-  it("invalidates cache when epub file changes", () => {
+  it("readMetaCache returns payload without checking source epub", () => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "epub-cache-"));
     const epubDir = path.join(tmpDir, "epub");
-    const cacheDir = path.join(epubDir, ".cache");
+    const cacheDir = path.join(tmpDir, "cache");
     fs.mkdirSync(epubDir);
 
     const filename = "book.epub";
@@ -36,48 +38,56 @@ describe("epub-cache", () => {
     };
     writeMetaCache(cacheDir, epubPath, filename, meta, ["spine-0"]);
 
-    expect(readMetaCache(cacheDir, epubPath, filename)?.meta.title).toBe(
-      "Test Book",
-    );
+    expect(readMetaCache(cacheDir, filename)?.meta.title).toBe("Test Book");
 
+    // Source epub modified but runtime read still succeeds — invalidation is
+    // a separate concern (isMetaCacheCurrent), not a runtime concern.
     fs.writeFileSync(epubPath, "v2-updated");
-    expect(readMetaCache(cacheDir, epubPath, filename)).toBeNull();
+    expect(readMetaCache(cacheDir, filename)?.meta.title).toBe("Test Book");
   });
 
-  it("listSummariesFromCache reads cache without parsing epub", () => {
+  it("isMetaCacheCurrent detects source epub changes", () => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "epub-cache-"));
     const epubDir = path.join(tmpDir, "epub");
-    const cacheDir = path.join(epubDir, ".cache");
+    const cacheDir = path.join(tmpDir, "cache");
     fs.mkdirSync(epubDir);
 
-    const filename = "cached.epub";
+    const filename = "book.epub";
     const epubPath = path.join(epubDir, filename);
-    fs.writeFileSync(epubPath, "content");
+    fs.writeFileSync(epubPath, "v1");
 
     writeMetaCache(
       cacheDir,
       epubPath,
       filename,
-      {
-        filename,
-        title: "Cached Title",
-        chapters: [
-          { index: 0, title: "A" },
-          { index: 1, title: "B" },
-        ],
-      },
-      ["a", "b"],
+      { filename, title: "T", chapters: [] },
+      [],
     );
 
-    const summaries = listSummariesFromCache(epubDir, cacheDir, [filename]);
-    expect(summaries).toEqual([
-      { filename, title: "Cached Title", chapterCount: 2 },
-    ]);
+    const cached = readMetaCache(cacheDir, filename);
+    expect(isMetaCacheCurrent(cached, epubPath)).toBe(true);
+
+    fs.writeFileSync(epubPath, "v2-different-size");
+    expect(isMetaCacheCurrent(cached, epubPath)).toBe(false);
   });
 
-  it("writes and reads chapter cache", () => {
+  it("cache index round-trip", () => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "epub-cache-"));
+    const cacheDir = path.join(tmpDir, "cache");
+
+    writeCacheIndex(cacheDir, [
+      { filename: "a.epub", title: "A", chapterCount: 3 },
+      { filename: "b.epub", title: "B", chapterCount: 5 },
+    ]);
+
+    const idx = readCacheIndex(cacheDir);
+    expect(idx?.books).toHaveLength(2);
+    expect(idx?.books[1].title).toBe("B");
+  });
+
+  it("writeChapterCache produces a gzipped JSON file", () => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "epub-ch-"));
-    const cacheDir = path.join(tmpDir, ".cache");
+    const cacheDir = path.join(tmpDir, "cache");
     const filename = "book.epub";
 
     writeChapterCache(cacheDir, filename, {
@@ -86,8 +96,16 @@ describe("epub-cache", () => {
       paragraphs: ["line one", "line two"],
     });
 
-    const chapter = readChapterCache(cacheDir, filename, 2);
-    expect(chapter?.title).toBe("Ch 3");
-    expect(chapter?.paragraphs).toHaveLength(2);
+    // Decompress manually to mirror what the browser will do via DecompressionStream.
+    const written = fs.readdirSync(cacheDir, { recursive: true, withFileTypes: true })
+      .filter((d) => d.isFile() && d.name.endsWith(".json.gz"))
+      .map((d) => path.join(d.parentPath, d.name));
+    expect(written).toHaveLength(1);
+
+    const json = JSON.parse(
+      zlib.gunzipSync(fs.readFileSync(written[0])).toString("utf-8"),
+    );
+    expect(json.title).toBe("Ch 3");
+    expect(json.paragraphs).toHaveLength(2);
   });
 });

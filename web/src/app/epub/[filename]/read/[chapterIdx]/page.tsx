@@ -1,10 +1,5 @@
 import { notFound } from "next/navigation";
-import {
-  getEpubChapter,
-  getEpubMeta,
-  isEpubChapterReady,
-} from "@/lib/epub";
-import EpubCacheMissing from "@/components/EpubCacheMissing";
+import { chapterCacheUrlPath, getEpubMeta } from "@/lib/epub";
 import ReaderClient from "@/components/ReaderClient";
 
 export const revalidate = 86400;
@@ -22,21 +17,11 @@ export default async function EpubReaderPage({
   const meta = getEpubMeta(decodedFilename);
   if (!meta) return notFound();
 
+  const chapter = meta.chapters[chapterIdx];
+  if (!chapter) return notFound();
+
   const readHref = `/epub/${encodeURIComponent(decodedFilename)}/read`;
   const backHref = `/epub/${encodeURIComponent(decodedFilename)}`;
-
-  if (!isEpubChapterReady(decodedFilename, chapterIdx)) {
-    return (
-      <EpubCacheMissing
-        filename={decodedFilename}
-        chapterIdx={chapterIdx}
-        backHref={backHref}
-      />
-    );
-  }
-
-  const chapter = getEpubChapter(decodedFilename, chapterIdx);
-  if (!chapter) return notFound();
 
   return (
     <ReaderClient
@@ -45,7 +30,7 @@ export default async function EpubReaderPage({
       chapterIdx={chapterIdx}
       totalChapters={meta.chapters.length}
       title={chapter.title}
-      paragraphs={chapter.paragraphs}
+      chapterContentUrl={chapterCacheUrlPath(decodedFilename, chapterIdx)}
       chapters={meta.chapters}
       backHref={backHref}
       readHref={readHref}

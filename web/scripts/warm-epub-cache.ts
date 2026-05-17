@@ -8,7 +8,7 @@ async function main() {
   }
   console.log(`Extracting metadata + chapters for ${files.length} EPUB(s)...`);
   await warmAllEpubCaches();
-  console.log("Done. Cache: epub/.cache/");
+  console.log("Done. Cache: web/public/epub-cache/");
 }
 
 main().catch((err) => {

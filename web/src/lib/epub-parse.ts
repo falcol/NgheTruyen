@@ -7,14 +7,17 @@ import fs from "fs";
 import path from "path";
 import {
   hasChapterCache,
+  isMetaCacheCurrent,
   readMetaCache,
+  writeCacheIndex,
   writeChapterCache,
   writeMetaCache,
+  type EpubListSummary,
 } from "./epub-cache";
 import type { EpubBookMeta, EpubChapter, EpubChapterMeta } from "./epub-types";
 
 const EPUB_DIR = path.join(process.cwd(), "..", "epub");
-const META_CACHE_DIR = path.join(EPUB_DIR, ".cache");
+const META_CACHE_DIR = path.join(process.cwd(), "public", "epub-cache");
 
 interface CachedMeta {
   meta: EpubBookMeta;
@@ -126,71 +129,54 @@ async function parseTocTitles(epub: Epub): Promise<Map<string, string>> {
   return titles;
 }
 
-async function parseMetaFromEpub(filename: string): Promise<CachedMeta | null> {
-  const filepath = path.join(EPUB_DIR, filename);
-  if (!fs.existsSync(filepath)) return null;
+async function parseMetaFromEpub(
+  filename: string,
+  epubPath: string,
+  epub: Epub,
+): Promise<CachedMeta> {
+  const bookTitle = (await epub.getTitle()) || filename.replace(".epub", "");
+  const spine = await epub.getSpineItems();
+  const tocTitles = await parseTocTitles(epub);
+  const shouldUseToc = tocTitles.size > 0;
 
-  const epub = await Epub.from(filepath);
-  try {
-    const bookTitle = (await epub.getTitle()) || filename.replace(".epub", "");
-    const spine = await epub.getSpineItems();
-    const tocTitles = await parseTocTitles(epub);
-    const shouldUseToc = tocTitles.size > 0;
+  const chapters: EpubChapterMeta[] = [];
+  const spineIds: string[] = [];
 
-    const chapters: EpubChapterMeta[] = [];
-    const spineIds: string[] = [];
+  for (let i = 0; i < spine.length; i++) {
+    const item = spine[i];
+    const title = findTocTitle(tocTitles, item.href);
+    if (shouldUseToc && !title) continue;
 
-    for (let i = 0; i < spine.length; i++) {
-      const item = spine[i];
-      const title = findTocTitle(tocTitles, item.href);
-      if (shouldUseToc && !title) continue;
-
-      chapters.push({
-        index: chapters.length,
-        title: title || `Chương ${chapters.length + 1}`,
-      });
-      spineIds.push(item.id);
-    }
-
-    const meta: EpubBookMeta = { filename, title: bookTitle, chapters };
-    writeMetaCache(META_CACHE_DIR, filepath, filename, meta, spineIds);
-    return { meta, spineIds };
-  } finally {
-    await epub.close().catch(() => {});
+    chapters.push({
+      index: chapters.length,
+      title: title || `Chương ${chapters.length + 1}`,
+    });
+    spineIds.push(item.id);
   }
+
+  const meta: EpubBookMeta = { filename, title: bookTitle, chapters };
+  writeMetaCache(META_CACHE_DIR, epubPath, filename, meta, spineIds);
+  return { meta, spineIds };
 }
 
 async function extractChapter(
-  filename: string,
   cached: CachedMeta,
   chapterIdx: number,
+  epub: Epub,
 ): Promise<EpubChapter | null> {
   const spineId = cached.spineIds[chapterIdx];
   if (spineId === undefined) return null;
 
-  const filepath = path.join(EPUB_DIR, filename);
-  const epub = await Epub.from(filepath);
-  try {
-    const chapterTitle = cached.meta.chapters[chapterIdx].title;
-    const text = await epub.readXhtmlItemContents(spineId, "text");
+  const chapterTitle = cached.meta.chapters[chapterIdx].title;
+  const text = await epub.readXhtmlItemContents(spineId, "text");
 
-    let paragraphs = textToParagraphs(text, chapterTitle);
-    if (paragraphs.length === 0) {
-      const raw = await epub.readItemContents(spineId);
-      paragraphs = xhtmlToParagraphs(contentsToString(raw as Uint8Array), chapterTitle);
-    }
-
-    return { index: chapterIdx, title: chapterTitle, paragraphs };
-  } finally {
-    await epub.close().catch(() => {});
+  let paragraphs = textToParagraphs(text, chapterTitle);
+  if (paragraphs.length === 0) {
+    const raw = await epub.readItemContents(spineId);
+    paragraphs = xhtmlToParagraphs(contentsToString(raw as Uint8Array), chapterTitle);
   }
-}
 
-async function loadOrParseMeta(filename: string): Promise<CachedMeta | null> {
-  const epubPath = path.join(EPUB_DIR, filename);
-  const disk = readMetaCache(META_CACHE_DIR, epubPath, filename);
-  if (disk) return { meta: disk.meta, spineIds: disk.spineIds };
-  return parseMetaFromEpub(filename);
+  return { index: chapterIdx, title: chapterTitle, paragraphs };
 }
 
 export function listEpubFiles(): string[] {
@@ -198,31 +184,53 @@ export function listEpubFiles(): string[] {
   return fs.readdirSync(EPUB_DIR).filter((f) => f.endsWith(".epub"));
 }
 
-export async function warmEpubFile(filename: string): Promise<void> {
-  const meta = await loadOrParseMeta(filename);
-  if (!meta) {
+export async function warmEpubFile(filename: string): Promise<EpubListSummary | null> {
+  const epubPath = path.join(EPUB_DIR, filename);
+  if (!fs.existsSync(epubPath)) {
     console.warn(`  skip (not found): ${filename}`);
-    return;
+    return null;
   }
 
-  const total = meta.meta.chapters.length;
-  console.log(`  ${filename}: ${total} chapters`);
-
-  for (let i = 0; i < total; i++) {
-    if (hasChapterCache(META_CACHE_DIR, filename, i)) continue;
-
-    const chapter = await extractChapter(filename, meta, i);
-    if (!chapter) continue;
-
-    writeChapterCache(META_CACHE_DIR, filename, chapter);
-    if ((i + 1) % 100 === 0 || i + 1 === total) {
-      console.log(`    ${i + 1}/${total}`);
+  const epub = await Epub.from(epubPath);
+  try {
+    const existing = readMetaCache(META_CACHE_DIR, filename);
+    let cached: CachedMeta;
+    if (existing && isMetaCacheCurrent(existing, epubPath)) {
+      cached = { meta: existing.meta, spineIds: existing.spineIds };
+    } else {
+      cached = await parseMetaFromEpub(filename, epubPath, epub);
     }
+
+    const total = cached.meta.chapters.length;
+    console.log(`  ${filename}: ${total} chapters`);
+
+    for (let i = 0; i < total; i++) {
+      if (hasChapterCache(META_CACHE_DIR, filename, i)) continue;
+
+      const chapter = await extractChapter(cached, i, epub);
+      if (!chapter) continue;
+
+      writeChapterCache(META_CACHE_DIR, filename, chapter);
+      if ((i + 1) % 100 === 0 || i + 1 === total) {
+        console.log(`    ${i + 1}/${total}`);
+      }
+    }
+
+    return {
+      filename,
+      title: cached.meta.title,
+      chapterCount: cached.meta.chapters.length,
+    };
+  } finally {
+    await epub.close().catch(() => {});
   }
 }
 
 export async function warmAllEpubCaches(): Promise<void> {
+  const summaries: EpubListSummary[] = [];
   for (const filename of listEpubFiles()) {
-    await warmEpubFile(filename);
+    const summary = await warmEpubFile(filename);
+    if (summary) summaries.push(summary);
   }
+  writeCacheIndex(META_CACHE_DIR, summaries);
 }

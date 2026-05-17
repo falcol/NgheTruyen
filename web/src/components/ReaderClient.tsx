@@ -16,19 +16,50 @@ interface ChapterMeta {
   title: string;
 }
 
-export default function ReaderClient(
-  props: {
-    slug: string;
-    storyTitle: string;
-    chapterIdx: number;
-    totalChapters: number;
-    title: string;
-    paragraphs: string[];
-    chapters: ChapterMeta[];
-    backHref?: string;
-    readHref?: string;
-  },
-) {
+interface ChapterPayload {
+  index: number;
+  title: string;
+  paragraphs: string[];
+}
+
+type ChapterState =
+  | { status: "loading" }
+  | { status: "ready"; paragraphs: string[] }
+  | { status: "error"; message: string };
+
+// Browser-side gunzip — keeps dev/prod identical regardless of Content-Encoding header.
+async function fetchChapterContent(
+  url: string,
+  signal: AbortSignal,
+): Promise<ChapterPayload> {
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.body) throw new Error("Empty response body");
+
+  const decompressed = res.body.pipeThrough(new DecompressionStream("gzip"));
+  const text = await new Response(decompressed).text();
+  return JSON.parse(text) as ChapterPayload;
+}
+
+// Two content modes:
+//  - `paragraphs` (sync): caller already has the chapter text — render immediately.
+//  - `chapterContentUrl` (async): fetch a gzipped JSON payload client-side.
+// Exactly one should be provided per page.
+type ReaderClientProps = {
+  slug: string;
+  storyTitle: string;
+  chapterIdx: number;
+  totalChapters: number;
+  title: string;
+  chapters: ChapterMeta[];
+  backHref?: string;
+  readHref?: string;
+} & (
+  | { paragraphs: string[]; chapterContentUrl?: never }
+  | { chapterContentUrl: string; paragraphs?: never }
+);
+
+export default function ReaderClient(props: ReaderClientProps) {
   return (
     <ReaderSettingsProvider>
       <ReaderClientInner {...props} />
@@ -42,21 +73,12 @@ function ReaderClientInner({
   chapterIdx,
   totalChapters,
   title,
-  paragraphs,
+  paragraphs: paragraphsProp,
+  chapterContentUrl,
   chapters,
   backHref,
   readHref,
-}: {
-  slug: string;
-  storyTitle: string;
-  chapterIdx: number;
-  totalChapters: number;
-  title: string;
-  paragraphs: string[];
-  chapters: ChapterMeta[];
-  backHref?: string;
-  readHref?: string;
-}) {
+}: ReaderClientProps) {
   const { shellStyle } = useReaderSettingsContext();
   const router = useRouter();
   const { saveChapter, saveScroll } = useProgress(slug);
@@ -65,6 +87,13 @@ function ReaderClientInner({
   const tts = useTTS();
   const { prepare, setOnChapterComplete } = tts;
   const chapterKey = useMemo(() => `${slug}:${chapterIdx}`, [slug, chapterIdx]);
+
+  const [chapterState, setChapterState] = useState<ChapterState>(() =>
+    paragraphsProp
+      ? { status: "ready", paragraphs: paragraphsProp }
+      : { status: "loading" },
+  );
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const href = (idx: number) =>
     readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`;
@@ -111,10 +140,41 @@ function ReaderClientInner({
     saveChapter(chapterIdx);
   }, [chapterIdx, saveChapter]);
 
+  // Sync state to incoming `paragraphs` prop (sync mode) — covers chapter navigation
+  // in the crawler-fed reader where each page renders with fresh paragraphs.
+  useEffect(() => {
+    if (paragraphsProp) {
+      setChapterState({ status: "ready", paragraphs: paragraphsProp });
+    }
+  }, [paragraphsProp]);
+
+  // Fetch chapter content (async mode) whenever URL changes or user retries.
+  useEffect(() => {
+    if (!chapterContentUrl) return;
+    const controller = new AbortController();
+    setChapterState({ status: "loading" });
+
+    fetchChapterContent(chapterContentUrl, controller.signal)
+      .then((payload) => {
+        setChapterState({ status: "ready", paragraphs: payload.paragraphs });
+      })
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setChapterState({ status: "error", message });
+      });
+
+    return () => controller.abort();
+  }, [chapterContentUrl, retryNonce]);
+
+  const paragraphs = chapterState.status === "ready" ? chapterState.paragraphs : null;
+
+  // Restore scroll only after content renders (otherwise the page is empty).
   useLayoutEffect(() => {
+    if (!paragraphs) return;
     const scrollY = getChapterScrollY(loadProgress(slug), chapterIdx);
     window.scrollTo({ top: scrollY, left: 0 });
-  }, [slug, chapterIdx]);
+  }, [slug, chapterIdx, paragraphs]);
 
   useEffect(() => {
     const flushScroll = () => {
@@ -143,7 +203,7 @@ function ReaderClientInner({
   }, [chapterIdx, saveScroll]);
 
   useEffect(() => {
-    prepare(chapterKey, paragraphs);
+    if (paragraphs) prepare(chapterKey, paragraphs);
   }, [chapterKey, paragraphs, prepare]);
 
   useEffect(() => {
@@ -242,22 +302,50 @@ function ReaderClientInner({
           )}
         </div>
 
-        <div className="space-y-0">
-          {paragraphs.map((p, i) => (
-            <p
-              key={i}
-              className={`reader-paragraph ${
-                tts.activeRange &&
-                i >= tts.activeRange.start &&
-                i <= tts.activeRange.end
-                  ? "speaking"
-                  : ""
-              }`}
-            >
-              {p}
+        {chapterState.status === "loading" && (
+          <div className="space-y-3" aria-busy="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-4 rounded reader-surface animate-pulse"
+                style={{ width: `${70 + ((i * 13) % 25)}%` }}
+              />
+            ))}
+          </div>
+        )}
+
+        {chapterState.status === "error" && (
+          <div className="p-4 rounded-lg reader-surface">
+            <p className="text-sm reader-muted mb-3">
+              Không tải được chương: {chapterState.message}
             </p>
-          ))}
-        </div>
+            <button
+              onClick={() => setRetryNonce((n) => n + 1)}
+              className="px-3 py-1.5 text-sm rounded reader-accent hover:underline cursor-pointer"
+            >
+              Thử lại
+            </button>
+          </div>
+        )}
+
+        {chapterState.status === "ready" && (
+          <div className="space-y-0">
+            {chapterState.paragraphs.map((p, i) => (
+              <p
+                key={i}
+                className={`reader-paragraph ${
+                  tts.activeRange &&
+                  i >= tts.activeRange.start &&
+                  i <= tts.activeRange.end
+                    ? "speaking"
+                    : ""
+                }`}
+              >
+                {p}
+              </p>
+            ))}
+          </div>
+        )}
 
         <div className="flex justify-between items-center mt-8 pt-4 border-t reader-border">
           <button
@@ -283,10 +371,10 @@ function ReaderClientInner({
         loading={tts.loading}
         rate={tts.rate}
         currentIdx={tts.currentIdx}
-        totalParagraphs={paragraphs.length}
+        totalParagraphs={paragraphs?.length ?? 0}
         viVoices={tts.viVoices}
         selectedVoiceName={tts.selectedVoiceName}
-        onPlay={() => tts.play(chapterKey, paragraphs)}
+        onPlay={() => paragraphs && tts.play(chapterKey, paragraphs)}
         onPause={tts.pause}
         onResume={tts.resume}
         onStop={tts.stop}
