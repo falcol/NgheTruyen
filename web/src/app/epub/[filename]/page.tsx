@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getEpubMeta, listEpubFiles } from "@/lib/epub";
 import ChapterList from "@/components/ChapterList";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function EpubBookPage({
   params,

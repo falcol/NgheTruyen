@@ -1,20 +1,10 @@
 import Link from "next/link";
-import { listEpubFiles, getEpubMeta } from "@/lib/epub";
+import { listEpubSummaries } from "@/lib/epub";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
-export default async function EpubListPage() {
-  const files = listEpubFiles();
-  const books = await Promise.all(
-    files.map(async (filename) => {
-      const meta = await getEpubMeta(filename);
-      return {
-        filename,
-        title: meta?.title || filename.replace(".epub", ""),
-        chapterCount: meta?.chapters.length ?? 0,
-      };
-    })
-  );
+export default function EpubListPage() {
+  const books = listEpubSummaries();
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8">
@@ -41,9 +31,13 @@ export default async function EpubListPage() {
             className="block p-4 rounded-lg bg-(--color-surface) hover:bg-(--color-surface)/80 transition-colors"
           >
             <div className="font-semibold text-lg truncate">{book.title}</div>
-            <div className="text-sm text-(--color-text-muted) mt-1">
-              {book.chapterCount} chương · {book.filename}
-            </div>
+            <p className="text-sm text-(--color-text-muted) mt-1">
+              {book.chapterCount != null
+                ? `${book.chapterCount} chương`
+                : "Mở để tải mục lục"}
+              {" · "}
+              {book.filename}
+            </p>
           </Link>
         ))}
       </div>

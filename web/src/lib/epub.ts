@@ -1,23 +1,24 @@
 import { Epub } from "@smoores/epub";
 import fs from "fs";
 import path from "path";
+import {
+  listSummariesFromCache,
+  readMetaCache,
+  writeMetaCache,
+  type EpubListSummary,
+} from "./epub-cache";
 
-export interface EpubChapterMeta {
-  index: number;
-  title: string;
-}
+export type {
+  EpubChapter,
+  EpubChapterMeta,
+  EpubBookMeta,
+} from "./epub-types";
+export type { EpubListSummary } from "./epub-cache";
 
-export interface EpubChapter extends EpubChapterMeta {
-  paragraphs: string[];
-}
-
-export interface EpubBookMeta {
-  filename: string;
-  title: string;
-  chapters: EpubChapterMeta[];
-}
+import type { EpubBookMeta, EpubChapter, EpubChapterMeta } from "./epub-types";
 
 const EPUB_DIR = path.join(process.cwd(), "..", "epub");
+const META_CACHE_DIR = path.join(EPUB_DIR, ".cache");
 const MAX_CACHE = 3;
 
 interface CachedMeta {
@@ -154,10 +155,14 @@ async function parseTocTitles(epub: Epub): Promise<Map<string, string>> {
   return titles;
 }
 
-async function loadMeta(filename: string): Promise<CachedMeta | null> {
-  const cached = metaCache.get(filename);
-  if (cached) return cached;
+function cacheFromDisk(filename: string): CachedMeta | null {
+  const epubPath = path.join(EPUB_DIR, filename);
+  const payload = readMetaCache(META_CACHE_DIR, epubPath, filename);
+  if (!payload) return null;
+  return { meta: payload.meta, spineIds: payload.spineIds };
+}
 
+async function parseMetaFromEpub(filename: string): Promise<CachedMeta | null> {
   const epub = await getEpub(filename);
   if (!epub) return null;
 
@@ -178,17 +183,43 @@ async function loadMeta(filename: string): Promise<CachedMeta | null> {
     spineIds.push(item.id);
   }
 
-  const result: CachedMeta = {
-    meta: { filename, title: bookTitle, chapters },
-    spineIds,
-  };
-  metaCache.set(filename, result);
-  return result;
+  const meta: EpubBookMeta = { filename, title: bookTitle, chapters };
+  const epubPath = path.join(EPUB_DIR, filename);
+  writeMetaCache(META_CACHE_DIR, epubPath, filename, meta, spineIds);
+  return { meta, spineIds };
+}
+
+async function loadMeta(filename: string): Promise<CachedMeta | null> {
+  const memory = metaCache.get(filename);
+  if (memory) return memory;
+
+  const disk = cacheFromDisk(filename);
+  if (disk) {
+    metaCache.set(filename, disk);
+    return disk;
+  }
+
+  const parsed = await parseMetaFromEpub(filename);
+  if (parsed) metaCache.set(filename, parsed);
+  return parsed;
 }
 
 export function listEpubFiles(): string[] {
   if (!fs.existsSync(EPUB_DIR)) return [];
   return fs.readdirSync(EPUB_DIR).filter((f) => f.endsWith(".epub"));
+}
+
+/** Fast list for /epub — reads disk cache only, never opens EPUB archives. */
+export function listEpubSummaries(): EpubListSummary[] {
+  return listSummariesFromCache(EPUB_DIR, META_CACHE_DIR, listEpubFiles());
+}
+
+/** Parse all EPUBs and write metadata cache (run after adding new files). */
+export async function warmAllEpubCaches(): Promise<void> {
+  for (const filename of listEpubFiles()) {
+    metaCache.delete(filename);
+    await loadMeta(filename);
+  }
 }
 
 export async function getEpubMeta(
@@ -221,7 +252,6 @@ export async function getEpubChapter(
   const chapterTitle = cached.meta.chapters[chapterIdx].title;
   const text = await epub.readXhtmlItemContents(spineId, "text");
 
-  // Deduplicate title from content (EPUB often repeats it as first line).
   let paragraphs = textToParagraphs(text, chapterTitle);
   if (paragraphs.length === 0) {
     const raw = await epub.readItemContents(spineId);

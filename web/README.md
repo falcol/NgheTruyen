@@ -12,6 +12,7 @@ npm run test         # Run tests
 npm run test:watch   # Tests ở watch mode
 npm run lint         # ESLint
 npm run data:copy    # Copy data từ crawler vào web
+npm run epub:cache   # Parse EPUB → cache metadata (epub/.cache/)
 ```
 
 ## Import truyện đã crawl
@@ -65,6 +66,12 @@ npm run build   # prebuild tự chạy data:copy trước
 `vercel.json` đã cấu hình:
 - `/data/*.json.gz` serve với header `Content-Encoding: gzip` → browser auto-decompress nếu có client-side fetch
 - Cache `max-age=31536000, immutable` → CDN cache 1 năm (chương đã crawl không đổi)
+
+### EPUB
+
+- Trang `/epub` đọc metadata từ `epub/.cache/` (nhanh, không mở file .epub).
+- Sau khi thêm/sửa file `.epub`, chạy `npm run epub:cache` (hoặc `npm run build` — prebuild tự warm).
+- Lần đầu mở một cuốn (chưa cache) vẫn parse EPUB một lần rồi ghi cache.
 
 ### Lưu ý
 

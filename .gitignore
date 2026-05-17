@@ -10,3 +10,4 @@ node_modules/
 .serena/
 .dual-graph/
 *.log
+epub/.cache/
