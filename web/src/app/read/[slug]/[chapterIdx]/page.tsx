@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
+import { crawlChapterApiPath } from "@/lib/chapter-nav";
 import {
-  getChapter,
   getChapterIndex,
   getStoryTitle,
   getTotalChapters,
 } from "@/lib/data";
 import ReaderClient from "@/components/ReaderClient";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export default async function ReaderPage({
   params,
@@ -19,13 +19,14 @@ export default async function ReaderPage({
 
   if (isNaN(chapterIdx)) return notFound();
 
-  const chapter = getChapter(slug, chapterIdx);
-  if (!chapter) return notFound();
+  const chapters = getChapterIndex(slug);
+  if (!chapters) return notFound();
+
+  const chapterMeta = chapters.find((c) => c.index === chapterIdx);
+  if (!chapterMeta) return notFound();
 
   const storyTitle = getStoryTitle(slug);
   const totalChapters = getTotalChapters(slug);
-  const chapters = getChapterIndex(slug);
-  if (!chapters) return notFound();
 
   return (
     <ReaderClient
@@ -33,8 +34,8 @@ export default async function ReaderPage({
       storyTitle={storyTitle}
       chapterIdx={chapterIdx}
       totalChapters={totalChapters}
-      title={chapter.title}
-      paragraphs={chapter.paragraphs}
+      title={chapterMeta.title}
+      chapterContentUrl={crawlChapterApiPath(slug, chapterIdx)}
       chapters={chapters}
     />
   );

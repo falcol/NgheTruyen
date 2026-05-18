@@ -3,6 +3,12 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { adjacentChapterContentUrls } from "@/lib/chapter-nav";
+import {
+  getCachedChapter,
+  loadChapterContent,
+  prefetchChapterContent,
+} from "@/lib/chapter-prefetch";
 import { getChapterScrollY, loadProgress, useProgress } from "@/hooks/useProgress";
 import { useTTS } from "@/hooks/useTTS";
 import Player from "@/components/Player";
@@ -16,30 +22,10 @@ interface ChapterMeta {
   title: string;
 }
 
-interface ChapterPayload {
-  index: number;
-  title: string;
-  paragraphs: string[];
-}
-
 type ChapterState =
   | { status: "loading" }
   | { status: "ready"; paragraphs: string[] }
   | { status: "error"; message: string };
-
-// Browser-side gunzip — keeps dev/prod identical regardless of Content-Encoding header.
-async function fetchChapterContent(
-  url: string,
-  signal: AbortSignal,
-): Promise<ChapterPayload> {
-  const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  if (!res.body) throw new Error("Empty response body");
-
-  const decompressed = res.body.pipeThrough(new DecompressionStream("gzip"));
-  const text = await new Response(decompressed).text();
-  return JSON.parse(text) as ChapterPayload;
-}
 
 // Two content modes:
 //  - `paragraphs` (sync): caller already has the chapter text — render immediately.
@@ -152,9 +138,15 @@ function ReaderClientInner({
   useEffect(() => {
     if (!chapterContentUrl) return;
     const controller = new AbortController();
-    setChapterState({ status: "loading" });
 
-    fetchChapterContent(chapterContentUrl, controller.signal)
+    const cached = getCachedChapter(chapterContentUrl);
+    if (cached) {
+      setChapterState({ status: "ready", paragraphs: cached.paragraphs });
+    } else {
+      setChapterState({ status: "loading" });
+    }
+
+    loadChapterContent(chapterContentUrl, controller.signal)
       .then((payload) => {
         setChapterState({ status: "ready", paragraphs: payload.paragraphs });
       })
@@ -166,6 +158,13 @@ function ReaderClientInner({
 
     return () => controller.abort();
   }, [chapterContentUrl, retryNonce]);
+
+  // Prefetch prev/next chapter JSON while reading (instant Sau/Trước when cached).
+  useEffect(() => {
+    const { prev, next } = adjacentChapterContentUrls(slug, chapters, chapterIdx);
+    if (prev) prefetchChapterContent(prev).catch(() => {});
+    if (next) prefetchChapterContent(next).catch(() => {});
+  }, [slug, chapters, chapterIdx]);
 
   const paragraphs = chapterState.status === "ready" ? chapterState.paragraphs : null;
 
