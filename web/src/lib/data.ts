@@ -2,6 +2,12 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 
+// In-memory caches for static files
+const volumeCache = new Map<string, Volume>();
+const indexCache = new Map<string, ChapterMeta[]>();
+const metadataCache = new Map<string, StoryMetadata>();
+const MAX_VOLUME_CACHE_SIZE = 10;
+
 // Read .json or .json.gz transparently. Prefers .gz when both exist.
 function readJsonAny<T>(filePath: string): T | null {
   const gzPath = filePath + ".gz";
@@ -42,6 +48,10 @@ export interface Volume {
 export function makeDataDir(baseDir: string) {
   const dataDir = path.join(process.cwd(), baseDir);
 
+  function isSafeSlug(slug: string): boolean {
+    return !slug.includes("/") && !slug.includes("\\") && !slug.includes("..");
+  }
+
   function listStories(): string[] {
     if (!fs.existsSync(dataDir)) return [];
     return fs
@@ -59,22 +69,41 @@ export function makeDataDir(baseDir: string) {
   }
 
   function getChapterIndex(slug: string): ChapterMeta[] | null {
-    return readJsonAny<ChapterMeta[]>(
-      path.join(dataDir, slug, "chapters_index.json")
-    );
+    if (!isSafeSlug(slug)) return null;
+    const filePath = path.join(dataDir, slug, "chapters_index.json");
+    
+    const cached = indexCache.get(filePath);
+    if (cached) return cached;
+
+    const data = readJsonAny<ChapterMeta[]>(filePath);
+    if (data) {
+      indexCache.set(filePath, data);
+    }
+    return data;
   }
 
   function getStoryMetadata(slug: string): StoryMetadata | null {
-    return readJsonAny<StoryMetadata>(
-      path.join(dataDir, slug, "metadata.json")
-    );
+    if (!isSafeSlug(slug)) return null;
+    const filePath = path.join(dataDir, slug, "metadata.json");
+
+    const cached = metadataCache.get(filePath);
+    if (cached) return cached;
+
+    const data = readJsonAny<StoryMetadata>(filePath);
+    if (data) {
+      metadataCache.set(filePath, data);
+    }
+    return data;
   }
 
   function getStoryTitle(slug: string): string {
+    if (!isSafeSlug(slug)) return slug;
     return getStoryMetadata(slug)?.story_title || slug;
   }
 
   function getChapter(slug: string, chapterIdx: number): Chapter | null {
+    if (!isSafeSlug(slug)) return null;
+
     // Find position in index first — chapter indices may not start at 0
     const index = getChapterIndex(slug);
     if (!index) return null;
@@ -104,11 +133,25 @@ export function makeDataDir(baseDir: string) {
         const prefix = `vol-${String(tryVol).padStart(3, "0")}-`;
         const volFile = files.find((f) => f.startsWith(prefix));
         if (!volFile) continue;
+        
         // Strip .gz suffix so readJsonAny can probe both variants
         const logicalPath = path
           .join(storyDir, volFile)
           .replace(/\.gz$/, "");
-        const volData = readJsonAny<Volume>(logicalPath);
+        
+        let volData = volumeCache.get(logicalPath);
+        if (!volData) {
+          volData = readJsonAny<Volume>(logicalPath) || undefined;
+          if (volData) {
+            // Evict if cache exceeds max size
+            if (volumeCache.size >= MAX_VOLUME_CACHE_SIZE) {
+              const oldestKey = volumeCache.keys().next().value;
+              if (oldestKey) volumeCache.delete(oldestKey);
+            }
+            volumeCache.set(logicalPath, volData);
+          }
+        }
+
         if (!volData) continue;
         const chapter = volData.chapters.find((c) => c.index === chapterIdx);
         if (chapter) return chapter;
@@ -118,6 +161,7 @@ export function makeDataDir(baseDir: string) {
   }
 
   function getTotalChapters(slug: string): number {
+    if (!isSafeSlug(slug)) return 0;
     const index = getChapterIndex(slug);
     if (!index || index.length === 0) return 0;
     return index[index.length - 1].index + 1;
@@ -136,7 +180,28 @@ export function makeDataDir(baseDir: string) {
 // Aggregate across all source directories (truyenqq, metruyenchu, metruyencv, ...)
 function makeAllSources() {
   const baseDir = path.join(process.cwd(), "public", "data");
-  if (!fs.existsSync(baseDir)) return makeDataDir(path.join("public", "data"));
+  
+  if (!fs.existsSync(baseDir)) {
+    const singleInst = makeDataDir(path.join("public", "data"));
+    const slugMap = new Map<string, typeof singleInst>();
+    
+    try {
+      singleInst.listStories().forEach((slug) => {
+        slugMap.set(slug, singleInst);
+      });
+    } catch {
+      // ignore
+    }
+
+    return {
+      listStories: () => Array.from(slugMap.keys()),
+      getChapterIndex: (slug: string) => slugMap.get(slug)?.getChapterIndex(slug) ?? null,
+      getStoryMetadata: (slug: string) => slugMap.get(slug)?.getStoryMetadata(slug) ?? null,
+      getStoryTitle: (slug: string) => slugMap.get(slug)?.getStoryTitle(slug) ?? slug,
+      getChapter: (slug: string, chapterIdx: number) => slugMap.get(slug)?.getChapter(slug, chapterIdx) ?? null,
+      getTotalChapters: (slug: string) => slugMap.get(slug)?.getTotalChapters(slug) ?? 0,
+    };
+  }
 
   const sources = fs
     .readdirSync(baseDir)
@@ -146,12 +211,23 @@ function makeAllSources() {
     makeDataDir(path.join("public", "data", s))
   );
 
+  const slugMap = new Map<string, typeof instances[number]>();
+  instances.forEach((inst) => {
+    try {
+      inst.listStories().forEach((slug) => {
+        slugMap.set(slug, inst);
+      });
+    } catch {
+      // ignore
+    }
+  });
+
   function listStories(): string[] {
-    return instances.flatMap((inst) => inst.listStories());
+    return Array.from(slugMap.keys());
   }
 
   function findInstance(slug: string) {
-    return instances.find((inst) => inst.listStories().includes(slug));
+    return slugMap.get(slug);
   }
 
   function getChapterIndex(slug: string) {
@@ -188,3 +264,4 @@ export const getStoryMetadata = defaultData.getStoryMetadata;
 export const getStoryTitle = defaultData.getStoryTitle;
 export const getChapter = defaultData.getChapter;
 export const getTotalChapters = defaultData.getTotalChapters;
+

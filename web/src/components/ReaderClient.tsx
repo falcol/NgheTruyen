@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { adjacentChapterContentUrls } from "@/lib/chapter-nav";
+import { adjacentChapterContentUrls, crawlChapterApiPath } from "@/lib/chapter-nav";
+import { epubFilenameFromReaderSlug, chapterCacheUrlPath } from "@/lib/epub-urls";
 import {
   getCachedChapter,
   loadChapterContent,
@@ -72,7 +73,34 @@ function ReaderClientInner({
   const scrollSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tts = useTTS();
   const { prepare, setOnChapterComplete } = tts;
-  const chapterKey = useMemo(() => `${slug}:${chapterIdx}`, [slug, chapterIdx]);
+
+  const [activeChapterIdx, setActiveChapterIdx] = useState(chapterIdx);
+  const [autoPlayNext, setAutoPlayNext] = useState(false);
+
+  useEffect(() => {
+    setActiveChapterIdx(chapterIdx);
+  }, [chapterIdx]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const pathParts = window.location.pathname.split("/");
+      const idxStr = pathParts[pathParts.length - 1];
+      const idx = parseInt(idxStr, 10);
+      if (!isNaN(idx)) {
+        setActiveChapterIdx(idx);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const chapterKey = useMemo(() => `${slug}:${activeChapterIdx}`, [slug, activeChapterIdx]);
+
+  const activeChapterMeta = useMemo(() => {
+    return chapters.find((c) => c.index === activeChapterIdx);
+  }, [chapters, activeChapterIdx]);
+
+  const activeTitle = activeChapterMeta ? activeChapterMeta.title : title;
 
   const [chapterState, setChapterState] = useState<ChapterState>(() =>
     paragraphsProp
@@ -81,16 +109,18 @@ function ReaderClientInner({
   );
   const [retryNonce, setRetryNonce] = useState(0);
 
-  const href = (idx: number) =>
-    readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`;
+  const href = useCallback((idx: number) =>
+    readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`,
+    [slug, readHref]
+  );
 
   const prevHref = useMemo(
-    () => href(chapterIdx - 1),
-    [chapterIdx, slug, readHref],
+    () => href(activeChapterIdx - 1),
+    [activeChapterIdx, href],
   );
   const nextHref = useMemo(
-    () => href(chapterIdx + 1),
-    [chapterIdx, slug, readHref],
+    () => href(activeChapterIdx + 1),
+    [activeChapterIdx, href],
   );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -123,8 +153,14 @@ function ReaderClientInner({
   }, []);
 
   useEffect(() => {
-    saveChapter(chapterIdx);
-  }, [chapterIdx, saveChapter]);
+    saveChapter(activeChapterIdx);
+  }, [activeChapterIdx, saveChapter]);
+
+  useEffect(() => {
+    if (activeChapterMeta) {
+      document.title = `${activeChapterMeta.title} - ${storyTitle}`;
+    }
+  }, [activeChapterMeta, storyTitle]);
 
   // Sync state to incoming `paragraphs` prop (sync mode) — covers chapter navigation
   // in the crawler-fed reader where each page renders with fresh paragraphs.
@@ -134,19 +170,28 @@ function ReaderClientInner({
     }
   }, [paragraphsProp]);
 
+  const activeChapterContentUrl = useMemo(() => {
+    if (!chapterContentUrl) return undefined;
+    const epubFile = epubFilenameFromReaderSlug(slug);
+    if (epubFile) {
+      return chapterCacheUrlPath(epubFile, activeChapterIdx);
+    }
+    return crawlChapterApiPath(slug, activeChapterIdx);
+  }, [slug, activeChapterIdx, chapterContentUrl]);
+
   // Fetch chapter content (async mode) whenever URL changes or user retries.
   useEffect(() => {
-    if (!chapterContentUrl) return;
+    if (!activeChapterContentUrl) return;
     const controller = new AbortController();
 
-    const cached = getCachedChapter(chapterContentUrl);
+    const cached = getCachedChapter(activeChapterContentUrl);
     if (cached) {
       setChapterState({ status: "ready", paragraphs: cached.paragraphs });
     } else {
       setChapterState({ status: "loading" });
     }
 
-    loadChapterContent(chapterContentUrl, controller.signal)
+    loadChapterContent(activeChapterContentUrl, controller.signal)
       .then((payload) => {
         setChapterState({ status: "ready", paragraphs: payload.paragraphs });
       })
@@ -157,23 +202,23 @@ function ReaderClientInner({
       });
 
     return () => controller.abort();
-  }, [chapterContentUrl, retryNonce]);
+  }, [activeChapterContentUrl, retryNonce]);
 
   // Prefetch prev/next chapter JSON while reading (instant Sau/Trước when cached).
   useEffect(() => {
-    const { prev, next } = adjacentChapterContentUrls(slug, chapters, chapterIdx);
+    const { prev, next } = adjacentChapterContentUrls(slug, chapters, activeChapterIdx);
     if (prev) prefetchChapterContent(prev).catch(() => {});
     if (next) prefetchChapterContent(next).catch(() => {});
-  }, [slug, chapters, chapterIdx]);
+  }, [slug, chapters, activeChapterIdx]);
 
   const paragraphs = chapterState.status === "ready" ? chapterState.paragraphs : null;
 
   // Restore scroll only after content renders (otherwise the page is empty).
   useLayoutEffect(() => {
     if (!paragraphs) return;
-    const scrollY = getChapterScrollY(loadProgress(slug), chapterIdx);
+    const scrollY = getChapterScrollY(loadProgress(slug), activeChapterIdx);
     window.scrollTo({ top: scrollY, left: 0 });
-  }, [slug, chapterIdx, paragraphs]);
+  }, [slug, activeChapterIdx, paragraphs]);
 
   useEffect(() => {
     const flushScroll = () => {
@@ -181,13 +226,13 @@ function ReaderClientInner({
         clearTimeout(scrollSaveTimer.current);
         scrollSaveTimer.current = null;
       }
-      saveScroll(chapterIdx, window.scrollY);
+      saveScroll(activeChapterIdx, window.scrollY);
     };
 
     const onScroll = () => {
       if (scrollSaveTimer.current) clearTimeout(scrollSaveTimer.current);
       scrollSaveTimer.current = setTimeout(
-        () => saveScroll(chapterIdx, window.scrollY),
+        () => saveScroll(activeChapterIdx, window.scrollY),
         200,
       );
     };
@@ -199,35 +244,54 @@ function ReaderClientInner({
       window.removeEventListener("pagehide", flushScroll);
       flushScroll();
     };
-  }, [chapterIdx, saveScroll]);
+  }, [activeChapterIdx, saveScroll]);
 
   useEffect(() => {
     if (paragraphs) prepare(chapterKey, paragraphs);
   }, [chapterKey, paragraphs, prepare]);
 
-  useEffect(() => {
-    setOnChapterComplete(() => {
-      if (chapterIdx < totalChapters - 1) {
-        router.push(nextHref);
-      }
-    });
-  }, [chapterIdx, totalChapters, nextHref, router, setOnChapterComplete]);
+  const navigateToChapter = useCallback(
+    (newIdx: number) => {
+      if (newIdx < 0 || newIdx >= totalChapters) return;
+      setActiveChapterIdx(newIdx);
 
-  const hasPrev = chapterIdx > 0;
-  const hasNext = chapterIdx < totalChapters - 1;
+      const newUrl = href(newIdx);
+      window.history.pushState(null, "", newUrl);
+    },
+    [href, totalChapters],
+  );
+
+  const hasPrev = activeChapterIdx > 0;
+  const hasNext = activeChapterIdx < totalChapters - 1;
 
   const goNext = useCallback(() => {
-    if (hasNext) router.push(nextHref);
-  }, [hasNext, nextHref, router]);
+    if (hasNext) navigateToChapter(activeChapterIdx + 1);
+  }, [hasNext, activeChapterIdx, navigateToChapter]);
 
   const goPrev = useCallback(() => {
-    if (hasPrev) router.push(prevHref);
-  }, [hasPrev, prevHref, router]);
+    if (hasPrev) navigateToChapter(activeChapterIdx - 1);
+  }, [hasPrev, activeChapterIdx, navigateToChapter]);
 
   const navRef = useRef({ goNext, goPrev });
   useEffect(() => {
     navRef.current = { goNext, goPrev };
   });
+
+  useEffect(() => {
+    setOnChapterComplete(() => {
+      if (activeChapterIdx < totalChapters - 1) {
+        setAutoPlayNext(true);
+        navigateToChapter(activeChapterIdx + 1);
+      }
+    });
+  }, [activeChapterIdx, totalChapters, navigateToChapter, setOnChapterComplete]);
+
+  useEffect(() => {
+    if (paragraphs && autoPlayNext) {
+      setAutoPlayNext(false);
+      tts.play(chapterKey, paragraphs);
+    }
+  }, [paragraphs, autoPlayNext, chapterKey, tts]);
 
   // Prefetch adjacent chapters so navigation feels instant
   useEffect(() => {
@@ -246,7 +310,7 @@ function ReaderClientInner({
 
   return (
     <div className="reader-shell min-h-dvh" style={shellStyle}>
-      <main className="max-w-3xl mx-auto px-6 py-6 pb-32 reader-content">
+      <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 pb-32 reader-content">
         <div ref={topRef} />
 
         <div className="mb-6">
@@ -257,13 +321,13 @@ function ReaderClientInner({
             ← Danh sách chương
           </Link>
           <p className="text-sm reader-muted mt-2">{storyTitle}</p>
-          <h1 className="text-xl font-bold mt-2">{title}</h1>
+          <h1 className="text-xl font-bold mt-2">{activeTitle}</h1>
           <div className="flex items-center gap-2 mt-2">
             <button
               onClick={() => { setPickerOpen((o) => !o); setFilter(""); }}
               className="text-sm reader-accent hover:underline cursor-pointer"
             >
-              Chương {chapterIdx + 1} / {totalChapters} ▾
+              Chương {activeChapterIdx + 1} / {totalChapters} ▾
             </button>
           </div>
           {pickerOpen && (
@@ -278,18 +342,22 @@ function ReaderClientInner({
               />
               <div className="overflow-y-auto flex-1">
                 {filtered.map((ch) => (
-                  <Link
+                  <a
                     key={ch.index}
                     href={href(ch.index)}
-                    onClick={() => setPickerOpen(false)}
-                    className={`block px-3 py-2 text-sm truncate hover:bg-[var(--color-surface)] ${
-                      ch.index === chapterIdx
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setPickerOpen(false);
+                      navigateToChapter(ch.index);
+                    }}
+                    className={`block px-3 py-2 text-sm truncate hover:bg-[var(--color-surface)] cursor-pointer ${
+                      ch.index === activeChapterIdx
                         ? "text-[var(--color-accent)] font-medium"
                         : ""
                     }`}
                   >
                     {ch.title}
-                  </Link>
+                  </a>
                 ))}
                 {filtered.length === 0 && (
                   <p className="px-3 py-4 text-sm text-[var(--color-text-muted)] text-center">
