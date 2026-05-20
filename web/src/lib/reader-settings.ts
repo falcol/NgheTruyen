@@ -22,11 +22,19 @@ export interface ReaderFontSize {
   rem: number;
 }
 
+export interface ReaderTextColor {
+  id: string;
+  name: string;
+  value: string;
+  valueMuted: string;
+}
+
 export const READER_SETTINGS_KEY = "reader-settings-v1";
 
 export const DEFAULT_THEME_ID = "dark";
 export const DEFAULT_FONT_ID = "literata";
 export const DEFAULT_FONT_SIZE_ID = "md";
+export const DEFAULT_TEXT_COLOR_ID = "default";
 
 /** Dark themes only — tuned for long reading sessions. */
 export const READER_THEMES: ReaderTheme[] = [
@@ -98,6 +106,45 @@ export const READER_THEMES: ReaderTheme[] = [
   },
 ];
 
+export const READER_TEXT_COLORS: ReaderTextColor[] = [
+  {
+    id: "default",
+    name: "Mặc định",
+    value: "",
+    valueMuted: "",
+  },
+  {
+    id: "soft-white",
+    name: "Trắng sữa",
+    value: "#d1d5db",
+    valueMuted: "#9ca3af",
+  },
+  {
+    id: "gray",
+    name: "Xám dịu",
+    value: "#9ca3af",
+    valueMuted: "#6b7280",
+  },
+  {
+    id: "warm",
+    name: "Vàng cát",
+    value: "#d5c7b3",
+    valueMuted: "#a39581",
+  },
+  {
+    id: "green",
+    name: "Lá nhạt",
+    value: "#aabfaa",
+    valueMuted: "#7a8f7a",
+  },
+  {
+    id: "blue",
+    name: "Xanh nhạt",
+    value: "#b0c2d6",
+    valueMuted: "#8092a6",
+  },
+];
+
 export const READER_FONTS: ReaderFont[] = [
   {
     id: "palatino",
@@ -162,12 +209,22 @@ export function getReaderFontSize(id: string): ReaderFontSize {
   return READER_FONT_SIZES.find((s) => s.id === id) ?? READER_FONT_SIZES[1];
 }
 
-export function themeToCssVars(theme: ReaderTheme): Record<string, string> {
+export function getReaderTextColor(id: string | undefined): ReaderTextColor {
+  if (!id) return READER_TEXT_COLORS[0];
+  return READER_TEXT_COLORS.find((c) => c.id === id) ?? READER_TEXT_COLORS[0];
+}
+
+export function themeToCssVars(
+  theme: ReaderTheme,
+  textColor?: ReaderTextColor,
+): Record<string, string> {
+  const text = textColor && textColor.value ? textColor.value : theme.text;
+  const textMuted = textColor && textColor.valueMuted ? textColor.valueMuted : theme.textMuted;
   return {
     "--color-bg": theme.bg,
     "--color-surface": theme.surface,
-    "--color-text": theme.text,
-    "--color-text-muted": theme.textMuted,
+    "--color-text": text,
+    "--color-text-muted": textMuted,
     "--color-accent": theme.accent,
     "--color-accent-dim": theme.accentDim,
     "--color-border": theme.border,
@@ -178,12 +235,14 @@ export interface StoredReaderSettings {
   themeId: string;
   fontId: string;
   fontSizeId: string;
+  textColorId?: string;
 }
 
 export const DEFAULT_READER_SETTINGS: StoredReaderSettings = {
   themeId: DEFAULT_THEME_ID,
   fontId: DEFAULT_FONT_ID,
   fontSizeId: DEFAULT_FONT_SIZE_ID,
+  textColorId: DEFAULT_TEXT_COLOR_ID,
 };
 
 export function parseStoredReaderSettings(raw: string | null): StoredReaderSettings {
@@ -199,6 +258,9 @@ export function parseStoredReaderSettings(raw: string | null): StoredReaderSetti
       fontSizeId: READER_FONT_SIZES.some((s) => s.id === o.fontSizeId)
         ? o.fontSizeId!
         : DEFAULT_FONT_SIZE_ID,
+      textColorId: READER_TEXT_COLORS.some((c) => c.id === o.textColorId)
+        ? o.textColorId!
+        : DEFAULT_TEXT_COLOR_ID,
     };
   } catch {
     return DEFAULT_READER_SETTINGS;
@@ -209,11 +271,12 @@ export function applyReaderThemeToDocument(
   theme: ReaderTheme,
   fontFamily: string,
   fontSizeRem: number,
+  textColor?: ReaderTextColor,
 ): () => void {
   if (typeof document === "undefined") return () => {};
 
   const root = document.documentElement;
-  const vars = themeToCssVars(theme);
+  const vars = themeToCssVars(theme, textColor);
   const previous: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(vars)) {
@@ -229,7 +292,7 @@ export function applyReaderThemeToDocument(
   root.style.setProperty("--reader-font-family", fontFamily);
   root.style.setProperty("--reader-font-size", `${fontSizeRem}rem`);
   document.body.style.backgroundColor = theme.bg;
-  document.body.style.color = theme.text;
+  document.body.style.color = vars["--color-text"];
 
   return () => {
     for (const key of Object.keys(vars)) {

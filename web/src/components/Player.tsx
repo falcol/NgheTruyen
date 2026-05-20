@@ -6,6 +6,7 @@ import {
   READER_FONTS,
   READER_FONT_SIZES,
   READER_THEMES,
+  READER_TEXT_COLORS,
 } from "@/lib/reader-settings";
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
@@ -77,6 +78,7 @@ export default function Player({
     setThemeId,
     setFontId,
     setFontSizeId,
+    setTextColorId,
   } = useReaderSettingsContext();
 
   const progress =
@@ -125,6 +127,25 @@ export default function Player({
                     {t.name}
                   </span>
                 </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs text-[var(--color-text-muted)] block mb-2 font-medium">
+              Màu chữ (Dịu mắt)
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {READER_TEXT_COLORS.map((c) => (
+                <Chip
+                  key={c.id}
+                  active={(settings.textColorId || "default") === c.id}
+                  onClick={() => setTextColorId(c.id)}
+                >
+                  <span style={{ color: (settings.textColorId || "default") === c.id ? "black" : (c.value || "inherit") }}>
+                    {c.name}
+                  </span>
+                </Chip>
               ))}
             </div>
           </div>

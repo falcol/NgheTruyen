@@ -7,6 +7,7 @@ import {
   getReaderFont,
   getReaderFontSize,
   getReaderTheme,
+  getReaderTextColor,
   parseStoredReaderSettings,
   READER_SETTINGS_KEY,
   themeToCssVars,
@@ -43,6 +44,10 @@ export function useReaderSettings() {
     (fontSizeId: string) => update({ fontSizeId }),
     [update],
   );
+  const setTextColorId = useCallback(
+    (textColorId: string) => update({ textColorId }),
+    [update],
+  );
 
   const theme = useMemo(() => getReaderTheme(settings.themeId), [settings.themeId]);
   const font = useMemo(() => getReaderFont(settings.fontId), [settings.fontId]);
@@ -50,22 +55,26 @@ export function useReaderSettings() {
     () => getReaderFontSize(settings.fontSizeId),
     [settings.fontSizeId],
   );
+  const textColor = useMemo(
+    () => getReaderTextColor(settings.textColorId),
+    [settings.textColorId],
+  );
 
   const shellStyle = useMemo(
     () =>
       ({
-        ...themeToCssVars(theme),
+        ...themeToCssVars(theme, textColor),
         "--reader-font-family": font.family,
         "--reader-font-size": `${fontSize.rem}rem`,
         backgroundColor: theme.bg,
-        color: theme.text,
+        color: textColor.value || theme.text,
       }) as React.CSSProperties,
-    [theme, font, fontSize],
+    [theme, font, fontSize, textColor],
   );
 
   useEffect(() => {
-    return applyReaderThemeToDocument(theme, font.family, fontSize.rem);
-  }, [theme, font.family, fontSize.rem]);
+    return applyReaderThemeToDocument(theme, font.family, fontSize.rem, textColor);
+  }, [theme, font.family, fontSize.rem, textColor]);
 
   useEffect(() => {
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -77,9 +86,11 @@ export function useReaderSettings() {
     theme,
     font,
     fontSize,
+    textColor,
     shellStyle,
     setThemeId,
     setFontId,
     setFontSizeId,
+    setTextColorId,
   };
 }

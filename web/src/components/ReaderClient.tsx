@@ -147,6 +147,21 @@ function ReaderClientInner({
   }, [pickerOpen]);
 
   useEffect(() => {
+    if (pickerOpen) {
+      const timer = setTimeout(() => {
+        const container = pickerRef.current;
+        if (container) {
+          const activeEl = container.querySelector('[data-active-chapter="true"]');
+          if (activeEl) {
+            activeEl.scrollIntoView({ block: "nearest" });
+          }
+        }
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [pickerOpen]);
+
+  useEffect(() => {
     if (typeof history !== "undefined") {
       history.scrollRestoration = "manual";
     }
@@ -350,6 +365,7 @@ function ReaderClientInner({
                       setPickerOpen(false);
                       navigateToChapter(ch.index);
                     }}
+                    data-active-chapter={ch.index === activeChapterIdx ? "true" : "false"}
                     className={`block px-3 py-2 text-sm truncate hover:bg-[var(--color-surface)] cursor-pointer ${
                       ch.index === activeChapterIdx
                         ? "text-[var(--color-accent)] font-medium"
