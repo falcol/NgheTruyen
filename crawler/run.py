@@ -8,6 +8,7 @@ Sites:
     truyenqq     - truyenqq.vn
     metruyenchu  - metruyenchu.com.vn
     metruyencv   - metruyencv.xyz
+    sitruyencv   - sitruyencv.com (JSON API)
 
 Options:
     --start INDEX   Starting chapter index (default: 0)
@@ -41,12 +42,14 @@ from .truyenqq import TruyenQQCrawler
 from .metruyenchu import MetruyenchuCrawler
 from .metruyencv import MetruyencvCrawler
 from .truyenfullmoi import TruyenfullmoiCrawler
+from .sitruyencv import SitruyencvCrawler
 
 CRAWLERS = {
     "truyenqq": TruyenQQCrawler,
     "metruyenchu": MetruyenchuCrawler,
     "metruyencv": MetruyencvCrawler,
     "truyenfullmoi": TruyenfullmoiCrawler,
+    "sitruyencv": SitruyencvCrawler,
 }
 
 # Preset for --aggressive: maximize throughput, accept higher 429 risk.

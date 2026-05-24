@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useReaderSettingsContext } from "@/context/ReaderSettingsContext";
 import {
   READER_FONTS,
@@ -54,6 +54,7 @@ export default function Player({
   onSkipBackward,
   onRateChange,
   onVoiceChange,
+  hidden = false,
 }: {
   playing: boolean;
   paused: boolean;
@@ -71,6 +72,7 @@ export default function Player({
   onSkipBackward: () => void;
   onRateChange: (rate: number) => void;
   onVoiceChange: (voiceName: string) => void;
+  hidden?: boolean;
 }) {
   const [showSettings, setShowSettings] = useState(false);
   const {
@@ -86,8 +88,14 @@ export default function Player({
 
   const noVoice = viVoices.length === 0;
 
+  useEffect(() => {
+    if (hidden && showSettings) {
+      setShowSettings(false);
+    }
+  }, [hidden, showSettings]);
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-[var(--color-border)] z-50">
+    <div className={`fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-[var(--color-border)] z-50 transition-transform duration-300 ${hidden ? "translate-y-full md:translate-y-0" : "translate-y-0"}`}>
       {playing && (
         <div className="w-full h-1 bg-[var(--color-border)]">
           <div

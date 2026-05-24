@@ -76,6 +76,12 @@ function ReaderClientInner({
 
   const [activeChapterIdx, setActiveChapterIdx] = useState(chapterIdx);
   const [autoPlayNext, setAutoPlayNext] = useState(false);
+  const [isScrollingDown, setIsScrollingDown] = useState(false);
+  const lastScrollY = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
+  const isAtTopOnStart = useRef(false);
+  const isAtBottomOnStart = useRef(false);
 
   useEffect(() => {
     setActiveChapterIdx(chapterIdx);
@@ -165,6 +171,9 @@ function ReaderClientInner({
     if (typeof history !== "undefined") {
       history.scrollRestoration = "manual";
     }
+    if (typeof window !== "undefined") {
+      lastScrollY.current = window.scrollY;
+    }
   }, []);
 
   useEffect(() => {
@@ -245,11 +254,22 @@ function ReaderClientInner({
     };
 
     const onScroll = () => {
+      const currentScrollY = window.scrollY;
       if (scrollSaveTimer.current) clearTimeout(scrollSaveTimer.current);
       scrollSaveTimer.current = setTimeout(
-        () => saveScroll(activeChapterIdx, window.scrollY),
+        () => saveScroll(activeChapterIdx, currentScrollY),
         200,
       );
+
+      const isAtBottom = window.innerHeight + currentScrollY >= document.body.scrollHeight - 10;
+      if (currentScrollY <= 0 || isAtBottom) {
+        setIsScrollingDown(false);
+      } else if (currentScrollY > lastScrollY.current + 10) {
+        setIsScrollingDown(true);
+      } else if (currentScrollY < lastScrollY.current - 10) {
+        setIsScrollingDown(false);
+      }
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -323,8 +343,47 @@ function ReaderClientInner({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+      touchEndY.current = e.touches[0].clientY;
+      isAtTopOnStart.current = window.scrollY <= 10;
+      isAtBottomOnStart.current = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10;
+    };
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = () => {
+      if (!touchStartY.current || !touchEndY.current) return;
+      
+      const distance = touchStartY.current - touchEndY.current;
+      const threshold = 100;
+
+      if (distance > threshold && isAtBottomOnStart.current) {
+        navRef.current.goNext();
+      } else if (distance < -threshold && isAtTopOnStart.current) {
+        navRef.current.goPrev();
+      }
+
+      touchStartY.current = 0;
+      touchEndY.current = 0;
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, []);
+
   return (
-    <div className="reader-shell min-h-dvh" style={shellStyle}>
+    <div className="reader-shell min-h-dvh overscroll-y-none" style={shellStyle}>
       <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 pb-32 reader-content">
         <div ref={topRef} />
 
@@ -449,6 +508,7 @@ function ReaderClientInner({
       </main>
 
       <Player
+        hidden={isScrollingDown}
         playing={tts.playing}
         paused={tts.paused}
         loading={tts.loading}

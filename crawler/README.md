@@ -19,6 +19,7 @@ pip install -r requirements.txt
 | `metruyenchu` | Mê Truyện Chữ | `metruyenchu.com.vn` |
 | `metruyencv` | Mê Truyện Chữ CV | `metruyencv.xyz` |
 | `truyenfullmoi` | Truyện Full Mới | `truyenfullmoi.com` |
+| `sitruyencv` | Si Truyện CV | `sitruyencv.com` (JSON API) |
 
 ## Chạy
 
@@ -94,6 +95,21 @@ python -m crawler.run metruyenchu \
 python -m crawler.run truyenfullmoi \
   "https://truyenfullmoi.com/ho-hoa-cao-thu-tai-do-thi/chuong-1.html" \
   --parallel --workers 5
+
+# Crawl từ sitruyencv (JSON API — React SPA, parallel mặc định)
+python -m crawler.run sitruyencv \
+  "https://sitruyencv.com/read/16277/1" \
+  --parallel --workers 3
+
+# Crawl toàn bộ (aggressive)
+python -m crawler.run sitruyencv \
+  "https://sitruyencv.com/read/16277/1" \
+  --aggressive
+
+# Hoặc dùng URL story (tự extract story ID + slug)
+python -m crawler.run sitruyencv \
+  "https://sitruyencv.com/story/16277-da-tu-da-phuc-con-ta-deu-co-tien-de-chi-tu-convert" \
+  --parallel --max 50
 ```
 
 ## Tính năng
@@ -110,6 +126,7 @@ python -m crawler.run truyenfullmoi \
   - metruyenchu: API discovery — fetch danh sách chương qua `/get/listchap/{id}`, rồi parallel fetch
   - truyenqq: Fallback sequential với delay giảm (1.5s thay vì 3s)
   - truyenfullmoi: URL prediction — `/{slug}/chuong-{N}.html`, detect end-of-story qua homepage redirect
+  - sitruyencv: JSON API — override `_request()` parse JSON, dùng `versionId` + chapter number prediction
 - **Early stop** (mới): Parallel mode tự dừng khi cả chunk trả 404 (qua đoạn cuối truyện)
 - **Aggressive preset** (`--aggressive`): Workers=8 + parallel_delay=(0.3, 0.7) → tốc độ tối đa, auto bật `--parallel`. Adaptive multiplier sẽ tự throttle nếu server push back.
 - **Time counter**: Cuối mỗi crawl in tổng thời gian + throughput (`5m 12s | 200 chapters indexed | 0.64 ch/s`)
@@ -132,6 +149,8 @@ python -m crawler.run truyenfullmoi \
   - 10 success liên tiếp → multiplier × 0.9 → tự phục hồi
   - Log `Rate-limited — adaptive multiplier 1.00x -> 1.50x` khi trigger
   - Log `Adaptive recover: 1.50x -> 1.35x` khi phục hồi
+- **Tor proxy** (sitruyencv): Tự động phát hiện Tor SOCKS5 proxy, route requests qua Tor.
+  Khi bị 429 → gửi SIGHUP đến container → IP mới → retry. Xem phần Tor bên dưới.
 
 ### Tweak anti-block
 
@@ -225,3 +244,82 @@ data/<site>/<story-slug>/
 ```python
 super().__init__(site_name="...", dest_dir=dest_dir, delay=(3.0, 6.0))
 ```
+
+## Tor Proxy (sitruyencv)
+
+`sitruyencv.com` rate-limit ~30 req/IP/min. Khi crawl nhiều chương liên tục (600+), dù workers=1 vẫn bị 429. Tor giúp xoay IP để vượt rate limit.
+
+### Cách hoạt động
+
+```
+Crawler → Tor SOCKS5 (localhost:9050) → API (thấy IP của Tor exit node)
+Gặp 429 → docker kill --signal=SIGHUP tor → Tor tạo circuit mới → IP mới → retry
+```
+
+- **Auto-detect**: Crawler tự phát hiện Tor trên port 9050. Nếu không có Tor → fallback về kết nối trực tiếp.
+- **Chỉ ảnh hưởng sitruyencv**: Các crawler khác (truyenqq, metruyencv...) không dùng Tor.
+- **Tự động đổi IP khi 429**: Không cần can thiệp thủ công.
+
+### Bật Tor
+
+```bash
+# 1. Chạy Tor trong Docker (không cần sudo)
+docker run -d --name tor \
+  -p 9050:9150 \
+  --restart unless-stopped \
+  peterdavehello/tor-socks-proxy
+
+# 2. Đợi Tor bootstrap (~5 giây)
+sleep 5
+
+# 3. Kiểm tra Tor đang chạy — trả về IP khác IP thật
+curl -s --socks5-hostname localhost:9050 https://httpbin.org/ip
+
+# 4. Crawl bình thường — Tor tự được sử dụng
+python -m crawler.run sitruyencv "https://sitruyencv.com/read/16277/1" \
+  --parallel --workers 3
+```
+
+> **Lưu ý port**: Image `peterdavehello/tor-socks-proxy` listen port 9150 bên trong, nên map `-p 9050:9150`.
+
+### Tắt Tor
+
+```bash
+# Dừng container (giữ data)
+docker stop tor
+
+# Hoặc xoá hoàn toàn
+docker rm -f tor
+```
+
+Khi Tor tắt, crawler tự động fallback về kết nối trực tiếp (như bình thường, không qua proxy).
+
+### Kiểm tra trạng thái
+
+```bash
+# Xem IP hiện tại qua Tor
+curl -s --socks5-hostname localhost:9050 https://httpbin.org/ip
+
+# Xem IP thật (không qua Tor)
+curl -s https://httpbin.org/ip
+
+# Đổi IP thủ công (nếu muốn)
+docker kill --signal=SIGHUP tor && sleep 3 && curl -s --socks5-hostname localhost:9050 https://httpbin.org/ip
+```
+
+### Performance với Tor
+
+| Mode | Throughput | Ghi chú |
+|------|-----------|---------|
+| `--workers 1` qua Tor | ~0.6 ch/s | Không bao giờ 429 |
+| `--workers 3` qua Tor | ~1.7 ch/s | 0 bị 429 trong test 20 chapters |
+| `--workers 3` không Tor | ~1.7 ch/s → 429 sau ~600 ch | Bị block khi crawl sustained |
+
+### Cài đặt dependency
+
+```bash
+# PySocks cần thiết cho SOCKS5 proxy support
+pip install PySocks
+```
+
+`PySocks` đã có trong `requirements.txt`.
