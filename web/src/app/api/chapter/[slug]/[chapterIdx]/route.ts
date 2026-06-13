@@ -1,6 +1,6 @@
 import { getChapter } from "@/lib/data";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400; // ISR — regenerate at most once per day
 
 export async function GET(
   _request: Request,
@@ -19,7 +19,7 @@ export async function GET(
 
   return Response.json(chapter, {
     headers: {
-      "Cache-Control": "private, max-age=3600",
+      "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800",
     },
   });
 }

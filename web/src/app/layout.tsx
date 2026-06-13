@@ -13,36 +13,42 @@ const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "700"],
   variable: "--font-be-vietnam",
+  display: "swap",
 });
 
 const literata = Literata({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "700"],
   variable: "--font-literata",
+  display: "swap",
 });
 
 const lora = Lora({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "700"],
   variable: "--font-lora",
+  display: "swap",
 });
 
 const merriweather = Merriweather({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "700"],
   variable: "--font-merriweather",
+  display: "swap",
 });
 
 const notoSerif = Noto_Serif({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "600", "700"],
   variable: "--font-noto-serif",
+  display: "swap",
 });
 
 const sourceSerif = Source_Serif_4({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "600", "700"],
   variable: "--font-source-serif",
+  display: "swap",
 });
 
 const fontVariables = [

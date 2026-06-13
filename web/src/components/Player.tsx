@@ -26,9 +26,9 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`px-3 py-1.5 text-xs rounded-full transition-colors ${className} ${
+      className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 active:scale-95 ${className} ${
         active
-          ? "bg-[var(--color-accent)] text-black font-semibold"
+          ? "bg-[var(--color-accent)] text-black font-semibold shadow-md shadow-[var(--color-accent)]/20"
           : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:opacity-90 ring-1 ring-[var(--color-border)]"
       }`}
     >
@@ -95,238 +95,252 @@ export default function Player({
   }, [hidden, showSettings]);
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 bg-[var(--color-surface)] border-t border-[var(--color-border)] z-50 transition-transform duration-300 ${hidden ? "translate-y-full md:translate-y-0" : "translate-y-0"}`}>
-      {playing && (
-        <div className="w-full h-1 bg-[var(--color-border)]">
-          <div
-            className="h-full bg-[var(--color-accent)] transition-all"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      )}
-
-      {showSettings && (
-        <div className="px-4 py-3 border-t border-[var(--color-border)] max-h-[min(55vh,420px)] overflow-y-auto space-y-4">
-          <div>
-            <label className="text-xs text-[var(--color-text-muted)] block mb-2 font-medium">
-              Bộ màu (tối)
-            </label>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-              {READER_THEMES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setThemeId(t.id)}
-                  className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ring-2 ${
-                    settings.themeId === t.id
-                      ? "ring-[var(--color-accent)]"
-                      : "ring-transparent hover:ring-[var(--color-border)]"
-                  }`}
-                  aria-label={t.name}
-                  aria-pressed={settings.themeId === t.id}
-                >
-                  <span
-                    className="w-full h-8 rounded-md border border-black/10 shadow-inner"
-                    style={{
-                      background: `linear-gradient(135deg, ${t.bg} 50%, ${t.surface} 50%)`,
-                    }}
-                  />
-                  <span className="text-[10px] text-[var(--color-text-muted)]">
-                    {t.name}
-                  </span>
-                </button>
-              ))}
-            </div>
+    <>
+      {/* Floating player bar */}
+      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel rounded-2xl z-40 transition-all duration-500 ease-out ${hidden ? "translate-y-32 opacity-0 md:translate-y-0 md:opacity-100" : "translate-y-0 opacity-100"}`}>
+        {playing && (
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-border)]/30 rounded-t-2xl overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[var(--color-accent-dim)] to-[var(--color-accent)] transition-[width] duration-700 ease-out shadow-[0_0_8px_var(--color-accent)]"
+              style={{ width: `${progress}%` }}
+            />
           </div>
+        )}
 
-          <div>
-            <label className="text-xs text-[var(--color-text-muted)] block mb-2 font-medium">
-              Màu chữ (Dịu mắt)
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {READER_TEXT_COLORS.map((c) => (
-                <Chip
-                  key={c.id}
-                  active={(settings.textColorId || "default") === c.id}
-                  onClick={() => setTextColorId(c.id)}
-                >
-                  <span style={{ color: (settings.textColorId || "default") === c.id ? "black" : (c.value || "inherit") }}>
-                    {c.name}
-                  </span>
-                </Chip>
-              ))}
-            </div>
-          </div>
+        <div className="flex items-center justify-between px-5 py-3">
+          <div className="flex items-center gap-3">
+            {playing && (
+              <button
+                type="button"
+                onClick={onSkipBackward}
+                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                aria-label="Quay lại đoạn trước"
+              >
+                {"⏮"}
+              </button>
+            )}
 
-          <div>
-            <label className="text-xs text-[var(--color-text-muted)] block mb-2 font-medium">
-              Font chữ
-            </label>
-            <div className="flex flex-wrap gap-1.5">
-              {READER_FONTS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFontId(f.id)}
-                  style={{ fontFamily: f.family }}
-                  className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-                    settings.fontId === f.id
-                      ? "bg-[var(--color-accent)] text-black font-semibold"
-                      : "bg-[var(--color-surface)] text-[var(--color-text)] ring-1 ring-[var(--color-border)] hover:opacity-90"
-                  }`}
-                >
-                  {f.name}
-                </button>
-              ))}
-            </div>
-          </div>
+            <button
+              type="button"
+              onClick={
+                playing && !paused
+                  ? onPause
+                  : playing && paused
+                    ? onResume
+                    : onPlay
+              }
+              disabled={loading || noVoice}
+              className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-dim)] text-black flex items-center justify-center text-xl font-bold disabled:opacity-50 shadow-[0_4px_20px_rgba(56,189,248,0.4)] hover:shadow-[0_4px_25px_rgba(56,189,248,0.6)] hover:scale-105 active:scale-95 transition-all duration-200"
+              aria-label={playing && !paused ? "Tạm dừng" : "Phát"}
+            >
+              {loading ? (
+                <span className="animate-spin text-base">{"⏳"}</span>
+              ) : playing && !paused ? (
+                "⏸"
+              ) : (
+                <span className="translate-x-[2px]">▶</span>
+              )}
+            </button>
 
-          <div>
-            <label className="text-xs text-[var(--color-text-muted)] block mb-2 font-medium">
-              Cỡ chữ
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {READER_FONT_SIZES.map((s) => (
-                <Chip
-                  key={s.id}
-                  active={settings.fontSizeId === s.id}
-                  onClick={() => setFontSizeId(s.id)}
-                >
-                  {s.name}
-                </Chip>
-              ))}
-            </div>
-          </div>
+            {playing && (
+              <button
+                type="button"
+                onClick={onSkipForward}
+                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                aria-label="Chuyển đoạn tiếp"
+              >
+                {"⏭"}
+              </button>
+            )}
 
-          <div>
-            <label className="text-xs text-[var(--color-text-muted)] block mb-1">
-              Giọng đọc
-            </label>
-            {noVoice ? (
-              <div className="text-xs text-red-400 space-y-1">
-                <p>Browser không có giọng tiếng Việt.</p>
-                <p>Dùng Chrome hoặc Edge để có giọng đọc tốt nhất.</p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-1">
-                {viVoices.map((v) => (
-                  <Chip
-                    key={v.name}
-                    active={selectedVoiceName === v.name}
-                    onClick={() => onVoiceChange(v.name)}
-                  >
-                    {v.name.includes("Google")
-                      ? "Google"
-                      : v.name.includes("Microsoft")
-                        ? "Microsoft"
-                        : v.name}
-                  </Chip>
-                ))}
-              </div>
+            {playing && (
+              <button
+                type="button"
+                onClick={onStop}
+                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                aria-label="Dừng"
+              >
+                {"⏹"}
+              </button>
             )}
           </div>
 
-          <div>
-            <label className="text-xs text-[var(--color-text-muted)] block mb-1">
-              Tốc độ
-            </label>
-            <div className="flex flex-wrap gap-1">
-              {RATES.map((r) => (
-                <Chip
-                  key={r}
-                  active={rate === r}
-                  onClick={() => onRateChange(r)}
-                >
-                  {r}x
-                </Chip>
-              ))}
-            </div>
+          <div className="text-sm font-medium tracking-wide text-[var(--color-text-muted)] bg-black/20 px-3 py-1.5 rounded-full border border-white/5">
+            {noVoice
+              ? "Không có giọng VN"
+              : loading
+                ? "Đang tải..."
+                : currentIdx >= 0
+                  ? `${currentIdx + 1} / ${totalParagraphs}`
+                  : "Sẵn sàng"}
           </div>
-        </div>
-      )}
-
-      <div className="flex items-center justify-between max-w-3xl mx-auto px-4 py-3">
-        <div className="flex items-center gap-2">
-          {playing && (
-            <button
-              type="button"
-              onClick={onSkipBackward}
-              className="w-9 h-9 rounded-full bg-[var(--color-bg)] ring-1 ring-[var(--color-border)] flex items-center justify-center text-sm hover:opacity-80"
-              aria-label="Quay lại đoạn trước"
-            >
-              {"⏮"}
-            </button>
-          )}
 
           <button
             type="button"
-            onClick={
-              playing && !paused
-                ? onPause
-                : playing && paused
-                  ? onResume
-                  : onPlay
-            }
-            disabled={loading || noVoice}
-            className="w-12 h-12 rounded-full bg-[var(--color-accent)] text-black flex items-center justify-center text-xl font-bold disabled:opacity-50"
-            aria-label={playing && !paused ? "Tạm dừng" : "Phát"}
+            onClick={() => setShowSettings(true)}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 bg-black/20 text-[var(--color-text-muted)] border border-white/5 hover:bg-white/10 hover:text-white hover:rotate-45"
+            aria-label="Cài đặt"
+            aria-expanded={showSettings}
           >
-            {loading ? (
-              <span className="animate-spin text-base">{"⏳"}</span>
-            ) : playing && !paused ? (
-              "⏸"
-            ) : (
-              "▶"
-            )}
+            {"⚙"}
           </button>
-
-          {playing && (
-            <button
-              type="button"
-              onClick={onSkipForward}
-              className="w-9 h-9 rounded-full bg-[var(--color-bg)] ring-1 ring-[var(--color-border)] flex items-center justify-center text-sm hover:opacity-80"
-              aria-label="Chuyển đoạn tiếp"
-            >
-              {"⏭"}
-            </button>
-          )}
-
-          {playing && (
-            <button
-              type="button"
-              onClick={onStop}
-              className="w-9 h-9 rounded-full bg-[var(--color-bg)] ring-1 ring-[var(--color-border)] flex items-center justify-center text-sm hover:opacity-80"
-              aria-label="Dừng"
-            >
-              {"⏹"}
-            </button>
-          )}
         </div>
-
-        <div className="text-sm text-[var(--color-text-muted)]">
-          {noVoice
-            ? "Không có giọng VN"
-            : loading
-              ? "Đang tải..."
-              : currentIdx >= 0
-                ? `${currentIdx + 1} / ${totalParagraphs}`
-                : "Sẵn sàng"}
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setShowSettings(!showSettings)}
-          className={`px-3 py-2 text-sm rounded-lg transition-colors ${
-            showSettings
-              ? "bg-[var(--color-accent)] text-black font-semibold"
-              : "bg-[var(--color-bg)] text-[var(--color-text-muted)] ring-1 ring-[var(--color-border)]"
-          }`}
-          aria-label="Cài đặt"
-          aria-expanded={showSettings}
-        >
-          {"⚙"}
-        </button>
       </div>
-    </div>
+
+      {/* Settings bottom sheet */}
+      {showSettings && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setShowSettings(false)}
+          />
+          <div className="relative w-full sm:max-w-2xl bg-[var(--color-surface)] sm:rounded-3xl rounded-t-3xl border border-white/10 shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]">
+            <div className="flex justify-between items-center p-5 border-b border-white/5 bg-white/5">
+              <h3 className="text-lg font-bold">Tùy chỉnh</h3>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto space-y-8 custom-scrollbar">
+              <div>
+                <label className="text-xs text-[var(--color-text-muted)] block mb-3 font-semibold uppercase tracking-wider">
+                  Bộ màu (tối)
+                </label>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+                  {READER_THEMES.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setThemeId(t.id)}
+                      className={`flex flex-col items-center gap-2 p-2 rounded-xl transition-all duration-200 active:scale-95 border ${
+                        settings.themeId === t.id
+                          ? "border-[var(--color-accent)] bg-[var(--color-accent)]/10"
+                          : "border-transparent hover:bg-white/5"
+                      }`}
+                      aria-label={t.name}
+                      aria-pressed={settings.themeId === t.id}
+                    >
+                      <span
+                        className="w-full h-10 rounded-lg border border-black/20 shadow-inner"
+                        style={{
+                          background: `linear-gradient(135deg, ${t.bg} 50%, ${t.surface} 50%)`,
+                        }}
+                      />
+                      <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
+                        {t.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[var(--color-text-muted)] block mb-3 font-semibold uppercase tracking-wider">
+                  Màu chữ (Dịu mắt)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {READER_TEXT_COLORS.map((c) => (
+                    <Chip
+                      key={c.id}
+                      active={(settings.textColorId || "default") === c.id}
+                      onClick={() => setTextColorId(c.id)}
+                    >
+                      <span style={{ color: (settings.textColorId || "default") === c.id ? "black" : (c.value || "inherit") }}>
+                        {c.name}
+                      </span>
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[var(--color-text-muted)] block mb-3 font-semibold uppercase tracking-wider">
+                  Font chữ
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {READER_FONTS.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setFontId(f.id)}
+                      style={{ fontFamily: f.family }}
+                      className={`px-4 py-2.5 text-sm rounded-xl transition-all duration-200 active:scale-95 ${
+                        settings.fontId === f.id
+                          ? "bg-[var(--color-accent)] text-black font-semibold shadow-lg shadow-[var(--color-accent)]/20"
+                          : "bg-black/20 text-[var(--color-text)] border border-white/5 hover:bg-white/10"
+                      }`}
+                    >
+                      {f.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[var(--color-text-muted)] block mb-3 font-semibold uppercase tracking-wider">
+                  Cỡ chữ
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {READER_FONT_SIZES.map((s) => (
+                    <Chip
+                      key={s.id}
+                      active={settings.fontSizeId === s.id}
+                      onClick={() => setFontSizeId(s.id)}
+                    >
+                      {s.name}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-[var(--color-text-muted)] block mb-3 font-semibold uppercase tracking-wider">
+                  Giọng đọc & Tốc độ
+                </label>
+                {noVoice ? (
+                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 space-y-1">
+                    <p>Browser không có giọng tiếng Việt.</p>
+                    <p>Dùng Chrome hoặc Edge để có giọng đọc tốt nhất.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      {viVoices.map((v) => (
+                        <Chip
+                          key={v.name}
+                          active={selectedVoiceName === v.name}
+                          onClick={() => onVoiceChange(v.name)}
+                        >
+                          {v.name.includes("Google")
+                            ? "Google"
+                            : v.name.includes("Microsoft")
+                              ? "Microsoft"
+                              : v.name}
+                        </Chip>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {RATES.map((r) => (
+                        <Chip
+                          key={r}
+                          active={rate === r}
+                          onClick={() => onRateChange(r)}
+                        >
+                          {r}x
+                        </Chip>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

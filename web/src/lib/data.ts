@@ -6,20 +6,19 @@ import zlib from "zlib";
 const volumeCache = new Map<string, Volume>();
 const indexCache = new Map<string, ChapterMeta[]>();
 const metadataCache = new Map<string, StoryMetadata>();
+const volFileCache = new Map<string, string[]>();
 const MAX_VOLUME_CACHE_SIZE = 10;
 
 // Read .json or .json.gz transparently. Prefers .gz when both exist.
+// Uses try/catch instead of existsSync to avoid redundant syscalls.
 function readJsonAny<T>(filePath: string): T | null {
-  const gzPath = filePath + ".gz";
-  if (fs.existsSync(gzPath)) {
-    const buf = fs.readFileSync(gzPath);
-    const text = zlib.gunzipSync(buf).toString("utf-8");
-    return JSON.parse(text) as T;
-  }
-  if (fs.existsSync(filePath)) {
+  try {
+    const buf = fs.readFileSync(filePath + ".gz");
+    return JSON.parse(zlib.gunzipSync(buf).toString("utf-8")) as T;
+  } catch { /* .gz not found */ }
+  try {
     return JSON.parse(fs.readFileSync(filePath, "utf-8")) as T;
-  }
-  return null;
+  } catch { return null; }
 }
 
 function existsAny(filePath: string): boolean {
@@ -116,14 +115,18 @@ export function makeDataDir(baseDir: string) {
     const storyDir = path.join(dataDir, slug);
     if (!fs.existsSync(storyDir)) return null;
 
-    // Match both vol-NNN-*.json and vol-NNN-*.json.gz
-    const files = fs
-      .readdirSync(storyDir)
-      .filter(
-        (f) =>
-          f.startsWith("vol-") &&
-          (f.endsWith(".json") || f.endsWith(".json.gz"))
-      );
+    // Match both vol-NNN-*.json and vol-NNN-*.json.gz (cached per storyDir)
+    let files = volFileCache.get(storyDir);
+    if (!files) {
+      files = fs
+        .readdirSync(storyDir)
+        .filter(
+          (f) =>
+            f.startsWith("vol-") &&
+            (f.endsWith(".json") || f.endsWith(".json.gz"))
+        );
+      volFileCache.set(storyDir, files);
+    }
 
     for (let delta = 0; delta <= 2; delta++) {
       const candidates =

@@ -82,6 +82,9 @@ function ReaderClientInner({
   const touchEndY = useRef(0);
   const isAtTopOnStart = useRef(false);
   const isAtBottomOnStart = useRef(false);
+  const [overscrollDelta, setOverscrollDelta] = useState(0);
+  const [overscrollDir, setOverscrollDir] = useState<"up" | "down" | null>(null);
+  const [chapterFade, setChapterFade] = useState(false);
 
   useEffect(() => {
     setActiveChapterIdx(chapterIdx);
@@ -344,31 +347,48 @@ function ReaderClientInner({
   }, []);
 
   useEffect(() => {
+    const OVERSCROLL_THRESHOLD = 80;
+
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY;
       touchEndY.current = e.touches[0].clientY;
       isAtTopOnStart.current = window.scrollY <= 10;
       isAtBottomOnStart.current = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10;
     };
-    
+
     const handleTouchMove = (e: TouchEvent) => {
       touchEndY.current = e.touches[0].clientY;
+      const delta = touchStartY.current - touchEndY.current;
+
+      if (delta > 10 && isAtBottomOnStart.current) {
+        setOverscrollDir("down");
+        setOverscrollDelta(Math.min(delta / OVERSCROLL_THRESHOLD, 1));
+      } else if (delta < -10 && isAtTopOnStart.current) {
+        setOverscrollDir("up");
+        setOverscrollDelta(Math.min(Math.abs(delta) / OVERSCROLL_THRESHOLD, 1));
+      } else {
+        setOverscrollDelta(0);
+        setOverscrollDir(null);
+      }
     };
 
     const handleTouchEnd = () => {
       if (!touchStartY.current || !touchEndY.current) return;
-      
-      const distance = touchStartY.current - touchEndY.current;
-      const threshold = 100;
 
-      if (distance > threshold && isAtBottomOnStart.current) {
-        navRef.current.goNext();
-      } else if (distance < -threshold && isAtTopOnStart.current) {
-        navRef.current.goPrev();
+      const delta = touchStartY.current - touchEndY.current;
+
+      if (delta > OVERSCROLL_THRESHOLD && isAtBottomOnStart.current && hasNext) {
+        setChapterFade(true);
+        setTimeout(() => { navRef.current.goNext(); setChapterFade(false); }, 200);
+      } else if (delta < -OVERSCROLL_THRESHOLD && isAtTopOnStart.current && hasPrev) {
+        setChapterFade(true);
+        setTimeout(() => { navRef.current.goPrev(); setChapterFade(false); }, 200);
       }
 
       touchStartY.current = 0;
       touchEndY.current = 0;
+      setOverscrollDelta(0);
+      setOverscrollDir(null);
     };
 
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
@@ -380,76 +400,102 @@ function ReaderClientInner({
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, []);
+  }, [hasNext, hasPrev]);
 
   return (
-    <div className="reader-shell min-h-dvh overscroll-y-none" style={shellStyle}>
-      <main className="max-w-3xl mx-auto px-4 md:px-6 py-6 pb-32 reader-content">
-        <div ref={topRef} />
-
-        <div className="mb-6">
-          <Link
-            href={backHref ?? `/story/${slug}`}
-            className="text-sm reader-muted"
-          >
-            ← Danh sách chương
-          </Link>
-          <p className="text-sm reader-muted mt-2">{storyTitle}</p>
-          <h1 className="text-xl font-bold mt-2">{activeTitle}</h1>
-          <div className="flex items-center gap-2 mt-2">
+    <div className={`reader-shell min-h-dvh overscroll-y-none transition-opacity duration-200 ${chapterFade ? "opacity-0" : "opacity-100"}`} style={shellStyle}>
+      {/* Overscroll indicator — top (prev chapter) */}
+      {overscrollDir === "up" && (
+        <div
+          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-3 bg-[var(--color-accent)] text-black text-xs font-bold transition-opacity"
+          style={{ opacity: overscrollDelta * 0.9 }}
+        >
+          <span className="mr-1">↑</span>
+          {overscrollDelta >= 1 ? "Thả ra để lùi chương" : "Kéo thêm để lùi chương..."}
+        </div>
+      )}
+      {/* Overscroll indicator — bottom (next chapter) */}
+      {overscrollDir === "down" && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center py-3 bg-[var(--color-accent)] text-black text-xs font-bold transition-opacity"
+          style={{ opacity: overscrollDelta * 0.9 }}
+        >
+          {overscrollDelta >= 1 ? "Thả ra để sang chương sau" : "Kéo thêm để sang chương sau..."}
+          <span className="ml-1">↓</span>
+        </div>
+      )}
+      <div className={`fixed top-0 left-0 right-0 z-40 glass-panel rounded-none border-x-0 border-t-0 smart-header ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}`}>
+        <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[10px] md:text-xs reader-accent/80 font-bold tracking-widest uppercase mb-1 truncate">{storyTitle}</p>
+              <h1 className="text-lg md:text-xl font-extrabold truncate">{activeTitle}</h1>
+            </div>
+            <Link
+              href={backHref ?? `/story/${slug}`}
+              className="shrink-0 w-9 h-9 rounded-full bg-black/20 border border-white/5 flex items-center justify-center hover:bg-black/40 active:scale-90 transition-all duration-200"
+            >
+              ✕
+            </Link>
+          </div>
+          <div className="mt-3 relative">
             <button
               onClick={() => { setPickerOpen((o) => !o); setFilter(""); }}
-              className="text-sm reader-accent hover:underline cursor-pointer"
+              className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
             >
-              Chương {activeChapterIdx + 1} / {totalChapters} ▾
+              Chương {activeChapterIdx + 1} / {totalChapters}
+              <span className={`transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}>▾</span>
             </button>
-          </div>
-          {pickerOpen && (
-            <div ref={pickerRef} className="mt-2 rounded-lg border border-[var(--color-surface)] bg-[var(--color-bg)] max-h-64 flex flex-col">
-              <input
-                autoFocus
-                type="text"
-                placeholder="Tìm chương..."
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="px-3 py-2 text-sm bg-transparent border-b border-[var(--color-surface)] outline-none"
-              />
-              <div className="overflow-y-auto flex-1">
-                {filtered.map((ch) => (
-                  <a
-                    key={ch.index}
-                    href={href(ch.index)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setPickerOpen(false);
-                      navigateToChapter(ch.index);
-                    }}
-                    data-active-chapter={ch.index === activeChapterIdx ? "true" : "false"}
-                    className={`block px-3 py-2 text-sm truncate hover:bg-[var(--color-surface)] cursor-pointer ${
-                      ch.index === activeChapterIdx
-                        ? "text-[var(--color-accent)] font-medium"
-                        : ""
-                    }`}
-                  >
-                    {ch.title}
-                  </a>
-                ))}
-                {filtered.length === 0 && (
-                  <p className="px-3 py-4 text-sm text-[var(--color-text-muted)] text-center">
-                    Không tìm thấy
-                  </p>
-                )}
+            {pickerOpen && (
+              <div ref={pickerRef} className="absolute top-full left-0 mt-2 w-72 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Tìm chương..."
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  className="px-4 py-3.5 text-sm bg-black/20 border-b border-white/5 outline-none w-full placeholder-white/40"
+                />
+                <div className="overflow-y-auto flex-1">
+                  {filtered.map((ch) => (
+                    <a
+                      key={ch.index}
+                      href={href(ch.index)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPickerOpen(false);
+                        navigateToChapter(ch.index);
+                      }}
+                      data-active-chapter={ch.index === activeChapterIdx ? "true" : "false"}
+                      className={`block px-4 py-3 text-sm truncate hover:bg-white/10 transition-colors cursor-pointer ${
+                        ch.index === activeChapterIdx
+                          ? "text-[var(--color-accent)] font-medium bg-[var(--color-accent)]/10"
+                          : ""
+                      }`}
+                    >
+                      {ch.title}
+                    </a>
+                  ))}
+                  {filtered.length === 0 && (
+                    <p className="px-4 py-6 text-sm text-[var(--color-text-muted)] text-center italic">
+                      Không tìm thấy
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+      </div>
+
+      <main className="max-w-3xl mx-auto px-4 md:px-6 pt-36 pb-40 reader-content relative">
 
         {chapterState.status === "loading" && (
           <div className="space-y-3" aria-busy="true">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="h-4 rounded reader-surface animate-pulse"
+                className="h-4 rounded reader-surface animate-shimmer"
                 style={{ width: `${70 + ((i * 13) % 25)}%` }}
               />
             ))}
@@ -475,7 +521,7 @@ function ReaderClientInner({
             {chapterState.paragraphs.map((p, i) => (
               <p
                 key={i}
-                className={`reader-paragraph ${
+                className={`reader-paragraph ${i === 0 ? "drop-cap" : ""} ${
                   tts.activeRange &&
                   i >= tts.activeRange.start &&
                   i <= tts.activeRange.end
@@ -489,22 +535,29 @@ function ReaderClientInner({
           </div>
         )}
 
-        <div className="flex justify-between items-center mt-8 pt-4 border-t reader-border">
+        <div className="flex justify-between items-center mt-12 pt-8 border-t reader-border">
           <button
             onClick={goPrev}
             disabled={!hasPrev}
-            className="px-4 py-2 rounded-lg reader-surface disabled:opacity-30 hover:opacity-80"
+            className="btn-spring px-5 py-3 rounded-xl glass-panel disabled:opacity-30 disabled:active:scale-100 hover:scale-[1.02] transition-all font-medium flex items-center gap-2 group"
           >
-            ← Trước
+            <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Trước
           </button>
           <button
             onClick={goNext}
             disabled={!hasNext}
-            className="px-4 py-2 rounded-lg reader-surface disabled:opacity-30 hover:opacity-80"
+            className="btn-spring px-5 py-3 rounded-xl glass-panel disabled:opacity-30 disabled:active:scale-100 hover:scale-[1.02] transition-all font-medium flex items-center gap-2 group bg-gradient-to-r hover:from-[var(--color-accent)]/10 hover:to-transparent"
           >
-            Sau →
+            Sau <span className="group-hover:translate-x-1 transition-transform">→</span>
           </button>
         </div>
+
+        {hasNext && (
+          <div className="text-center mt-16 pb-8 opacity-50 reader-muted text-sm flex flex-col items-center gap-2 animate-pulse">
+            <span>↓</span>
+            <span>Kéo lên để sang chương sau</span>
+          </div>
+        )}
       </main>
 
       <Player

@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #0f0f0f;
-  --color-surface: #1a1a1a;
-  --color-text: #e5e5e5;
-  --color-text-muted: #9ca3af;
-  --color-accent: #60a5fa;
-  --color-accent-dim: #3b82f6;
-  --color-border: #2d2d2d;
+  --color-bg: #09090b;
+  --color-surface: #18181b;
+  --color-text: #f4f4f5;
+  --color-text-muted: #a1a1aa;
+  --color-accent: #38bdf8;
+  --color-accent-dim: #0ea5e9;
+  --color-border: #27272a;
   --reader-font-family: var(--font-literata), Georgia, serif;
   --reader-font-size: 1.125rem;
 }
@@ -15,10 +15,12 @@
 html {
   background-color: var(--color-bg);
   color: var(--color-text);
+  scroll-behavior: smooth;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .reader-shell {
@@ -52,15 +54,102 @@ a.reader-muted:hover {
 }
 
 .reader-paragraph {
-  line-height: 1.9;
+  line-height: 2;
   font-size: var(--reader-font-size);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   color: var(--color-text);
+  letter-spacing: 0.01em;
 }
 
 .reader-paragraph.speaking {
-  background-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
   border-left: 3px solid var(--color-accent);
-  padding-left: 0.75rem;
-  border-radius: 0 0.25rem 0.25rem 0;
+  padding-left: 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.chapter-item {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 52px;
+}
+
+/* Glassmorphism utilities */
+.glass-panel {
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Scrollbar styling for modern look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Drop Cap for first paragraph of a chapter */
+.reader-paragraph.drop-cap::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.85;
+  margin-right: 0.12em;
+  margin-top: 0.05em;
+  margin-bottom: -0.05em;
+  font-weight: 800;
+  color: var(--color-accent);
+  text-shadow: 0 2px 15px color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+
+/* Hide on scroll transitions */
+.smart-header {
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.3, 1), opacity 0.4s ease;
+  will-change: transform, opacity;
+}
+
+/* Fluid animations */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Spring-like press feedback for interactive elements */
+.btn-spring {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.btn-spring:active {
+  transform: scale(0.95);
+}
+
+/* Loading skeleton pulse */
+@keyframes shimmerPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.animate-shimmer {
+  animation: shimmerPulse 1.8s ease-in-out infinite;
 }

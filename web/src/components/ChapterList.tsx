@@ -56,46 +56,71 @@ export default function ChapterList({
   }, [progress, prefetchOnIntent]);
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       {progress && (
         <Link
           href={href(progress.chapterIdx)}
           onMouseEnter={() => prefetchOnIntent(progress.chapterIdx)}
           onFocus={() => prefetchOnIntent(progress.chapterIdx)}
-          className="block p-3 mb-4 rounded-lg bg-[var(--color-accent-dim)] text-white font-medium"
+          className="block p-4 mb-8 rounded-2xl bg-gradient-to-r from-[var(--color-accent-dim)] to-purple-500 text-white font-medium shadow-[0_0_20px_rgba(56,189,248,0.2)] hover:shadow-[0_0_25px_rgba(56,189,248,0.3)] hover:-translate-y-0.5 transition-all duration-300"
         >
-          Tiếp tục đọc:{" "}
-          {chapters.find((ch) => ch.index === progress.chapterIdx)?.title ||
-            `Chương ${progress.chapterIdx + 1}`}
+          <div className="flex items-center justify-between">
+            <div className="truncate pr-4">
+              <div className="text-[10px] sm:text-xs text-white/80 uppercase tracking-widest mb-1 font-bold">Tiếp tục đọc</div>
+              <div className="text-base drop-shadow-sm truncate">
+                {chapters.find((ch) => ch.index === progress.chapterIdx)?.title ||
+                  `Chương ${progress.chapterIdx + 1}`}
+              </div>
+            </div>
+            <div className="w-10 h-10 shrink-0 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+              <span className="text-lg translate-x-[1px]">▶</span>
+            </div>
+          </div>
         </Link>
       )}
 
-      {chapters.map((ch) => {
-        const isRead = progress && progress.chapterIdx >= ch.index;
-        const isCurrent = progress && progress.chapterIdx === ch.index;
+      <div className="grid gap-2.5">
+        {chapters.map((ch) => {
+          const isRead = progress && progress.chapterIdx >= ch.index;
+          const isCurrent = progress && progress.chapterIdx === ch.index;
 
-        return (
-          <Link
-            key={ch.index}
-            href={href(ch.index)}
-            onMouseEnter={() => prefetchOnIntent(ch.index)}
-            onFocus={() => prefetchOnIntent(ch.index)}
-            className={`block p-3 rounded-lg transition-colors ${
-              isCurrent
-                ? "bg-[var(--color-accent)]/20 text-[var(--color-accent)]"
-                : "hover:bg-[var(--color-surface)]"
-            }`}
-          >
-            <span
-              className={
-                isRead && !isCurrent ? "text-[var(--color-text-muted)]" : ""
-              }
+          return (
+            <Link
+              key={ch.index}
+              href={href(ch.index)}
+              onMouseEnter={() => prefetchOnIntent(ch.index)}
+              onFocus={() => prefetchOnIntent(ch.index)}
+              className={`block px-4 py-3 sm:px-5 sm:py-4 rounded-2xl transition-all duration-300 glass-panel border ${
+                isCurrent
+                  ? "bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 shadow-[inset_0_0_20px_rgba(56,189,248,0.15)]"
+                  : isRead 
+                    ? "border-white/5 bg-black/20 hover:bg-white/5 hover:border-white/10"
+                    : "border-white/10 bg-black/40 hover:bg-white/10 hover:border-white/20 hover:-translate-y-0.5 hover:shadow-lg"
+              }`}
             >
-              {ch.title}
-            </span>
-          </Link>
-        );
-      })}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 text-[10px] sm:text-xs font-bold transition-colors ${
+                  isCurrent 
+                    ? "bg-[var(--color-accent)] text-black shadow-[0_0_10px_rgba(56,189,248,0.4)]" 
+                    : isRead
+                      ? "bg-white/5 text-[var(--color-text-muted)]"
+                      : "bg-white/10 text-white/90"
+                }`}>
+                  {ch.index + 1}
+                </div>
+                <span
+                  className={`block truncate flex-1 text-sm sm:text-base ${
+                    isRead && !isCurrent ? "text-[var(--color-text-muted)] opacity-60 font-normal" : "font-medium text-white/95"
+                  }`}
+                >
+                  {ch.title}
+                </span>
+                {isCurrent && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]"></span>}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }

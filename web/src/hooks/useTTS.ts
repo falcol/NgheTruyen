@@ -1,9 +1,68 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useReducer, useState, useCallback, useRef, useEffect } from "react";
 import { buildTTSChunks, type TTSChunk } from "@/lib/tts-chunks";
 
 const VOICE_STORAGE_KEY = "nghetruyen-tts-voice";
+
+// ---------------------------------------------------------------------------
+// Reducer – batches related state updates into single re-renders
+// ---------------------------------------------------------------------------
+
+interface TTSPlaybackState {
+  playing: boolean;
+  paused: boolean;
+  loading: boolean;
+  currentIdx: number;
+  activeRange: { start: number; end: number } | null;
+  totalChunks: number;
+}
+
+type TTSAction =
+  | { type: "START"; totalChunks: number }
+  | { type: "CHUNK_START"; currentIdx: number; activeRange: { start: number; end: number } }
+  | { type: "UTTERANCE_START" }
+  | { type: "PAUSE" }
+  | { type: "RESUME" }
+  | { type: "STOP" }
+  | { type: "COMPLETE" }
+  | { type: "SET_TOTAL_CHUNKS"; totalChunks: number };
+
+const INITIAL_PLAYBACK: TTSPlaybackState = {
+  playing: false,
+  paused: false,
+  loading: false,
+  currentIdx: -1,
+  activeRange: null,
+  totalChunks: 0,
+};
+
+function ttsReducer(state: TTSPlaybackState, action: TTSAction): TTSPlaybackState {
+  switch (action.type) {
+    case "START":
+      return { ...state, playing: true, paused: false, loading: true, totalChunks: action.totalChunks };
+    case "CHUNK_START":
+      return { ...state, currentIdx: action.currentIdx, activeRange: action.activeRange };
+    case "UTTERANCE_START":
+      return state.loading ? { ...state, loading: false } : state;
+    case "PAUSE":
+      return { ...state, paused: true };
+    case "RESUME":
+      return { ...state, paused: false };
+    case "STOP":
+      return INITIAL_PLAYBACK;
+    case "COMPLETE":
+      return { ...INITIAL_PLAYBACK, totalChunks: state.totalChunks };
+    case "SET_TOTAL_CHUNKS":
+      return state.totalChunks === action.totalChunks ? state : { ...state, totalChunks: action.totalChunks };
+    default:
+      return state;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function getVietnameseVoices(): SpeechSynthesisVoice[] {
   if (typeof window === "undefined" || !window.speechSynthesis) return [];
@@ -38,17 +97,13 @@ function selectVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | nul
   return voices[0];
 }
 
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 export function useTTS() {
-  const [playing, setPlaying] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [currentIdx, setCurrentIdx] = useState(-1);
+  const [state, dispatch] = useReducer(ttsReducer, INITIAL_PLAYBACK);
   const [rate, setRateState] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [activeRange, setActiveRange] = useState<{
-    start: number;
-    end: number;
-  } | null>(null);
-  const [totalChunks, setTotalChunks] = useState(0);
   const [viVoices, setViVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceName, setSelectedVoiceName] = useState<string | null>(null);
 
@@ -87,11 +142,7 @@ export function useTTS() {
     if (playIdRef.current !== playId || stoppedRef.current) return;
 
     if (idx >= chunksRef.current.length) {
-      setPlaying(false);
-      setPaused(false);
-      setLoading(false);
-      setCurrentIdx(-1);
-      setActiveRange(null);
+      dispatch({ type: "COMPLETE" });
       currentChunkIdxRef.current = -1;
       const cb = onCompleteRef.current;
       onCompleteRef.current = null;
@@ -102,10 +153,10 @@ export function useTTS() {
     currentChunkIdxRef.current = idx;
     const chunk = chunksRef.current[idx];
 
-    setCurrentIdx(chunk.startParagraphIdx);
-    setActiveRange({
-      start: chunk.startParagraphIdx,
-      end: chunk.endParagraphIdx,
+    dispatch({
+      type: "CHUNK_START",
+      currentIdx: chunk.startParagraphIdx,
+      activeRange: { start: chunk.startParagraphIdx, end: chunk.endParagraphIdx },
     });
 
     const utterance = new SpeechSynthesisUtterance(chunk.text);
@@ -115,7 +166,7 @@ export function useTTS() {
     utterance.pitch = 1;
 
     utterance.onstart = () => {
-      setLoading(false);
+      dispatch({ type: "UTTERANCE_START" });
     };
 
     utterance.onend = () => {
@@ -156,7 +207,7 @@ export function useTTS() {
       currentChunkIdxRef.current = -1;
       preparedKeyRef.current = key;
       preparedRateRef.current = rateRef.current;
-      setTotalChunks(chunksRef.current.length);
+      dispatch({ type: "SET_TOTAL_CHUNKS", totalChunks: chunksRef.current.length });
     },
     [],
   );
@@ -183,11 +234,7 @@ export function useTTS() {
       }
 
       currentChunkIdxRef.current = -1;
-
-      setPlaying(true);
-      setPaused(false);
-      setLoading(true);
-      setTotalChunks(chunksRef.current.length);
+      dispatch({ type: "START", totalChunks: chunksRef.current.length });
 
       playChunkAt(0, newPlayId);
     },
@@ -196,12 +243,12 @@ export function useTTS() {
 
   const pause = useCallback(() => {
     window.speechSynthesis.pause();
-    setPaused(true);
+    dispatch({ type: "PAUSE" });
   }, []);
 
   const resume = useCallback(() => {
     window.speechSynthesis.resume();
-    setPaused(false);
+    dispatch({ type: "RESUME" });
   }, []);
 
   const stop = useCallback(() => {
@@ -211,12 +258,7 @@ export function useTTS() {
     currentChunkIdxRef.current = -1;
     preparedKeyRef.current = null;
     preparedRateRef.current = rateRef.current;
-    setPlaying(false);
-    setPaused(false);
-    setLoading(false);
-    setCurrentIdx(-1);
-    setActiveRange(null);
-    setTotalChunks(0);
+    dispatch({ type: "STOP" });
   }, []);
 
   const skipForward = useCallback(() => {
@@ -245,11 +287,7 @@ export function useTTS() {
     preparedKeyRef.current = null;
     preparedRateRef.current = newRate;
     setRateState(newRate);
-    setPlaying(false);
-    setPaused(false);
-    setLoading(false);
-    setCurrentIdx(-1);
-    setActiveRange(null);
+    dispatch({ type: "COMPLETE" });
   }, []);
 
   const setVoice = useCallback((voiceName: string) => {
@@ -266,11 +304,7 @@ export function useTTS() {
     chunksRef.current = [];
     currentChunkIdxRef.current = -1;
     preparedKeyRef.current = null;
-    setPlaying(false);
-    setPaused(false);
-    setLoading(false);
-    setCurrentIdx(-1);
-    setActiveRange(null);
+    dispatch({ type: "COMPLETE" });
   }, []);
 
   const setOnChapterComplete = useCallback((cb: () => void) => {
@@ -287,13 +321,13 @@ export function useTTS() {
   }, []);
 
   return {
-    playing,
-    paused,
-    loading,
-    currentIdx,
-    activeRange,
+    playing: state.playing,
+    paused: state.paused,
+    loading: state.loading,
+    currentIdx: state.currentIdx,
+    activeRange: state.activeRange,
     rate,
-    totalChunks,
+    totalChunks: state.totalChunks,
     currentChunkIdx: currentChunkIdxRef.current,
     viVoices,
     selectedVoiceName,
