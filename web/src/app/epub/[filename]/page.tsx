@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEpubMeta } from "@/lib/epub";
 import ChapterList from "@/components/ChapterList";
+import ReadCTA from "@/components/ReadCTA";
 import { getGradientFromString } from "@/lib/color";
 
 export const revalidate = 86400;
@@ -55,12 +56,12 @@ export default async function EpubBookPage({
             </div>
             
             <div className="flex justify-center md:justify-start">
-              <Link 
-                href={`${readHref}?chapter=0`} 
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_rgba(255,255,255,0.5)] text-lg"
-              >
-                <span>▶</span> Đọc Từ Đầu
-              </Link>
+              <ReadCTA
+                slug={`epub-${decodedFilename}`}
+                totalChapters={meta.chapters.length}
+                chaptersInfo={meta.chapters}
+                readHrefBase={readHref}
+              />
             </div>
           </div>
         </div>

@@ -424,7 +424,7 @@ function ReaderClientInner({
           <span className="ml-1">↓</span>
         </div>
       )}
-      <div className={`fixed top-0 left-0 right-0 z-40 glass-panel rounded-none border-x-0 border-t-0 smart-header ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}`}>
+      <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -441,13 +441,13 @@ function ReaderClientInner({
           <div className="mt-3 relative">
             <button
               onClick={() => { setPickerOpen((o) => !o); setFilter(""); }}
-              className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between gap-1 cursor-pointer w-full"
             >
-              Chương {activeChapterIdx + 1} / {totalChapters}
+              <span>Chương {activeChapterIdx + 1} / {totalChapters}</span>
               <span className={`transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}>▾</span>
             </button>
             {pickerOpen && (
-              <div ref={pickerRef} className="absolute top-full left-0 mt-2 w-72 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+              <div ref={pickerRef} className="absolute top-full left-0 right-0 mt-2 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
                 <input
                   autoFocus
                   type="text"

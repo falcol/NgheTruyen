@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   adjacentChapterContentUrls,
   crawlChapterApiPath,
@@ -33,6 +33,13 @@ export default function ChapterList({
 }) {
   const router = useRouter();
   const { progress } = useProgress(slug);
+  const [query, setQuery] = useState("");
+
+  const filtered = chapters.filter(
+    (ch) =>
+      ch.title.toLowerCase().includes(query.toLowerCase()) ||
+      String(ch.index + 1).includes(query),
+  );
 
   const href = (idx: number) =>
     readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`;
@@ -79,14 +86,60 @@ export default function ChapterList({
         </Link>
       )}
 
+      {progress && (
+        <div className="flex items-center gap-2 mb-3 text-xs text-[var(--color-text-muted)]">
+          <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[var(--color-accent)] to-purple-400 transition-all duration-700"
+              style={{ width: `${Math.round(((progress.chapterIdx + 1) / chapters.length) * 100)}%` }}
+            />
+          </div>
+          <span className="shrink-0 font-medium text-white/70">
+            {progress.chapterIdx + 1} / {chapters.length}
+          </span>
+        </div>
+      )}
+
+      {progress && !query && (
+        <button
+          onClick={() => {
+            document.getElementById(`ch-${progress.chapterIdx}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+          className="text-xs text-[var(--color-accent)] hover:underline mb-3 flex items-center gap-1 transition-opacity"
+        >
+          <span>↓</span> Đến chương đang đọc
+        </button>
+      )}
+
+      <div className="relative mb-4">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Tìm chương..."
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl glass-panel border border-white/10 text-sm text-white placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]/50 focus:shadow-[0_0_0_2px_rgba(56,189,248,0.1)] transition-all bg-transparent"
+        />
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        {query && (
+          <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-white transition-colors text-xs">✕</button>
+        )}
+      </div>
+
+      {filtered.length === 0 && query && (
+        <p className="text-center text-[var(--color-text-muted)] py-8 text-sm">Không tìm thấy chương nào</p>
+      )}
+
       <div className="grid gap-2.5">
-        {chapters.map((ch) => {
+        {filtered.map((ch) => {
           const isRead = progress && progress.chapterIdx >= ch.index;
           const isCurrent = progress && progress.chapterIdx === ch.index;
 
           return (
             <Link
               key={ch.index}
+              id={`ch-${ch.index}`}
               href={href(ch.index)}
               onMouseEnter={() => prefetchOnIntent(ch.index)}
               onFocus={() => prefetchOnIntent(ch.index)}

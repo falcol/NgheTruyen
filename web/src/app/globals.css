@@ -145,6 +145,15 @@ a.reader-muted:hover {
   transform: scale(0.95);
 }
 
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Loading skeleton pulse */
 @keyframes shimmerPulse {
   0%, 100% { opacity: 0.4; }
@@ -152,4 +161,40 @@ a.reader-muted:hover {
 }
 .animate-shimmer {
   animation: shimmerPulse 1.8s ease-in-out infinite;
+}
+
+/* Ambient background blobs */
+@keyframes blobDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+@keyframes blobDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-25px, 30px) scale(1.08); }
+}
+.ambient-blob {
+  position: fixed;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient-blob-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%);
+  top: -100px; left: -150px;
+  animation: blobDrift1 25s ease-in-out infinite;
+}
+.ambient-blob-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(168,85,247,0.05) 0%, transparent 70%);
+  bottom: 10%; right: -100px;
+  animation: blobDrift2 30s ease-in-out infinite;
+}
+.ambient-blob-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(56,189,248,0.04) 0%, transparent 70%);
+  top: 50%; left: 40%;
+  animation: blobDrift1 20s ease-in-out infinite reverse;
 }

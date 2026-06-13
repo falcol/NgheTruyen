@@ -8,6 +8,7 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import "./globals.css";
+import NavWrapper from "@/components/NavWrapper";
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -81,7 +82,10 @@ export default function RootLayout({
       <body
         className={`${beVietnam.className} bg-[var(--color-bg)] text-[var(--color-text)] min-h-dvh`}
       >
-        {children}
+        <div className="ambient-blob ambient-blob-1" aria-hidden="true" />
+        <div className="ambient-blob ambient-blob-2" aria-hidden="true" />
+        <div className="ambient-blob ambient-blob-3" aria-hidden="true" />
+        <NavWrapper>{children}</NavWrapper>
       </body>
     </html>
   );

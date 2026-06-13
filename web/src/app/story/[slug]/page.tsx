@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getChapterIndex, getStoryTitle, listStories } from "@/lib/data";
+import { estimateReadingTime, getChapterIndex, getStoryTitle, listStories } from "@/lib/data";
 import ChapterList from "@/components/ChapterList";
+import ReadCTA from "@/components/ReadCTA";
 import { getGradientFromString } from "@/lib/color";
 
 export function generateStaticParams() {
@@ -51,16 +52,20 @@ export default async function StoryPage({
               <span className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl font-bold text-white/90 border border-white/10 shadow-inner tracking-wider">
                 {chapters.length} CHƯƠNG
               </span>
+              <span className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl font-medium text-white/70 border border-white/10 text-sm flex items-center gap-1.5">
+                <span className="text-[var(--color-accent)]">⏱</span>
+                {estimateReadingTime(chapters.length)}
+              </span>
               <span className="opacity-70 font-mono text-xs bg-black/20 px-4 py-2 rounded-xl border border-white/5">{slug}</span>
             </div>
             
             <div className="flex justify-center md:justify-start">
-              <Link 
-                href={`/read/${slug}/0`} 
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_rgba(255,255,255,0.5)] text-lg"
-              >
-                <span>▶</span> Đọc Từ Đầu
-              </Link>
+              <ReadCTA
+                slug={slug}
+                totalChapters={chapters.length}
+                chaptersInfo={chapters}
+                readHrefBase={`/read/${slug}`}
+              />
             </div>
           </div>
         </div>

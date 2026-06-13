@@ -261,6 +261,15 @@ function makeAllSources() {
 
 const defaultData = makeAllSources();
 
+export function estimateReadingTime(chapterCount: number): string {
+  const minutes = chapterCount * 15;
+  if (minutes < 60) return `${minutes} phút`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `~${hours} giờ`;
+  const days = Math.round(hours / 8);
+  return `~${days} ngày đọc`;
+}
+
 export const listStories = defaultData.listStories;
 export const getChapterIndex = defaultData.getChapterIndex;
 export const getStoryMetadata = defaultData.getStoryMetadata;
