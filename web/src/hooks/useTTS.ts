@@ -119,6 +119,27 @@ export function useTTS() {
   const playChunkAtRef = useRef<
     (idx: number, playId: number) => void
   >(() => {});
+  // Chrome/Android Web Speech API stops after ~15s when tab loses focus.
+  // Workaround from Read Aloud (MIT): periodically pause+resume to reset timer.
+  const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startKeepAlive = useCallback(() => {
+    if (keepAliveRef.current) return;
+    keepAliveRef.current = setInterval(() => {
+      const ss = window.speechSynthesis;
+      if (ss.speaking && !ss.paused) {
+        ss.pause();
+        ss.resume();
+      }
+    }, 10_000);
+  }, []);
+
+  const stopKeepAlive = useCallback(() => {
+    if (keepAliveRef.current) {
+      clearInterval(keepAliveRef.current);
+      keepAliveRef.current = null;
+    }
+  }, []);
 
   const refreshVoices = useCallback(() => {
     const voices = getVietnameseVoices();
@@ -142,6 +163,11 @@ export function useTTS() {
     if (playIdRef.current !== playId || stoppedRef.current) return;
 
     if (idx >= chunksRef.current.length) {
+      // Stop keep-alive via ref to avoid adding stopKeepAlive to callback deps
+      if (keepAliveRef.current) {
+        clearInterval(keepAliveRef.current);
+        keepAliveRef.current = null;
+      }
       dispatch({ type: "COMPLETE" });
       currentChunkIdxRef.current = -1;
       const cb = onCompleteRef.current;
@@ -236,9 +262,10 @@ export function useTTS() {
       currentChunkIdxRef.current = -1;
       dispatch({ type: "START", totalChunks: chunksRef.current.length });
 
+      startKeepAlive();
       playChunkAt(0, newPlayId);
     },
-    [playChunkAt],
+    [playChunkAt, startKeepAlive],
   );
 
   const pause = useCallback(() => {
@@ -252,6 +279,7 @@ export function useTTS() {
   }, []);
 
   const stop = useCallback(() => {
+    stopKeepAlive();
     stoppedRef.current = true;
     window.speechSynthesis.cancel();
     chunksRef.current = [];
@@ -259,7 +287,7 @@ export function useTTS() {
     preparedKeyRef.current = null;
     preparedRateRef.current = rateRef.current;
     dispatch({ type: "STOP" });
-  }, []);
+  }, [stopKeepAlive]);
 
   const skipForward = useCallback(() => {
     if (currentChunkIdxRef.current < 0) return;
@@ -313,12 +341,13 @@ export function useTTS() {
 
   useEffect(() => {
     return () => {
+      stopKeepAlive();
       stoppedRef.current = true;
       if (typeof window !== "undefined" && window.speechSynthesis) {
         window.speechSynthesis.cancel();
       }
     };
-  }, []);
+  }, [stopKeepAlive]);
 
   return {
     playing: state.playing,

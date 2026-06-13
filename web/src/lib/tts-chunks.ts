@@ -7,20 +7,43 @@ export interface TTSChunk {
 const MIN_CHUNK_CHARS = 60;
 const MAX_CHUNK_CHARS = 250;
 const SENTENCE_SEPARATOR = " ";
-const BOUNDARY_PATTERN = /[^.!?。！？…;；:：]+(?:[.!?。！？…;；:：]+["')\]”’」』）]*|$)/g;
+
+// Placeholder swapped in for protected periods so they survive the split step.
+// Must be a character that never appears in story text.
+const PROTECTED_PERIOD = "\x01";
+
+// Vietnamese academic/professional titles and common abbreviations that should
+// NOT trigger a sentence break when followed by a period.
+const VI_ABBR_PATTERN =
+  /\b(GS|PGS|TS|ThS|BS|KS|NXB|UBND|HĐND|MTTQ|TP|TT|TX|BT|TH|TK|CT|TW|QH|TG|NV|BC|TBT|PV|BTV|MC|Mr|Mrs|Ms|Dr|Prof|St|vs|etc)\./gi;
+
+// Numbered/lettered list markers: "1.", "(1)", "a." followed by a space
+// Only shield when they appear at a word boundary before a space.
+const NUM_LIST_PATTERN = /(\b\d{1,3}|\([a-zA-Zđ\d]{1,2}\))\.\s/g;
 
 function normalizeText(text: string) {
   return text.replace(/\s+/g, " ").trim();
 }
 
-function splitSentences(text: string) {
+// Protect abbreviation/list periods → split on real sentence endings → restore.
+// Inspired by Read Aloud (MIT): github.com/ken107/read-aloud
+function splitSentences(text: string): string[] {
   const normalized = normalizeText(text);
   if (!normalized) return [];
 
-  const matches =
-    normalized.match(BOUNDARY_PATTERN)?.map((part) => part.trim()) ?? [];
+  // Shield periods that are NOT sentence endings
+  const shielded = normalized
+    .replace(VI_ABBR_PATTERN, (_, abbr) => `${abbr}${PROTECTED_PERIOD}`)
+    .replace(NUM_LIST_PATTERN, (_, tok) => `${tok}${PROTECTED_PERIOD} `);
 
-  const parts = matches.filter(Boolean).length > 0 ? matches.filter(Boolean) : [normalized];
+  // Split on genuine sentence-ending punctuation followed by whitespace or EOS
+  const raw = shielded.split(/(?<=[.!?…。！？]+["')\]"'」』）]*)\s+/);
+
+  const sentences = raw
+    .map((s) => s.replace(new RegExp(PROTECTED_PERIOD, "g"), ".").trim())
+    .filter(Boolean);
+
+  const parts = sentences.length > 0 ? sentences : [normalized];
   return parts.flatMap(splitLongSegment);
 }
 

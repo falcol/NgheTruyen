@@ -244,7 +244,12 @@ function ReaderClientInner({
   useLayoutEffect(() => {
     if (!paragraphs) return;
     const scrollY = getChapterScrollY(loadProgress(slug), activeChapterIdx);
-    window.scrollTo({ top: scrollY, left: 0 });
+    // instant: skip smooth-scroll CSS animation between chapters
+    window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
+    // Sync ref so the scroll-direction detector starts fresh at the new position
+    lastScrollY.current = scrollY;
+    // Always show header when entering a new chapter
+    setIsScrollingDown(false);
   }, [slug, activeChapterIdx, paragraphs]);
 
   useEffect(() => {
