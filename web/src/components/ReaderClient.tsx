@@ -69,7 +69,6 @@ function ReaderClientInner({
   const { shellStyle } = useReaderSettingsContext();
   const router = useRouter();
   const { saveChapter, saveScroll } = useProgress(slug);
-  const topRef = useRef<HTMLDivElement>(null);
   const scrollSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tts = useTTS();
   const { prepare, setOnChapterComplete } = tts;
@@ -80,8 +79,9 @@ function ReaderClientInner({
   const lastScrollY = useRef(0);
   const touchStartY = useRef(0);
   const touchEndY = useRef(0);
-  const isAtTopOnStart = useRef(false);
-  const isAtBottomOnStart = useRef(false);
+  const touchedTopDuringGesture = useRef(false);
+  const touchedBottomDuringGesture = useRef(false);
+  const overscrollNavigating = useRef(false);
   const [overscrollDelta, setOverscrollDelta] = useState(0);
   const [overscrollDir, setOverscrollDir] = useState<"up" | "down" | null>(null);
   const [chapterFade, setChapterFade] = useState(false);
@@ -250,6 +250,11 @@ function ReaderClientInner({
     lastScrollY.current = scrollY;
     // Always show header when entering a new chapter
     setIsScrollingDown(false);
+    requestAnimationFrame(() => {
+      lastScrollY.current = window.scrollY;
+      setIsScrollingDown(false);
+      overscrollNavigating.current = false;
+    });
   }, [slug, activeChapterIdx, paragraphs]);
 
   useEffect(() => {
@@ -352,23 +357,43 @@ function ReaderClientInner({
   }, []);
 
   useEffect(() => {
-    const OVERSCROLL_THRESHOLD = 80;
+    const OVERSCROLL_THRESHOLD = 56;
+    const EDGE_THRESHOLD = 48;
+    const HEADER_HIDE_TOUCH_DELTA = 8;
+
+    const isNearTop = () => window.scrollY <= EDGE_THRESHOLD;
+    const isNearBottom = () =>
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - EDGE_THRESHOLD;
 
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY;
       touchEndY.current = e.touches[0].clientY;
-      isAtTopOnStart.current = window.scrollY <= 10;
-      isAtBottomOnStart.current = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 10;
+      touchedTopDuringGesture.current = isNearTop();
+      touchedBottomDuringGesture.current = isNearBottom();
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       touchEndY.current = e.touches[0].clientY;
       const delta = touchStartY.current - touchEndY.current;
+      const atTopNow = isNearTop();
+      const atBottomNow = isNearBottom();
 
-      if (delta > 10 && isAtBottomOnStart.current) {
+      if (atTopNow) touchedTopDuringGesture.current = true;
+      if (atBottomNow) touchedBottomDuringGesture.current = true;
+
+      // Mobile fallback: some Android browsers delay/skip scroll direction events
+      // right after programmatic chapter navigation.
+      if (delta > HEADER_HIDE_TOUCH_DELTA && !atTopNow && !atBottomNow) {
+        setIsScrollingDown(true);
+      } else if (delta < -HEADER_HIDE_TOUCH_DELTA) {
+        setIsScrollingDown(false);
+      }
+
+      if (delta > 8 && touchedBottomDuringGesture.current) {
         setOverscrollDir("down");
         setOverscrollDelta(Math.min(delta / OVERSCROLL_THRESHOLD, 1));
-      } else if (delta < -10 && isAtTopOnStart.current) {
+      } else if (delta < -8 && touchedTopDuringGesture.current) {
         setOverscrollDir("up");
         setOverscrollDelta(Math.min(Math.abs(delta) / OVERSCROLL_THRESHOLD, 1));
       } else {
@@ -382,16 +407,20 @@ function ReaderClientInner({
 
       const delta = touchStartY.current - touchEndY.current;
 
-      if (delta > OVERSCROLL_THRESHOLD && isAtBottomOnStart.current && hasNext) {
+      if (!overscrollNavigating.current && delta > OVERSCROLL_THRESHOLD && touchedBottomDuringGesture.current && hasNext) {
+        overscrollNavigating.current = true;
         setChapterFade(true);
-        setTimeout(() => { navRef.current.goNext(); setChapterFade(false); }, 200);
-      } else if (delta < -OVERSCROLL_THRESHOLD && isAtTopOnStart.current && hasPrev) {
+        setTimeout(() => { navRef.current.goNext(); setChapterFade(false); }, 120);
+      } else if (!overscrollNavigating.current && delta < -OVERSCROLL_THRESHOLD && touchedTopDuringGesture.current && hasPrev) {
+        overscrollNavigating.current = true;
         setChapterFade(true);
-        setTimeout(() => { navRef.current.goPrev(); setChapterFade(false); }, 200);
+        setTimeout(() => { navRef.current.goPrev(); setChapterFade(false); }, 120);
       }
 
       touchStartY.current = 0;
       touchEndY.current = 0;
+      touchedTopDuringGesture.current = false;
+      touchedBottomDuringGesture.current = false;
       setOverscrollDelta(0);
       setOverscrollDir(null);
     };
@@ -432,9 +461,9 @@ function ReaderClientInner({
       <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[10px] md:text-xs reader-accent/80 font-bold tracking-widest uppercase mb-1 truncate">{storyTitle}</p>
-              <h1 className="text-lg md:text-xl font-extrabold truncate">{activeTitle}</h1>
+            <div className="flex-1">
+              <p className="text-[10px] md:text-xs reader-accent/80 font-bold tracking-widest uppercase mb-1 break-words leading-snug">{storyTitle}</p>
+              <h1 className="text-lg md:text-xl font-extrabold break-words leading-snug">{activeTitle}</h1>
             </div>
             <Link
               href={backHref ?? `/story/${slug}`}
@@ -493,7 +522,7 @@ function ReaderClientInner({
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 md:px-6 pt-36 pb-40 reader-content relative">
+      <main className="max-w-3xl mx-auto px-4 md:px-6 pt-48 md:pt-36 pb-40 reader-content relative">
 
         {chapterState.status === "loading" && (
           <div className="space-y-3" aria-busy="true">

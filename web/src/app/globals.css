@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #09090b;
-  --color-surface: #18181b;
-  --color-text: #f4f4f5;
-  --color-text-muted: #a1a1aa;
-  --color-accent: #38bdf8;
-  --color-accent-dim: #0ea5e9;
-  --color-border: #27272a;
+  /* ── Anime aesthetic: midnight navy + sakura pink ── */
+  --color-bg: #06070f;
+  --color-surface: #0d0f1c;
+  --color-text: #ede9fe;
+  --color-text-muted: #8891b4;
+  --color-accent: #e879a0;
+  --color-accent-dim: #be185d;
+  --color-secondary: #818cf8;
+  --color-gold: #f59e0b;
+  --color-border: #181c30;
   --reader-font-family: var(--font-literata), Georgia, serif;
   --reader-font-size: 1.125rem;
 }
@@ -75,11 +78,97 @@ a.reader-muted:hover {
 
 /* Glassmorphism utilities */
 .glass-panel {
-  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Anime-specific decorative utilities ── */
+
+/* Sakura glow: pink outer glow for interactive elements */
+.sakura-glow {
+  box-shadow: 0 0 20px rgba(232, 121, 160, 0.25), 0 0 60px rgba(232, 121, 160, 0.1);
+}
+.sakura-glow-sm {
+  box-shadow: 0 0 10px rgba(232, 121, 160, 0.2);
+}
+
+/* Anime card: double-ring border frame effect */
+.anime-card {
+  position: relative;
+}
+.anime-card::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  border: 1px solid rgba(232, 121, 160, 0);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+.anime-card:hover::before {
+  border-color: rgba(232, 121, 160, 0.35);
+  box-shadow: inset 0 0 20px rgba(232, 121, 160, 0.06);
+}
+
+/* Ink divider: brush-stroke style section separator */
+.ink-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.ink-divider::before {
+  content: "";
+  display: block;
+  width: 2px;
+  height: 1.1em;
+  background: linear-gradient(to bottom, var(--color-accent), var(--color-accent-dim));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Anime badge: styled chapter count */
+.anime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(135deg, rgba(232,121,160,0.15), rgba(129,140,248,0.15));
+  border: 1px solid rgba(232,121,160,0.3);
+  color: var(--color-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+}
+
+/* Sakura gradient text */
+.sakura-text {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-secondary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Nav link active indicator */
+.nav-link-active {
+  color: var(--color-accent) !important;
+  position: relative;
+}
+.nav-link-active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-accent);
 }
 
 /* Scrollbar styling for modern look */
@@ -181,20 +270,20 @@ a.reader-muted:hover {
   z-index: 0;
 }
 .ambient-blob-1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, transparent 70%);
-  top: -100px; left: -150px;
-  animation: blobDrift1 25s ease-in-out infinite;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(232,121,160,0.07) 0%, transparent 65%);
+  top: -150px; left: -200px;
+  animation: blobDrift1 28s ease-in-out infinite;
 }
 .ambient-blob-2 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(168,85,247,0.05) 0%, transparent 70%);
-  bottom: 10%; right: -100px;
-  animation: blobDrift2 30s ease-in-out infinite;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 65%);
+  bottom: 5%; right: -120px;
+  animation: blobDrift2 35s ease-in-out infinite;
 }
 .ambient-blob-3 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(56,189,248,0.04) 0%, transparent 70%);
-  top: 50%; left: 40%;
-  animation: blobDrift1 20s ease-in-out infinite reverse;
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(190,24,93,0.05) 0%, transparent 65%);
+  top: 45%; left: 35%;
+  animation: blobDrift1 22s ease-in-out infinite reverse;
 }
