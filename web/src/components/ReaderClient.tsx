@@ -25,8 +25,13 @@ interface ChapterMeta {
 
 type ChapterState =
   | { status: "loading" }
-  | { status: "ready"; paragraphs: string[] }
+  | { status: "ready"; paragraphs: string[]; idx: number }
   | { status: "error"; message: string };
+
+// Picker windowing: render only chapters near the current one so opening the list
+// stays fast on novels with hundreds/thousands of chapters.
+const PICKER_WINDOW_HALF = 40;
+const PICKER_LOAD_STEP = 40;
 
 // Two content modes:
 //  - `paragraphs` (sync): caller already has the chapter text — render immediately.
@@ -86,6 +91,19 @@ function ReaderClientInner({
   const [overscrollDir, setOverscrollDir] = useState<"up" | "down" | null>(null);
   const [chapterFade, setChapterFade] = useState(false);
 
+  // DOM refs for paragraphs (auto-follow + "play from here").
+  const paragraphRefs = useRef<(HTMLParagraphElement | null)[]>([]);
+  // Pause auto-follow briefly while the user scrolls manually during playback.
+  const followPausedUntilRef = useRef(0);
+  // Chapter scroll-progress bar, updated directly to avoid re-renders.
+  const progressRef = useRef<HTMLDivElement>(null);
+  // Latest values for the keyboard handler (avoids stale closure + listener churn).
+  const latestRef = useRef<{
+    tts: typeof tts;
+    paragraphs: string[] | null;
+    chapterKey: string;
+  }>({ tts, paragraphs: null, chapterKey: "" });
+
   useEffect(() => {
     setActiveChapterIdx(chapterIdx);
   }, [chapterIdx]);
@@ -103,8 +121,6 @@ function ReaderClientInner({
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const chapterKey = useMemo(() => `${slug}:${activeChapterIdx}`, [slug, activeChapterIdx]);
-
   const activeChapterMeta = useMemo(() => {
     return chapters.find((c) => c.index === activeChapterIdx);
   }, [chapters, activeChapterIdx]);
@@ -113,7 +129,7 @@ function ReaderClientInner({
 
   const [chapterState, setChapterState] = useState<ChapterState>(() =>
     paragraphsProp
-      ? { status: "ready", paragraphs: paragraphsProp }
+      ? { status: "ready", paragraphs: paragraphsProp, idx: chapterIdx }
       : { status: "loading" },
   );
   const [retryNonce, setRetryNonce] = useState(0);
@@ -134,16 +150,48 @@ function ReaderClientInner({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const pickerRef = useRef<HTMLDivElement>(null);
+  // Extra chapters the user has loaded beyond the initial window (each direction).
+  const [pickerExtraBefore, setPickerExtraBefore] = useState(0);
+  const [pickerExtraAfter, setPickerExtraAfter] = useState(0);
 
-  const filtered = useMemo(() => {
+  const pickerList = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    if (!q) return chapters;
-    return chapters.filter(
-      (ch) =>
-        ch.title.toLowerCase().includes(q) ||
-        String(ch.index + 1).includes(q),
+    const list = q
+      ? chapters.filter(
+          (ch) =>
+            ch.title.toLowerCase().includes(q) ||
+            String(ch.index + 1).includes(q),
+        )
+      : chapters;
+
+    if (list.length === 0) {
+      return {
+        items: [] as ChapterMeta[],
+        startIdx: 0,
+        endIdx: 0,
+        hasMoreBefore: false,
+        hasMoreAfter: false,
+        total: 0,
+      };
+    }
+
+    const foundPos = list.findIndex((c) => c.index === activeChapterIdx);
+    const anchorPos = q ? 0 : foundPos === -1 ? 0 : foundPos;
+    const startIdx = Math.max(0, anchorPos - (PICKER_WINDOW_HALF + pickerExtraBefore));
+    const endIdx = Math.min(
+      list.length,
+      anchorPos + 1 + (PICKER_WINDOW_HALF + pickerExtraAfter),
     );
-  }, [chapters, filter]);
+
+    return {
+      items: list.slice(startIdx, endIdx),
+      startIdx,
+      endIdx,
+      hasMoreBefore: startIdx > 0,
+      hasMoreAfter: endIdx < list.length,
+      total: list.length,
+    };
+  }, [chapters, filter, activeChapterIdx, pickerExtraBefore, pickerExtraAfter]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -193,9 +241,9 @@ function ReaderClientInner({
   // in the crawler-fed reader where each page renders with fresh paragraphs.
   useEffect(() => {
     if (paragraphsProp) {
-      setChapterState({ status: "ready", paragraphs: paragraphsProp });
+      setChapterState({ status: "ready", paragraphs: paragraphsProp, idx: activeChapterIdx });
     }
-  }, [paragraphsProp]);
+  }, [paragraphsProp, activeChapterIdx]);
 
   const activeChapterContentUrl = useMemo(() => {
     if (!chapterContentUrl) return undefined;
@@ -213,14 +261,14 @@ function ReaderClientInner({
 
     const cached = getCachedChapter(activeChapterContentUrl);
     if (cached) {
-      setChapterState({ status: "ready", paragraphs: cached.paragraphs });
+      setChapterState({ status: "ready", paragraphs: cached.paragraphs, idx: activeChapterIdx });
     } else {
       setChapterState({ status: "loading" });
     }
 
     loadChapterContent(activeChapterContentUrl, controller.signal)
       .then((payload) => {
-        setChapterState({ status: "ready", paragraphs: payload.paragraphs });
+        setChapterState({ status: "ready", paragraphs: payload.paragraphs, idx: activeChapterIdx });
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
@@ -229,7 +277,7 @@ function ReaderClientInner({
       });
 
     return () => controller.abort();
-  }, [activeChapterContentUrl, retryNonce]);
+  }, [activeChapterContentUrl, retryNonce, activeChapterIdx]);
 
   // Prefetch prev/next chapter JSON while reading (instant Sau/Trước when cached).
   useEffect(() => {
@@ -238,7 +286,26 @@ function ReaderClientInner({
     if (next) prefetchChapterContent(next).catch(() => {});
   }, [slug, chapters, activeChapterIdx]);
 
-  const paragraphs = chapterState.status === "ready" ? chapterState.paragraphs : null;
+  // paragraphs is non-null only when the loaded content belongs to the active
+  // chapter (idx match). This kills the stale-content flash on navigation: during
+  // the one render where activeChapterIdx advanced but chapterState still holds the
+  // previous chapter, paragraphs is null, so neither display nor TTS prepare runs
+  // against stale text.
+  const paragraphs =
+    chapterState.status === "ready" && chapterState.idx === activeChapterIdx
+      ? chapterState.paragraphs
+      : null;
+
+  // Content signature in the key defeats stale-paragraph caching in useTTS: on nav,
+  // the first render still holds the old paragraphs under the new index, so an
+  // index-only key would cache the wrong content and skip rebuild when the real
+  // text arrives. The signature forces prepare/play to rebuild with correct text.
+  const chapterKey = useMemo(() => {
+    const sig = paragraphs
+      ? `${paragraphs.length}:${paragraphs[0]?.slice(0, 40)}:${paragraphs[paragraphs.length - 1]?.slice(0, 40)}`
+      : "pending";
+    return `${slug}:${activeChapterIdx}:${sig}`;
+  }, [slug, activeChapterIdx, paragraphs]);
 
   // Restore scroll only after content renders (otherwise the page is empty).
   useLayoutEffect(() => {
@@ -246,6 +313,11 @@ function ReaderClientInner({
     const scrollY = getChapterScrollY(loadProgress(slug), activeChapterIdx);
     // instant: skip smooth-scroll CSS animation between chapters
     window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    if (progressRef.current) {
+      const pct = maxScroll > 0 ? Math.min(100, (scrollY / maxScroll) * 100) : 0;
+      progressRef.current.style.width = `${pct}%`;
+    }
     // Sync ref so the scroll-direction detector starts fresh at the new position
     lastScrollY.current = scrollY;
     // Always show header when entering a new chapter
@@ -274,6 +346,10 @@ function ReaderClientInner({
         200,
       );
 
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = maxScroll > 0 ? Math.min(100, (currentScrollY / maxScroll) * 100) : 0;
+      if (progressRef.current) progressRef.current.style.width = `${pct}%`;
+
       const isAtBottom = window.innerHeight + currentScrollY >= document.body.scrollHeight - 10;
       if (currentScrollY <= 0 || isAtBottom) {
         setIsScrollingDown(false);
@@ -297,6 +373,62 @@ function ReaderClientInner({
   useEffect(() => {
     if (paragraphs) prepare(chapterKey, paragraphs);
   }, [chapterKey, paragraphs, prepare]);
+
+  // Keep latest values for the keyboard handler without re-binding listeners.
+  useEffect(() => {
+    latestRef.current = { tts, paragraphs, chapterKey };
+  });
+
+  // Index of the paragraph closest to the viewport center (for "Đọc từ đây").
+  const centerParagraphIdx = useCallback((count: number): number => {
+    const center = window.innerHeight / 2;
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    for (let i = 0; i < count; i++) {
+      const el = paragraphRefs.current[i];
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      const dist = Math.abs(rect.top + rect.height / 2 - center);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }, []);
+
+  const handlePlayFromHere = () => {
+    if (!paragraphs) return;
+    const idx = centerParagraphIdx(paragraphs.length);
+    if (idx < 0) tts.play(chapterKey, paragraphs);
+    else tts.playFromParagraph(chapterKey, paragraphs, idx);
+  };
+
+  // Auto-follow: keep the speaking paragraph inside the comfortable reading band.
+  useEffect(() => {
+    if (!tts.activeRange) return;
+    const el = paragraphRefs.current[tts.activeRange.start];
+    if (!el) return;
+    if (Date.now() < followPausedUntilRef.current) return;
+    const rect = el.getBoundingClientRect();
+    const viewH = window.innerHeight;
+    if (rect.top >= viewH * 0.15 && rect.bottom <= viewH * 0.85) return;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [tts.activeRange]);
+
+  // Respect manual scrolling during playback — pause auto-follow for ~4s.
+  useEffect(() => {
+    if (!tts.playing) return;
+    const pauseFollow = () => {
+      followPausedUntilRef.current = Date.now() + 4000;
+    };
+    window.addEventListener("wheel", pauseFollow, { passive: true });
+    window.addEventListener("touchmove", pauseFollow, { passive: true });
+    return () => {
+      window.removeEventListener("wheel", pauseFollow);
+      window.removeEventListener("touchmove", pauseFollow);
+    };
+  }, [tts.playing]);
 
   const navigateToChapter = useCallback(
     (newIdx: number) => {
@@ -349,12 +481,36 @@ function ReaderClientInner({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") navRef.current.goPrev();
-      if (e.key === "ArrowRight") navRef.current.goNext();
+      const tgt = e.target as HTMLElement | null;
+      if (
+        tgt &&
+        (tgt.tagName === "INPUT" ||
+          tgt.tagName === "TEXTAREA" ||
+          tgt.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        navRef.current.goPrev();
+      } else if (e.key === "ArrowRight") {
+        navRef.current.goNext();
+      } else if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        const { tts: t, paragraphs: p, chapterKey: k } = latestRef.current;
+        if (t.playing && !t.paused) t.pause();
+        else if (t.playing && t.paused) t.resume();
+        else if (p) t.play(k, p);
+      } else if (e.key === "f" || e.key === "F") {
+        const { tts: t, paragraphs: p, chapterKey: k } = latestRef.current;
+        if (!p) return;
+        const idx = centerParagraphIdx(p.length);
+        if (idx < 0) t.play(k, p);
+        else t.playFromParagraph(k, p, idx);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [centerParagraphIdx]);
 
   useEffect(() => {
     const OVERSCROLL_THRESHOLD = 56;
@@ -437,7 +593,7 @@ function ReaderClientInner({
   }, [hasNext, hasPrev]);
 
   return (
-    <div className={`reader-shell min-h-dvh overscroll-y-none transition-opacity duration-200 ${chapterFade ? "opacity-0" : "opacity-100"}`} style={shellStyle}>
+    <div className={`reader-shell min-h-dvh overscroll-y-none transition-opacity duration-150 ${chapterFade ? "opacity-0" : "opacity-100"}`} style={shellStyle}>
       {/* Overscroll indicator — top (prev chapter) */}
       {overscrollDir === "up" && (
         <div
@@ -458,6 +614,14 @@ function ReaderClientInner({
           <span className="ml-1">↓</span>
         </div>
       )}
+      {/* Chapter scroll progress — fixed top, above header */}
+      <div className="fixed top-0 left-0 right-0 h-0.5 z-50 bg-white/5 pointer-events-none">
+        <div
+          ref={progressRef}
+          className="h-full bg-gradient-to-r from-[var(--color-accent-dim)] to-[var(--color-accent)] transition-[width] duration-150 ease-out"
+          style={{ width: "0%" }}
+        />
+      </div>
       <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
@@ -474,7 +638,7 @@ function ReaderClientInner({
           </div>
           <div className="mt-3 relative">
             <button
-              onClick={() => { setPickerOpen((o) => !o); setFilter(""); }}
+              onClick={() => { setPickerOpen((o) => !o); setFilter(""); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
               className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between gap-1 cursor-pointer w-full"
             >
               <span>Chương {activeChapterIdx + 1} / {totalChapters}</span>
@@ -487,11 +651,20 @@ function ReaderClientInner({
                   type="text"
                   placeholder="Tìm chương..."
                   value={filter}
-                  onChange={(e) => setFilter(e.target.value)}
+                  onChange={(e) => { setFilter(e.target.value); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
                   className="px-4 py-3.5 text-sm bg-black/20 border-b border-white/5 outline-none w-full placeholder-white/40"
                 />
                 <div className="overflow-y-auto flex-1">
-                  {filtered.map((ch) => (
+                  {pickerList.hasMoreBefore && (
+                    <button
+                      type="button"
+                      onClick={() => setPickerExtraBefore((x) => x + PICKER_LOAD_STEP)}
+                      className="block w-full px-4 py-2.5 text-xs text-[var(--color-text-muted)] hover:bg-white/10 hover:text-[var(--color-accent)] transition-colors border-b border-white/5"
+                    >
+                      ↑ Xem các chương trước{pickerList.startIdx > 0 ? ` (còn ${pickerList.startIdx})` : ""}
+                    </button>
+                  )}
+                  {pickerList.items.map((ch) => (
                     <a
                       key={ch.index}
                       href={href(ch.index)}
@@ -510,7 +683,16 @@ function ReaderClientInner({
                       {ch.title}
                     </a>
                   ))}
-                  {filtered.length === 0 && (
+                  {pickerList.hasMoreAfter && (
+                    <button
+                      type="button"
+                      onClick={() => setPickerExtraAfter((x) => x + PICKER_LOAD_STEP)}
+                      className="block w-full px-4 py-2.5 text-xs text-[var(--color-text-muted)] hover:bg-white/10 hover:text-[var(--color-accent)] transition-colors border-t border-white/5"
+                    >
+                      ↓ Xem các chương sau (còn {pickerList.total - pickerList.endIdx})
+                    </button>
+                  )}
+                  {pickerList.items.length === 0 && (
                     <p className="px-4 py-6 text-sm text-[var(--color-text-muted)] text-center italic">
                       Không tìm thấy
                     </p>
@@ -550,11 +732,14 @@ function ReaderClientInner({
           </div>
         )}
 
-        {chapterState.status === "ready" && (
-          <div className="space-y-0">
-            {chapterState.paragraphs.map((p, i) => (
+        {paragraphs && (
+          <div className="space-y-0 animate-fade-in">
+            {paragraphs.map((p, i) => (
               <p
                 key={i}
+                ref={(el) => {
+                  if (el) paragraphRefs.current[i] = el;
+                }}
                 className={`reader-paragraph ${i === 0 ? "drop-cap" : ""} ${
                   tts.activeRange &&
                   i >= tts.activeRange.start &&
@@ -595,7 +780,7 @@ function ReaderClientInner({
       </main>
 
       <Player
-        hidden={isScrollingDown}
+        hidden={isScrollingDown && !tts.playing}
         playing={tts.playing}
         paused={tts.paused}
         loading={tts.loading}
@@ -605,6 +790,7 @@ function ReaderClientInner({
         viVoices={tts.viVoices}
         selectedVoiceName={tts.selectedVoiceName}
         onPlay={() => paragraphs && tts.play(chapterKey, paragraphs)}
+        onPlayFromHere={handlePlayFromHere}
         onPause={tts.pause}
         onResume={tts.resume}
         onStop={tts.stop}

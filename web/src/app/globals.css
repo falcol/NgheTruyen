@@ -59,9 +59,10 @@ a.reader-muted:hover {
 .reader-paragraph {
   line-height: 2;
   font-size: var(--reader-font-size);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
   color: var(--color-text);
   letter-spacing: 0.01em;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .reader-paragraph.speaking {
@@ -69,6 +70,7 @@ a.reader-muted:hover {
   border-left: 3px solid var(--color-accent);
   padding-left: 1rem;
   border-radius: 0 0.375rem 0.375rem 0;
+  box-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 14%, transparent);
 }
 
 .chapter-item {

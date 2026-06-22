@@ -1,7 +1,7 @@
 "use client";
 
 import { useReducer, useState, useCallback, useRef, useEffect } from "react";
-import { buildTTSChunks, type TTSChunk } from "@/lib/tts-chunks";
+import { buildTTSChunks, findChunkIndexForParagraph, type TTSChunk } from "@/lib/tts-chunks";
 
 const VOICE_STORAGE_KEY = "nghetruyen-tts-voice";
 
@@ -268,6 +268,41 @@ export function useTTS() {
     [playChunkAt, startKeepAlive],
   );
 
+  // Begin playback at the chunk containing `startParagraphIdx` (e.g. the paragraph
+  // currently in the viewport). Mirrors `play` but seeds the start chunk.
+  const playFromParagraph = useCallback(
+    (key: string, paragraphs: string[], startParagraphIdx: number) => {
+      if (!paragraphs.length) return;
+      if (typeof window === "undefined" || !window.speechSynthesis) return;
+
+      stoppedRef.current = false;
+      const newPlayId = ++playIdRef.current;
+
+      window.speechSynthesis.cancel();
+
+      const hasPrepared =
+        preparedKeyRef.current === key &&
+        preparedRateRef.current === rateRef.current &&
+        chunksRef.current.length > 0;
+
+      if (!hasPrepared) {
+        chunksRef.current = buildTTSChunks(paragraphs);
+        preparedKeyRef.current = key;
+        preparedRateRef.current = rateRef.current;
+      }
+
+      let startChunk = findChunkIndexForParagraph(chunksRef.current, startParagraphIdx);
+      if (startChunk < 0) startChunk = 0;
+
+      currentChunkIdxRef.current = startChunk;
+      dispatch({ type: "START", totalChunks: chunksRef.current.length });
+
+      startKeepAlive();
+      playChunkAt(startChunk, newPlayId);
+    },
+    [playChunkAt, startKeepAlive],
+  );
+
   const pause = useCallback(() => {
     window.speechSynthesis.pause();
     dispatch({ type: "PAUSE" });
@@ -361,6 +396,7 @@ export function useTTS() {
     viVoices,
     selectedVoiceName,
     play,
+    playFromParagraph,
     prepare,
     pause,
     resume,

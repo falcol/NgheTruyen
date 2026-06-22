@@ -47,6 +47,7 @@ export default function Player({
   viVoices,
   selectedVoiceName,
   onPlay,
+  onPlayFromHere,
   onPause,
   onResume,
   onStop,
@@ -65,6 +66,7 @@ export default function Player({
   viVoices: SpeechSynthesisVoice[];
   selectedVoiceName: string | null;
   onPlay: () => void;
+  onPlayFromHere?: () => void;
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
@@ -109,6 +111,17 @@ export default function Player({
 
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-3">
+            {!playing && onPlayFromHere && (
+              <button
+                type="button"
+                onClick={onPlayFromHere}
+                className="px-3 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-xs font-medium transition-all duration-200 active:scale-90 border border-white/5 whitespace-nowrap"
+                aria-label="Đọc từ đoạn đang xem"
+                title="Đọc từ đoạn đang xem"
+              >
+                Từ đây
+              </button>
+            )}
             {playing && (
               <button
                 type="button"
