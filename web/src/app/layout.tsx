@@ -78,7 +78,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={fontVariables}>
+    <html lang="vi" className={fontVariables} data-scroll-behavior="smooth">
       <body
         className={`${beVietnam.className} bg-[var(--color-bg)] text-[var(--color-text)] min-h-dvh`}
       >
