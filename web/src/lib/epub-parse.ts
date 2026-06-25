@@ -111,7 +111,11 @@ async function parseTocTitles(epub: Epub): Promise<Map<string, string>> {
     for (const match of html.matchAll(linkRegex)) {
       const href = normalizeHref(match[1]);
       const title = match[2].replace(/<[^>]+>/g, "").trim();
-      if (href && title && !titles.has(href)) titles.set(href, title);
+      if (href && title) {
+        if (!titles.has(href)) titles.set(href, title);
+        const base = path.basename(href);
+        if (!titles.has(base)) titles.set(base, title);
+      }
     }
   }
 
@@ -122,7 +126,11 @@ async function parseTocTitles(epub: Epub): Promise<Map<string, string>> {
     for (const match of xml.matchAll(navPointRegex)) {
       const title = decodeHtmlEntities(match[1].replace(/<[^>]+>/g, "").trim());
       const href = normalizeHref(match[2]);
-      if (href && title && !titles.has(href)) titles.set(href, title);
+      if (href && title) {
+        if (!titles.has(href)) titles.set(href, title);
+        const base = path.basename(href);
+        if (!titles.has(base)) titles.set(base, title);
+      }
     }
   }
 
