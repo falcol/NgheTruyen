@@ -150,6 +150,7 @@ function ReaderClientInner({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const pickerRef = useRef<HTMLDivElement>(null);
+  const pickerContainerRef = useRef<HTMLDivElement>(null);
   // Extra chapters the user has loaded beyond the initial window (each direction).
   const [pickerExtraBefore, setPickerExtraBefore] = useState(0);
   const [pickerExtraAfter, setPickerExtraAfter] = useState(0);
@@ -196,7 +197,7 @@ function ReaderClientInner({
   useEffect(() => {
     if (!pickerOpen) return;
     const handleClick = (e: MouseEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node))
+      if (pickerContainerRef.current && !pickerContainerRef.current.contains(e.target as Node))
         setPickerOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
@@ -622,7 +623,7 @@ function ReaderClientInner({
           style={{ width: "0%" }}
         />
       </div>
-      <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown ? "-translate-y-full" : "translate-y-0"}`}>
+      <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown && !pickerOpen ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -636,7 +637,7 @@ function ReaderClientInner({
               ✕
             </Link>
           </div>
-          <div className="mt-3 relative">
+          <div className="mt-3 relative" ref={pickerContainerRef}>
             <button
               onClick={() => { setPickerOpen((o) => !o); setFilter(""); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
               className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between gap-1 cursor-pointer w-full"
@@ -654,15 +655,22 @@ function ReaderClientInner({
                   onChange={(e) => { setFilter(e.target.value); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
                   className="px-4 py-3.5 text-sm bg-black/20 border-b border-white/5 outline-none w-full placeholder-white/40"
                 />
-                <div className="overflow-y-auto flex-1">
+                <div 
+                  className="overflow-y-auto flex-1"
+                  onScroll={(e) => {
+                    const el = e.currentTarget;
+                    if (el.scrollTop <= 10 && pickerList.hasMoreBefore) {
+                      setPickerExtraBefore((x) => x + PICKER_LOAD_STEP);
+                    }
+                    if (el.scrollHeight - el.scrollTop - el.clientHeight <= 10 && pickerList.hasMoreAfter) {
+                      setPickerExtraAfter((x) => x + PICKER_LOAD_STEP);
+                    }
+                  }}
+                >
                   {pickerList.hasMoreBefore && (
-                    <button
-                      type="button"
-                      onClick={() => setPickerExtraBefore((x) => x + PICKER_LOAD_STEP)}
-                      className="block w-full px-4 py-2.5 text-xs text-[var(--color-text-muted)] hover:bg-white/10 hover:text-[var(--color-accent)] transition-colors border-b border-white/5"
-                    >
-                      ↑ Xem các chương trước{pickerList.startIdx > 0 ? ` (còn ${pickerList.startIdx})` : ""}
-                    </button>
+                    <div className="py-2 text-center text-xs text-white/40 italic">
+                      Đang tải thêm...
+                    </div>
                   )}
                   {pickerList.items.map((ch) => (
                     <a
@@ -684,13 +692,9 @@ function ReaderClientInner({
                     </a>
                   ))}
                   {pickerList.hasMoreAfter && (
-                    <button
-                      type="button"
-                      onClick={() => setPickerExtraAfter((x) => x + PICKER_LOAD_STEP)}
-                      className="block w-full px-4 py-2.5 text-xs text-[var(--color-text-muted)] hover:bg-white/10 hover:text-[var(--color-accent)] transition-colors border-t border-white/5"
-                    >
-                      ↓ Xem các chương sau (còn {pickerList.total - pickerList.endIdx})
-                    </button>
+                    <div className="py-2 text-center text-xs text-white/40 italic">
+                      Đang tải thêm...
+                    </div>
                   )}
                   {pickerList.items.length === 0 && (
                     <p className="px-4 py-6 text-sm text-[var(--color-text-muted)] text-center italic">
