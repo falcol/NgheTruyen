@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { adjacentChapterContentUrls, crawlChapterApiPath } from "@/lib/chapter-nav";
@@ -262,14 +263,34 @@ function ReaderClientInner({
 
     const cached = getCachedChapter(activeChapterContentUrl);
     if (cached) {
-      setChapterState({ status: "ready", paragraphs: cached.paragraphs, idx: activeChapterIdx });
+      if (typeof document !== 'undefined' && document.startViewTransition) {
+        const transition = document.startViewTransition(() => {
+          flushSync(() => {
+            setChapterState({ status: "ready", paragraphs: cached.paragraphs, idx: activeChapterIdx });
+          });
+        });
+        transition.ready.catch(() => {});
+        transition.finished.catch(() => {});
+      } else {
+        setChapterState({ status: "ready", paragraphs: cached.paragraphs, idx: activeChapterIdx });
+      }
     } else {
       setChapterState({ status: "loading" });
     }
 
     loadChapterContent(activeChapterContentUrl, controller.signal)
       .then((payload) => {
-        setChapterState({ status: "ready", paragraphs: payload.paragraphs, idx: activeChapterIdx });
+        if (typeof document !== 'undefined' && document.startViewTransition) {
+          const transition = document.startViewTransition(() => {
+            flushSync(() => {
+              setChapterState({ status: "ready", paragraphs: payload.paragraphs, idx: activeChapterIdx });
+            });
+          });
+          transition.ready.catch(() => {});
+          transition.finished.catch(() => {});
+        } else {
+          setChapterState({ status: "ready", paragraphs: payload.paragraphs, idx: activeChapterIdx });
+        }
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
@@ -598,21 +619,45 @@ function ReaderClientInner({
       {/* Overscroll indicator — top (prev chapter) */}
       {overscrollDir === "up" && (
         <div
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-3 bg-[var(--color-accent)] text-black text-xs font-bold transition-opacity"
-          style={{ opacity: overscrollDelta * 0.9 }}
+          className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center justify-start pt-8 h-32 pointer-events-none transition-opacity"
+          style={{ opacity: Math.min(overscrollDelta * 1.5, 1) }}
         >
-          <span className="mr-1">↑</span>
-          {overscrollDelta >= 1 ? "Thả ra để lùi chương" : "Kéo thêm để lùi chương..."}
+          <div className={`flex flex-col items-center justify-center transition-transform ${overscrollDelta >= 1 ? 'scale-110' : ''}`}>
+            <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] shadow-lg border border-[var(--color-border)] flex items-center justify-center relative overflow-hidden mb-2">
+              <svg className="w-5 h-5 text-[var(--color-text-muted)] absolute z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-[var(--color-accent)]/20 transition-all duration-75"
+                style={{ height: `${Math.min(overscrollDelta * 100, 100)}%` }}
+              />
+            </div>
+            <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-accent)]">
+              {overscrollDelta >= 1 ? "Thả ra để lùi" : "Kéo thêm..."}
+            </span>
+          </div>
         </div>
       )}
       {/* Overscroll indicator — bottom (next chapter) */}
       {overscrollDir === "down" && (
         <div
-          className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center py-3 bg-[var(--color-accent)] text-black text-xs font-bold transition-opacity"
-          style={{ opacity: overscrollDelta * 0.9 }}
+          className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-8 h-32 pointer-events-none transition-opacity"
+          style={{ opacity: Math.min(overscrollDelta * 1.5, 1) }}
         >
-          {overscrollDelta >= 1 ? "Thả ra để sang chương sau" : "Kéo thêm để sang chương sau..."}
-          <span className="ml-1">↓</span>
+          <div className={`flex flex-col items-center justify-center transition-transform ${overscrollDelta >= 1 ? 'scale-110' : ''}`}>
+            <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-accent)] mb-2">
+              {overscrollDelta >= 1 ? "Thả ra để sang trang" : "Kéo thêm..."}
+            </span>
+            <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] shadow-lg border border-[var(--color-border)] flex items-center justify-center relative overflow-hidden">
+              <svg className="w-5 h-5 text-[var(--color-text-muted)] absolute z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+              <div 
+                className="absolute top-0 left-0 right-0 bg-[var(--color-accent)]/20 transition-all duration-75"
+                style={{ height: `${Math.min(overscrollDelta * 100, 100)}%` }}
+              />
+            </div>
+          </div>
         </div>
       )}
       {/* Chapter scroll progress — fixed top, above header */}
@@ -632,6 +677,7 @@ function ReaderClientInner({
             </div>
             <Link
               href={backHref ?? `/story/${slug}`}
+              aria-label="Đóng và quay lại danh sách"
               className="shrink-0 w-9 h-9 rounded-full bg-black/20 border border-white/5 flex items-center justify-center hover:bg-black/40 active:scale-90 transition-all duration-200"
             >
               ✕
@@ -646,17 +692,30 @@ function ReaderClientInner({
               <span className={`transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}>▾</span>
             </button>
             {pickerOpen && (
-              <div ref={pickerRef} className="absolute top-full left-0 right-0 mt-2 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Tìm chương..."
-                  value={filter}
-                  onChange={(e) => { setFilter(e.target.value); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
-                  className="px-4 py-3.5 text-sm bg-black/20 border-b border-white/5 outline-none w-full placeholder-white/40"
-                />
+              <>
+                <div className="fixed inset-0 top-16 bg-black/50 backdrop-blur-sm z-40" onClick={() => setPickerOpen(false)} />
+                <div ref={pickerRef} className="absolute top-full left-0 right-0 mt-2 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                  <div className="relative border-b border-white/5 bg-black/20">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                    <input
+                      autoFocus
+                      type="text"
+                      placeholder="Tìm chương..."
+                      value={filter}
+                      onChange={(e) => { setFilter(e.target.value); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
+                      className="pl-10 pr-4 py-3.5 text-sm bg-transparent outline-none w-full placeholder-white/40"
+                    />
+                  </div>
                 <div 
-                  className="overflow-y-auto flex-1"
+                  className="overflow-y-auto flex-1 scrollbar-hide"
+                  style={{
+                    maskImage: "linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 5%, black 95%, transparent 100%)"
+                  }}
                   onScroll={(e) => {
                     const el = e.currentTarget;
                     if (el.scrollTop <= 10 && pickerList.hasMoreBefore) {
@@ -703,6 +762,7 @@ function ReaderClientInner({
                   )}
                 </div>
               </div>
+              </>
             )}
           </div>
         </div>
@@ -762,6 +822,7 @@ function ReaderClientInner({
           <button
             onClick={goPrev}
             disabled={!hasPrev}
+            aria-label="Chương trước"
             className="btn-spring px-5 py-3 rounded-xl glass-panel disabled:opacity-30 disabled:active:scale-100 hover:scale-[1.02] transition-all font-medium flex items-center gap-2 group"
           >
             <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Trước
@@ -769,6 +830,7 @@ function ReaderClientInner({
           <button
             onClick={goNext}
             disabled={!hasNext}
+            aria-label="Chương sau"
             className="btn-spring px-5 py-3 rounded-xl glass-panel disabled:opacity-30 disabled:active:scale-100 hover:scale-[1.02] transition-all font-medium flex items-center gap-2 group bg-gradient-to-r hover:from-[var(--color-accent)]/10 hover:to-transparent"
           >
             Sau <span className="group-hover:translate-x-1 transition-transform">→</span>

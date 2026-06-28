@@ -104,6 +104,17 @@ export const READER_THEMES: ReaderTheme[] = [
     accentDim: "#d97706",
     border: "#3d342c",
   },
+  {
+    id: "ash",
+    name: "Tro",
+    bg: "#1a1a1a",
+    surface: "#242424",
+    text: "#a8a8a8",
+    textMuted: "#737373",
+    accent: "#6b7280",
+    accentDim: "#4b5563",
+    border: "#333333",
+  },
 ];
 
 export const READER_TEXT_COLORS: ReaderTextColor[] = [

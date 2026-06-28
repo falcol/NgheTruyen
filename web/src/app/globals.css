@@ -57,7 +57,7 @@ a.reader-muted:hover {
 }
 
 .reader-paragraph {
-  line-height: 2;
+  line-height: 1.75;
   font-size: var(--reader-font-size);
   margin-bottom: 1.75rem;
   color: var(--color-text);
