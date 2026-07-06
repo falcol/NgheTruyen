@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useReaderSettingsContext } from "@/context/ReaderSettingsContext";
 import {
   READER_FONTS,
@@ -8,6 +8,17 @@ import {
   READER_THEMES,
   READER_TEXT_COLORS,
 } from "@/lib/reader-settings";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Stop,
+  SlidersHorizontal,
+  X,
+  CircleNotch,
+  PlayCircle,
+} from "@/components/icons";
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
 
@@ -19,7 +30,7 @@ function Chip({
 }: {
   active: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
 }) {
   return (
@@ -28,8 +39,8 @@ function Chip({
       onClick={onClick}
       className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 active:scale-95 ${className} ${
         active
-          ? "bg-[var(--color-accent)] text-black font-semibold shadow-md shadow-[var(--color-accent)]/20"
-          : "bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:opacity-90 ring-1 ring-[var(--color-border)]"
+          ? "bg-[var(--color-accent)] text-black font-semibold"
+          : "bg-[var(--color-surface-2)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:opacity-90"
       }`}
     >
       {children}
@@ -92,6 +103,7 @@ export default function Player({
 
   useEffect(() => {
     if (hidden && showSettings) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- pre-existing sync of internal sheet state to external `hidden` prop; not in scope for this presentation-only pass.
       setShowSettings(false);
     }
   }, [hidden, showSettings]);
@@ -101,9 +113,9 @@ export default function Player({
       {/* Floating player bar */}
       <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel rounded-2xl z-40 transition-all duration-500 ease-out ${hidden ? "translate-y-32 opacity-0 md:translate-y-0 md:opacity-100" : "translate-y-0 opacity-100"}`}>
         {playing && (
-          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-border)]/30 rounded-t-2xl overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-border)] rounded-t-2xl overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[var(--color-accent-dim)] to-[var(--color-accent)] transition-[width] duration-700 ease-out shadow-[0_0_8px_var(--color-accent)]"
+              className="h-full bg-[var(--color-accent)] transition-[width] duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -115,10 +127,11 @@ export default function Player({
               <button
                 type="button"
                 onClick={onPlayFromHere}
-                className="px-3 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-xs font-medium transition-all duration-200 active:scale-90 border border-white/5 whitespace-nowrap"
+                className="px-3 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center gap-1.5 justify-center text-xs font-medium transition-all duration-200 active:scale-90 border border-white/5 whitespace-nowrap"
                 aria-label="Đọc từ đoạn đang xem"
                 title="Đọc từ đoạn đang xem"
               >
+                <PlayCircle size={18} />
                 Từ đây
               </button>
             )}
@@ -126,10 +139,10 @@ export default function Player({
               <button
                 type="button"
                 onClick={onSkipBackward}
-                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Quay lại đoạn trước"
               >
-                {"⏮"}
+                <SkipBack size={20} />
               </button>
             )}
 
@@ -143,15 +156,15 @@ export default function Player({
                     : onPlay
               }
               disabled={loading || noVoice}
-              className="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-accent-dim)] text-black flex items-center justify-center text-xl font-bold disabled:opacity-50 shadow-[0_4px_20px_rgba(56,189,248,0.4)] hover:shadow-[0_4px_25px_rgba(56,189,248,0.6)] hover:scale-105 active:scale-95 transition-all duration-200"
+              className="w-14 h-14 rounded-full bg-[var(--color-accent)] text-black flex items-center justify-center disabled:opacity-50 active:scale-95 transition-transform duration-200"
               aria-label={playing && !paused ? "Tạm dừng" : "Phát"}
             >
               {loading ? (
-                <span className="animate-spin text-base">{"⏳"}</span>
+                <CircleNotch size={24} weight="bold" className="animate-spin" />
               ) : playing && !paused ? (
-                "⏸"
+                <Pause size={24} weight="fill" />
               ) : (
-                <span className="translate-x-[2px]">▶</span>
+                <Play size={24} weight="fill" />
               )}
             </button>
 
@@ -159,10 +172,10 @@ export default function Player({
               <button
                 type="button"
                 onClick={onSkipForward}
-                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Chuyển đoạn tiếp"
               >
-                {"⏭"}
+                <SkipForward size={20} />
               </button>
             )}
 
@@ -170,10 +183,10 @@ export default function Player({
               <button
                 type="button"
                 onClick={onStop}
-                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Dừng"
               >
-                {"⏹"}
+                <Stop size={20} />
               </button>
             )}
           </div>
@@ -191,11 +204,11 @@ export default function Player({
           <button
             type="button"
             onClick={() => setShowSettings(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 bg-black/20 text-[var(--color-text-muted)] border border-white/5 hover:bg-white/10 hover:text-white hover:rotate-45"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 bg-black/20 text-[var(--color-text-muted)] border border-white/5 hover:bg-white/10 hover:text-white"
             aria-label="Cài đặt"
             aria-expanded={showSettings}
           >
-            {"⚙"}
+            <SlidersHorizontal size={20} />
           </button>
         </div>
       </div>
@@ -207,14 +220,15 @@ export default function Player({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowSettings(false)}
           />
-          <div className="relative w-full sm:max-w-2xl bg-[var(--color-surface)] sm:rounded-3xl rounded-t-3xl border border-white/10 shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]">
-            <div className="flex justify-between items-center p-5 border-b border-white/5 bg-white/5">
+          <div className="relative w-full sm:max-w-2xl bg-[var(--color-surface)] sm:rounded-2xl rounded-t-2xl border border-[var(--color-border)] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]">
+            <div className="flex justify-between items-center p-5 border-b border-[var(--color-border)]">
               <h3 className="text-lg font-bold">Tùy chỉnh</h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-sm transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
+                aria-label="Đóng"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
@@ -281,10 +295,10 @@ export default function Player({
                       type="button"
                       onClick={() => setFontId(f.id)}
                       style={{ fontFamily: f.family }}
-                      className={`px-4 py-2.5 text-sm rounded-xl transition-all duration-200 active:scale-95 ${
+                      className={`px-4 py-2.5 text-sm rounded-full transition-all duration-200 active:scale-95 ${
                         settings.fontId === f.id
-                          ? "bg-[var(--color-accent)] text-black font-semibold shadow-lg shadow-[var(--color-accent)]/20"
-                          : "bg-black/20 text-[var(--color-text)] border border-white/5 hover:bg-white/10"
+                          ? "bg-[var(--color-accent)] text-black font-semibold"
+                          : "bg-[var(--color-surface-2)] text-[var(--color-text)] border border-[var(--color-border)] hover:opacity-90"
                       }`}
                     >
                       {f.name}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { loadProgress } from "@/hooks/useProgress";
+import { Play } from "@/components/icons";
 
 interface ReadCTAProps {
   slug: string;
@@ -17,6 +18,7 @@ export default function ReadCTA({ slug, totalChapters, chaptersInfo, readHrefBas
 
   useEffect(() => {
     const p = loadProgress(slug);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage read must run post-mount to avoid SSR hydration mismatch
     if (p) setChapterIdx(p.chapterIdx);
   }, [slug]);
 
@@ -33,17 +35,17 @@ export default function ReadCTA({ slug, totalChapters, chaptersInfo, readHrefBas
     <div className="flex flex-col items-center md:items-start gap-2">
       <Link
         href={href}
-        className="inline-flex items-center gap-3 px-8 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 transition-all shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_40px_rgba(255,255,255,0.5)] text-lg"
+        className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--color-accent)] text-[var(--color-bg)] font-bold rounded-xl hover:bg-[var(--color-accent-strong)] hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 text-lg"
       >
-        <span>▶</span>
+        <Play weight="fill" size={20} />
         {hasProgress ? "Đọc Tiếp" : "Đọc Từ Đầu"}
       </Link>
       {hasProgress && chapterTitle && (
         <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
-          <div className="w-24 h-0.5 rounded-full bg-white/10 overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-[var(--color-accent)] to-purple-400" style={{ width: `${pct}%` }} />
+          <div className="w-24 h-[3px] rounded-full bg-[var(--color-border)] overflow-hidden">
+            <div className="h-full bg-[var(--color-accent)]" style={{ width: `${pct}%` }} />
           </div>
-          <span className="truncate max-w-[160px]" title={chapterTitle}>{chapterTitle}</span>
+          <span className="truncate max-w-[220px]" title={chapterTitle}>{chapterTitle}</span>
           <span>·</span>
           <span>{pct}%</span>
         </div>

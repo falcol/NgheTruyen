@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listEpubSummaries } from "@/lib/epub";
 import { getGradientFromString } from "@/lib/color";
 import CardProgressOverlay from "@/components/CardProgressOverlay";
+import { ArrowLeft } from "@/components/icons";
 import ContinueReadingSection, {
   type StoryMeta,
 } from "@/components/ContinueReadingSection";
@@ -24,26 +25,19 @@ export default function EpubListPage() {
       {/* Hero header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 pb-8 border-b border-[var(--color-border)]">
         <div>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-6 h-[1.5px] bg-gradient-to-r from-[var(--color-accent)] to-transparent rounded-full" />
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--color-accent)] opacity-80">
-              Kho Sách EPUB
-            </span>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 leading-tight">
-            <span className="sakura-text">Kho</span>
-            <span className="text-[var(--color-text)]"> EPUB</span>
+          <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-2 leading-tight text-[var(--color-text)]">
+            Kho EPUB
           </h1>
           <p className="text-[var(--color-text-muted)] text-sm font-medium">
-            Sách chất lượng cao — định dạng chuẩn
+            Sách chất lượng cao, định dạng chuẩn.
           </p>
         </div>
 
         <Link
           href="/"
-          className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl glass-panel hover:bg-[var(--color-accent)]/5 hover:border-[var(--color-accent)]/30 transition-all duration-300 font-medium text-sm border border-[var(--color-border)] shrink-0"
+          className="group inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 transition-colors duration-200 font-medium text-sm shrink-0"
         >
-          <span className="text-[var(--color-accent)] group-hover:-translate-x-0.5 transition-transform duration-200">←</span>
+          <ArrowLeft size={16} className="text-[var(--color-accent)] group-hover:-translate-x-0.5 transition-transform duration-200" />
           <span className="text-[var(--color-text-muted)] group-hover:text-[var(--color-text)] transition-colors">Thư Viện</span>
         </Link>
       </div>
@@ -52,8 +46,7 @@ export default function EpubListPage() {
       <ContinueReadingSection stories={storyMetas} />
 
       {books.length === 0 && (
-        <div className="glass-panel p-10 rounded-3xl text-center border border-dashed border-[var(--color-border)]">
-          <div className="text-4xl mb-4 opacity-50">📭</div>
+        <div className="p-10 rounded-2xl text-center border border-dashed border-[var(--color-border)]">
           <p className="text-[var(--color-text-muted)] text-lg">
             Chưa có file EPUB nào. Thêm file{" "}
             <code className="bg-black/30 px-1.5 py-0.5 rounded text-[var(--color-accent)]">
@@ -71,7 +64,8 @@ export default function EpubListPage() {
       {books.length > 0 && (
         <>
           {/* Section header */}
-          <div className="ink-divider mb-6">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-2 h-2 rounded-full bg-[var(--color-accent)]" />
             <span className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-[0.18em]">
               Tất cả sách
             </span>
@@ -80,31 +74,20 @@ export default function EpubListPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-5">
             {storyMetas.map((meta) => {
               const gradient = getGradientFromString(meta.title);
               return (
                 <Link
                   key={meta.slug}
                   href={meta.detailHref}
-                  className="anime-card group block relative aspect-[2/3] rounded-xl overflow-hidden
-                    shadow-[0_8px_32px_rgba(0,0,0,0.6)]
-                    hover:shadow-[0_16px_48px_rgba(232,121,160,0.2),0_8px_32px_rgba(0,0,0,0.5)]
-                    hover:-translate-y-2 transition-all duration-400
-                    focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/60
-                    border border-white/5 hover:border-[var(--color-accent)]/20"
+                  className="group block relative aspect-[2/3] rounded-2xl overflow-hidden
+                    border border-[var(--color-border)] hover:border-[var(--color-accent)]/40
+                    hover:-translate-y-1 active:scale-[0.98] transition-all duration-200
+                    focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/60"
                 >
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-85 group-hover:opacity-100 transition-opacity duration-400`}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-                  {/* Book spine */}
-                  <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-white/15 to-transparent z-10 pointer-events-none" />
-                  <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/30 z-10 pointer-events-none" />
-
-                  {/* Hover: sakura top-edge glow */}
-                  <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-[var(--color-accent)]/0 to-transparent group-hover:via-[var(--color-accent)]/50 transition-all duration-500 z-10 pointer-events-none" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
 
                   <div className="relative z-20 h-full flex flex-col p-3.5">
                     <div className="flex-1 flex items-center justify-center">
@@ -113,8 +96,7 @@ export default function EpubListPage() {
                       </h2>
                     </div>
                     <div className="mt-auto pt-3 flex justify-center">
-                      <span className="anime-badge">
-                        <span className="opacity-70">✦</span>
+                      <span className="inline-flex items-center bg-black/40 text-white/90 text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full">
                         {meta.totalChapters > 0 ? `${meta.totalChapters} CH` : "MỞ"}
                       </span>
                     </div>

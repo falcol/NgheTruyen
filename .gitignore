@@ -12,3 +12,8 @@ node_modules/
 *.log
 epub/.cache/
 web/public/epub-cache/
+_bmad/
+.agents/
+.agent/
+CLAUDE.md
+skills-lock.json

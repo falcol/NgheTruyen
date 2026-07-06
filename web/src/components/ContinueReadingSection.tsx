@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { loadProgress } from "@/hooks/useProgress";
 import { getGradientFromString } from "@/lib/color";
+import { Play } from "@/components/icons";
 
 export interface StoryMeta {
   slug: string;
@@ -59,6 +60,7 @@ export default function ContinueReadingSection({
     }
     // Sort most recently read first
     result.sort((a, b) => b.timestamp - a.timestamp);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- derives from localStorage post-mount to avoid SSR hydration mismatch
     setItems(result.slice(0, 6));
   }, [stories]);
 
@@ -83,14 +85,10 @@ export default function ContinueReadingSection({
               className="group snap-start shrink-0 w-36 sm:w-40 md:w-44 block"
             >
               {/* Book cover */}
-              <div className="relative aspect-[2/3] rounded-xl overflow-hidden glass-panel shadow-[0_8px_24px_rgba(0,0,0,0.5)] group-hover:shadow-[0_12px_32px_rgba(56,189,248,0.2)] transition-all duration-400 group-hover:-translate-y-1.5 mb-2.5">
+              <div className="relative aspect-[2/3] rounded-2xl overflow-hidden border border-[var(--color-border)] group-hover:border-[var(--color-accent)]/40 transition-all duration-200 group-hover:-translate-y-1 mb-2.5">
                 {/* Gradient bg */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-90 group-hover:opacity-100 transition-opacity duration-400`} />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-400" />
-
-                {/* Book spine */}
-                <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-white/20 to-transparent z-10 pointer-events-none" />
-                <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/40 z-10 pointer-events-none" />
+                <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
+                <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors duration-200" />
 
                 {/* Title */}
                 <div className="relative z-20 h-full flex flex-col p-3">
@@ -102,17 +100,17 @@ export default function ContinueReadingSection({
                 </div>
 
                 {/* Progress bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50 z-30">
+                <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black/50 z-30">
                   <div
-                    className="h-full bg-gradient-to-r from-[var(--color-accent)] to-purple-400"
+                    className="h-full bg-[var(--color-accent)]"
                     style={{ width: `${item.pct}%` }}
                   />
                 </div>
 
                 {/* Play button overlay on hover */}
-                <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20">
-                    <span className="text-white text-sm translate-x-[1px]">▶</span>
+                    <Play weight="fill" size={16} className="text-white translate-x-[1px]" />
                   </div>
                 </div>
               </div>
@@ -137,9 +135,9 @@ export default function ContinueReadingSection({
                 </div>
 
                 {/* Thin progress track */}
-                <div className="mt-1.5 h-0.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="mt-1.5 h-[3px] rounded-full bg-[var(--color-border)] overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-[var(--color-accent)] to-purple-400 transition-all"
+                    className="h-full rounded-full bg-[var(--color-accent)] transition-all"
                     style={{ width: `${item.pct}%` }}
                   />
                 </div>

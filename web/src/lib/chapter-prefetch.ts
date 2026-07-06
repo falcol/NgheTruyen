@@ -32,8 +32,14 @@ export function getCachedChapter(url: string): ChapterPayload | undefined {
   return cache.get(url);
 }
 
-/** Fetch and store in memory; dedupes concurrent requests for the same URL. */
-export function prefetchChapterContent(url: string): Promise<ChapterPayload> {
+/**
+ * Start (or join) the shared in-flight fetch for `url`. The returned promise is
+ * NOT bound to any single caller's AbortSignal: if one reader navigates away
+ * mid-fetch, the network request keeps running so concurrent readers (and
+ * prefetches) still resolve and the cache still gets populated for the next
+ * visit. Dedupes concurrent requests for the same URL.
+ */
+function fetchShared(url: string): Promise<ChapterPayload> {
   const hit = cache.get(url);
   if (hit) return Promise.resolve(hit);
 
@@ -54,26 +60,45 @@ export function prefetchChapterContent(url: string): Promise<ChapterPayload> {
   return promise;
 }
 
-export async function loadChapterContent(
+/** Fetch and store in memory; dedupes concurrent requests for the same URL. */
+export function prefetchChapterContent(url: string): Promise<ChapterPayload> {
+  return fetchShared(url);
+}
+
+/**
+ * Wait for the shared fetch for `url`, resolving from cache if available.
+ * The caller's `signal` only cancels THIS wait: if it aborts this promise
+ * rejects with AbortError, but the underlying fetch keeps running (and populates
+ * the cache) so other concurrent readers are unaffected. See fetchShared.
+ */
+export function loadChapterContent(
   url: string,
   signal: AbortSignal,
 ): Promise<ChapterPayload> {
   const hit = cache.get(url);
-  if (hit) return hit;
+  if (hit) return Promise.resolve(hit);
 
-  const pending = inflight.get(url);
-  if (pending) return pending;
+  const shared = fetchShared(url);
 
-  const promise = fetchPayload(url, signal)
-    .then((payload) => {
-      cache.set(url, payload);
-      evictOldest();
-      return payload;
-    })
-    .finally(() => {
-      inflight.delete(url);
-    });
+  if (signal.aborted) {
+    return Promise.reject(
+      new DOMException("The operation was aborted.", "AbortError"),
+    );
+  }
 
-  inflight.set(url, promise);
-  return promise;
+  return new Promise<ChapterPayload>((resolve, reject) => {
+    const onAbort = () =>
+      reject(new DOMException("The operation was aborted.", "AbortError"));
+    signal.addEventListener("abort", onAbort, { once: true });
+    shared.then(
+      (payload) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(payload);
+      },
+      (err: unknown) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(err);
+      },
+    );
+  });
 }

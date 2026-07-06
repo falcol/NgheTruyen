@@ -16,6 +16,7 @@ export default function CardProgressOverlay({
 
   useEffect(() => {
     const p = loadProgress(slug);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage read must run post-mount to avoid SSR hydration mismatch
     if (p) setChapterIdx(p.chapterIdx);
   }, [slug]);
 
@@ -26,16 +27,16 @@ export default function CardProgressOverlay({
   return (
     <>
       {/* Progress bar at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40 z-30 pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black/40 z-30 pointer-events-none">
         <div
-          className="h-full bg-gradient-to-r from-[var(--color-accent)] to-purple-400 transition-all duration-500"
+          className="h-full bg-[var(--color-accent)] transition-all duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>
 
       {/* Chapter badge top-right */}
       <div className="absolute top-2 right-2 z-30 pointer-events-none">
-        <span className="bg-black/60 backdrop-blur-md text-[var(--color-accent)] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[var(--color-accent)]/30 shadow-[0_0_8px_rgba(56,189,248,0.2)]">
+        <span className="bg-black/60 backdrop-blur-md text-[var(--color-accent)] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[var(--color-accent)]/30">
           CH {chapterIdx + 1}
         </span>
       </div>

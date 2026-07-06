@@ -4,6 +4,7 @@ import { estimateReadingTime, getChapterIndex, getStoryTitle, listStories } from
 import ChapterList from "@/components/ChapterList";
 import ReadCTA from "@/components/ReadCTA";
 import { getGradientFromString } from "@/lib/color";
+import { ArrowLeft, Clock } from "@/components/icons";
 
 export function generateStaticParams() {
   return listStories().map((slug) => ({ slug }));
@@ -24,21 +25,18 @@ export default async function StoryPage({
     <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass-panel hover:bg-white/10 text-sm text-[var(--color-text-muted)] hover:text-white transition-all mb-8 group font-medium"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors duration-200 mb-8 group font-medium"
       >
-        <span className="group-hover:-translate-x-1 transition-transform">←</span> Thư Viện Nghe
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" /> Thư Viện Nghe
       </Link>
 
-      <div className={`relative overflow-hidden rounded-[2rem] mb-12 shadow-2xl glass-panel border border-white/10`}>
+      <div className="relative overflow-hidden rounded-2xl mb-12 border border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50 mix-blend-overlay`}></div>
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
+        <div className="absolute inset-0 bg-black/50"></div>
+
         <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center md:items-start">
           {/* Big book cover representation */}
-          <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
-            <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-white/20 to-transparent"></div>
-            <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/40"></div>
-            <div className="absolute left-1.5 top-0 bottom-0 w-[1px] bg-black/20"></div>
+          <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
             <h2 className="font-serif font-bold text-center text-white/95 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] text-xl leading-snug line-clamp-6">
               {storyTitle}
             </h2>
@@ -49,14 +47,13 @@ export default async function StoryPage({
               {storyTitle}
             </h1>
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-sm text-[var(--color-text-muted)] mb-8">
-              <span className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl font-bold text-white/90 border border-white/10 shadow-inner tracking-wider">
+              <span className="bg-white/10 px-4 py-2 rounded-xl font-bold text-white/90 border border-white/10 tracking-wider">
                 {chapters.length} CHƯƠNG
               </span>
-              <span className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl font-medium text-white/70 border border-white/10 text-sm flex items-center gap-1.5">
-                <span className="text-[var(--color-accent)]">⏱</span>
+              <span className="bg-white/10 px-4 py-2 rounded-xl font-medium text-white/70 border border-white/10 text-sm flex items-center gap-1.5">
+                <Clock size={14} className="text-[var(--color-accent)]" />
                 {estimateReadingTime(chapters.length)}
               </span>
-              <span className="opacity-70 font-mono text-xs bg-black/20 px-4 py-2 rounded-xl border border-white/5">{slug}</span>
             </div>
             
             <div className="flex justify-center md:justify-start">

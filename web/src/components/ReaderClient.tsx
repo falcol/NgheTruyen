@@ -18,6 +18,15 @@ import {
   ReaderSettingsProvider,
   useReaderSettingsContext,
 } from "@/context/ReaderSettingsContext";
+import {
+  MagnifyingGlass,
+  CaretUp,
+  CaretDown,
+  CaretLeft,
+  CaretRight,
+  CircleNotch,
+  X,
+} from "@/components/icons";
 
 interface ChapterMeta {
   index: number;
@@ -35,7 +44,7 @@ const PICKER_WINDOW_HALF = 40;
 const PICKER_LOAD_STEP = 40;
 
 // Two content modes:
-//  - `paragraphs` (sync): caller already has the chapter text — render immediately.
+//  - `paragraphs` (sync): caller already has the chapter text, render immediately.
 //  - `chapterContentUrl` (async): fetch a gzipped JSON payload client-side.
 // Exactly one should be provided per page.
 type ReaderClientProps = {
@@ -55,6 +64,7 @@ type ReaderClientProps = {
 export default function ReaderClient(props: ReaderClientProps) {
   return (
     <ReaderSettingsProvider>
+      {/* eslint-disable-next-line no-use-before-define -- hoisted function declaration, defined below */}
       <ReaderClientInner {...props} />
     </ReaderSettingsProvider>
   );
@@ -239,7 +249,7 @@ function ReaderClientInner({
     }
   }, [activeChapterMeta, storyTitle]);
 
-  // Sync state to incoming `paragraphs` prop (sync mode) — covers chapter navigation
+  // Sync state to incoming `paragraphs` prop (sync mode): covers chapter navigation
   // in the crawler-fed reader where each page renders with fresh paragraphs.
   useEffect(() => {
     if (paragraphsProp) {
@@ -438,7 +448,7 @@ function ReaderClientInner({
     el.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [tts.activeRange]);
 
-  // Respect manual scrolling during playback — pause auto-follow for ~4s.
+  // Respect manual scrolling during playback: pause auto-follow for ~4s.
   useEffect(() => {
     if (!tts.playing) return;
     const pauseFollow = () => {
@@ -616,18 +626,16 @@ function ReaderClientInner({
 
   return (
     <div className={`reader-shell min-h-dvh overscroll-y-none transition-opacity duration-150 ${chapterFade ? "opacity-0" : "opacity-100"}`} style={shellStyle}>
-      {/* Overscroll indicator — top (prev chapter) */}
+      {/* Overscroll indicator: top (prev chapter) */}
       {overscrollDir === "up" && (
         <div
           className="fixed top-0 left-0 right-0 z-50 flex flex-col items-center justify-start pt-8 h-32 pointer-events-none transition-opacity"
           style={{ opacity: Math.min(overscrollDelta * 1.5, 1) }}
         >
           <div className={`flex flex-col items-center justify-center transition-transform ${overscrollDelta >= 1 ? 'scale-110' : ''}`}>
-            <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] shadow-lg border border-[var(--color-border)] flex items-center justify-center relative overflow-hidden mb-2">
-              <svg className="w-5 h-5 text-[var(--color-text-muted)] absolute z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-              </svg>
-              <div 
+            <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center relative overflow-hidden mb-2">
+              <CaretUp size={20} weight="bold" className="text-[var(--color-text-muted)] absolute z-10" />
+              <div
                 className="absolute bottom-0 left-0 right-0 bg-[var(--color-accent)]/20 transition-all duration-75"
                 style={{ height: `${Math.min(overscrollDelta * 100, 100)}%` }}
               />
@@ -638,7 +646,7 @@ function ReaderClientInner({
           </div>
         </div>
       )}
-      {/* Overscroll indicator — bottom (next chapter) */}
+      {/* Overscroll indicator: bottom (next chapter) */}
       {overscrollDir === "down" && (
         <div
           className="fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-8 h-32 pointer-events-none transition-opacity"
@@ -648,11 +656,9 @@ function ReaderClientInner({
             <span className="text-[10px] uppercase tracking-wider font-bold text-[var(--color-accent)] mb-2">
               {overscrollDelta >= 1 ? "Thả ra để sang trang" : "Kéo thêm..."}
             </span>
-            <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] shadow-lg border border-[var(--color-border)] flex items-center justify-center relative overflow-hidden">
-              <svg className="w-5 h-5 text-[var(--color-text-muted)] absolute z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-              <div 
+            <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center relative overflow-hidden">
+              <CaretDown size={20} weight="bold" className="text-[var(--color-text-muted)] absolute z-10" />
+              <div
                 className="absolute top-0 left-0 right-0 bg-[var(--color-accent)]/20 transition-all duration-75"
                 style={{ height: `${Math.min(overscrollDelta * 100, 100)}%` }}
               />
@@ -660,11 +666,11 @@ function ReaderClientInner({
           </div>
         </div>
       )}
-      {/* Chapter scroll progress — fixed top, above header */}
-      <div className="fixed top-0 left-0 right-0 h-0.5 z-50 bg-white/5 pointer-events-none">
+      {/* Chapter scroll progress: fixed top, above header */}
+      <div className="fixed top-0 left-0 right-0 h-1 z-50 bg-[var(--color-border)] pointer-events-none">
         <div
           ref={progressRef}
-          className="h-full bg-gradient-to-r from-[var(--color-accent-dim)] to-[var(--color-accent)] transition-[width] duration-150 ease-out"
+          className="h-full bg-[var(--color-accent)] transition-[width] duration-150 ease-out"
           style={{ width: "0%" }}
         />
       </div>
@@ -672,7 +678,7 @@ function ReaderClientInner({
         <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-[10px] md:text-xs reader-accent/80 font-bold tracking-widest uppercase mb-1 break-words leading-snug">{storyTitle}</p>
+              <p className="text-[10px] md:text-xs reader-accent opacity-80 font-bold tracking-widest uppercase mb-1 break-words leading-snug">{storyTitle}</p>
               <h1 className="text-lg md:text-xl font-extrabold break-words leading-snug">{activeTitle}</h1>
             </div>
             <Link
@@ -680,7 +686,7 @@ function ReaderClientInner({
               aria-label="Đóng và quay lại danh sách"
               className="shrink-0 w-9 h-9 rounded-full bg-black/20 border border-white/5 flex items-center justify-center hover:bg-black/40 active:scale-90 transition-all duration-200"
             >
-              ✕
+              <X size={16} />
             </Link>
           </div>
           <div className="mt-3 relative" ref={pickerContainerRef}>
@@ -689,25 +695,21 @@ function ReaderClientInner({
               className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between gap-1 cursor-pointer w-full"
             >
               <span>Chương {activeChapterIdx + 1} / {totalChapters}</span>
-              <span className={`transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`}>▾</span>
+              <CaretDown size={14} className={`transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`} />
             </button>
             {pickerOpen && (
               <>
                 <div className="fixed inset-0 top-16 bg-black/50 backdrop-blur-sm z-40" onClick={() => setPickerOpen(false)} />
                 <div ref={pickerRef} className="absolute top-full left-0 right-0 mt-2 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                  <div className="relative border-b border-white/5 bg-black/20">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </div>
+                  <div className="relative p-3 border-b border-white/5">
+                    <MagnifyingGlass size={16} className="absolute left-6 top-1/2 -translate-y-1/2 opacity-40" />
                     <input
                       autoFocus
                       type="text"
                       placeholder="Tìm chương..."
                       value={filter}
                       onChange={(e) => { setFilter(e.target.value); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
-                      className="pl-10 pr-4 py-3.5 text-sm bg-transparent outline-none w-full placeholder-white/40"
+                      className="pl-9 pr-4 py-2.5 text-sm rounded-lg bg-black/20 border border-white/5 outline-none w-full placeholder-white/40 focus:border-[var(--color-accent)]/50 transition-colors"
                     />
                   </div>
                 <div 
@@ -727,7 +729,8 @@ function ReaderClientInner({
                   }}
                 >
                   {pickerList.hasMoreBefore && (
-                    <div className="py-2 text-center text-xs text-white/40 italic">
+                    <div className="py-2 flex items-center justify-center gap-1.5 text-xs text-white/40 italic">
+                      <CircleNotch size={14} className="animate-spin" />
                       Đang tải thêm...
                     </div>
                   )}
@@ -751,7 +754,8 @@ function ReaderClientInner({
                     </a>
                   ))}
                   {pickerList.hasMoreAfter && (
-                    <div className="py-2 text-center text-xs text-white/40 italic">
+                    <div className="py-2 flex items-center justify-center gap-1.5 text-xs text-white/40 italic">
+                      <CircleNotch size={14} className="animate-spin" />
                       Đang tải thêm...
                     </div>
                   )}
@@ -823,23 +827,23 @@ function ReaderClientInner({
             onClick={goPrev}
             disabled={!hasPrev}
             aria-label="Chương trước"
-            className="btn-spring px-5 py-3 rounded-xl glass-panel disabled:opacity-30 disabled:active:scale-100 hover:scale-[1.02] transition-all font-medium flex items-center gap-2 group"
+            className="btn-spring px-5 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] disabled:opacity-30 disabled:active:scale-100 hover:bg-white/5 transition-colors font-medium flex items-center gap-2 group"
           >
-            <span className="group-hover:-translate-x-1 transition-transform duration-200">←</span> Trước
+            <CaretLeft size={16} className="group-hover:-translate-x-0.5 transition-transform duration-200" /> Trước
           </button>
           <button
             onClick={goNext}
             disabled={!hasNext}
             aria-label="Chương sau"
-            className="btn-spring px-5 py-3 rounded-xl glass-panel disabled:opacity-30 disabled:active:scale-100 hover:scale-[1.02] transition-all font-medium flex items-center gap-2 group bg-gradient-to-r hover:from-[var(--color-accent)]/10 hover:to-transparent"
+            className="btn-spring px-5 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] disabled:opacity-30 disabled:active:scale-100 hover:bg-white/5 transition-colors font-medium flex items-center gap-2 group"
           >
-            Sau <span className="group-hover:translate-x-1 transition-transform">→</span>
+            Sau <CaretRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
 
         {hasNext && (
-          <div className="text-center mt-16 pb-8 opacity-50 reader-muted text-sm flex flex-col items-center gap-2 animate-pulse">
-            <span>↓</span>
+          <div className="text-center mt-16 pb-8 opacity-50 reader-muted text-sm flex flex-col items-center gap-2">
+            <CaretDown size={14} />
             <span>Kéo lên để sang chương sau</span>
           </div>
         )}

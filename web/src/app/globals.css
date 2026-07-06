@@ -1,16 +1,31 @@
 @import "tailwindcss";
 
+/* ── App-shell design tokens (calm editorial, dark-only) ──
+   Single desaturated-rose accent, warm near-black neutrals.
+   These are DEFAULTS for non-reader routes. On reader routes,
+   `applyReaderThemeToDocument` (src/lib/reader-settings.ts) overwrites
+   --color-bg/-surface/-text/-text-muted/-accent/-accent-dim/-border
+   via inline style on <html>, which always wins over these @theme
+   values, so the 7 reader themes keep working unchanged. */
+@theme {
+  --color-bg: #0c0c0e;
+  --color-surface: #16161a;
+  --color-surface-2: #1e1e23;
+  --color-border: #2a2a31;
+  --color-text: #ededf0;
+  --color-text-muted: #9a9aa5;
+  --color-text-dim: #6b6b76;
+
+  /* Single accent: desaturated rose. ~6.95:1 contrast on --color-surface (AA). */
+  --color-accent: #d98aa0;
+  /* Hover/active state. ~5.13:1 contrast on --color-surface (AA). */
+  --color-accent-strong: #c76d88;
+  /* Legacy alias kept for existing gradient usages in not-yet-updated
+     shell/player markup; same value as --color-accent-strong (no 2nd hue). */
+  --color-accent-dim: #c76d88;
+}
+
 :root {
-  /* ── Anime aesthetic: midnight navy + sakura pink ── */
-  --color-bg: #06070f;
-  --color-surface: #0d0f1c;
-  --color-text: #ede9fe;
-  --color-text-muted: #8891b4;
-  --color-accent: #e879a0;
-  --color-accent-dim: #be185d;
-  --color-secondary: #818cf8;
-  --color-gold: #f59e0b;
-  --color-border: #181c30;
   --reader-font-family: var(--font-literata), Georgia, serif;
   --reader-font-size: 1.125rem;
 }
@@ -70,7 +85,7 @@ a.reader-muted:hover {
   border-left: 3px solid var(--color-accent);
   padding-left: 1rem;
   border-radius: 0 0.375rem 0.375rem 0;
-  box-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 14%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 10%, transparent);
 }
 
 .chapter-item {
@@ -78,45 +93,16 @@ a.reader-muted:hover {
   contain-intrinsic-size: auto 52px;
 }
 
-/* Glassmorphism utilities */
+/* Glassmorphism: reserved for fixed TopNav + fixed Player bar only. Kept subtle. */
 .glass-panel {
-  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-bg) 60%, transparent);
 }
 
-/* ── Anime-specific decorative utilities ── */
-
-/* Sakura glow: pink outer glow for interactive elements */
-.sakura-glow {
-  box-shadow: 0 0 20px rgba(232, 121, 160, 0.25), 0 0 60px rgba(232, 121, 160, 0.1);
-}
-.sakura-glow-sm {
-  box-shadow: 0 0 10px rgba(232, 121, 160, 0.2);
-}
-
-/* Anime card: double-ring border frame effect */
-.anime-card {
-  position: relative;
-}
-.anime-card::before {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border-radius: inherit;
-  border: 1px solid rgba(232, 121, 160, 0);
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
-  pointer-events: none;
-  z-index: 5;
-}
-.anime-card:hover::before {
-  border-color: rgba(232, 121, 160, 0.35);
-  box-shadow: inset 0 0 20px rgba(232, 121, 160, 0.06);
-}
-
-/* Ink divider: brush-stroke style section separator */
+/* Ink divider: section separator (flat accent, no gradient) */
 .ink-divider {
   position: relative;
   display: flex;
@@ -128,18 +114,18 @@ a.reader-muted:hover {
   display: block;
   width: 2px;
   height: 1.1em;
-  background: linear-gradient(to bottom, var(--color-accent), var(--color-accent-dim));
+  background: var(--color-accent);
   border-radius: 2px;
   flex-shrink: 0;
 }
 
-/* Anime badge: styled chapter count */
+/* Badge: flat tinted (no gradient) */
 .anime-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background: linear-gradient(135deg, rgba(232,121,160,0.15), rgba(129,140,248,0.15));
-  border: 1px solid rgba(232,121,160,0.3);
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
   color: var(--color-accent);
   font-size: 0.7rem;
   font-weight: 700;
@@ -148,12 +134,9 @@ a.reader-muted:hover {
   border-radius: 9999px;
 }
 
-/* Sakura gradient text */
+/* Heading accent text: solid color (no gradient) */
 .sakura-text {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-secondary) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--color-text);
 }
 
 /* Nav link active indicator */
@@ -202,7 +185,7 @@ a.reader-muted:hover {
   margin-bottom: -0.05em;
   font-weight: 800;
   color: var(--color-accent);
-  text-shadow: 0 2px 15px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  text-shadow: 0 1px 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
 }
 
 /* Hide on scroll transitions */
@@ -254,38 +237,11 @@ a.reader-muted:hover {
   animation: shimmerPulse 1.8s ease-in-out infinite;
 }
 
-/* Ambient background blobs */
-@keyframes blobDrift1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.05); }
-  66% { transform: translate(-20px, 15px) scale(0.95); }
-}
-@keyframes blobDrift2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-25px, 30px) scale(1.08); }
-}
-.ambient-blob {
-  position: fixed;
-  border-radius: 9999px;
-  filter: blur(80px);
-  pointer-events: none;
-  z-index: 0;
-}
-.ambient-blob-1 {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(232,121,160,0.07) 0%, transparent 65%);
-  top: -150px; left: -200px;
-  animation: blobDrift1 28s ease-in-out infinite;
-}
-.ambient-blob-2 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(129,140,248,0.06) 0%, transparent 65%);
-  bottom: 5%; right: -120px;
-  animation: blobDrift2 35s ease-in-out infinite;
-}
-.ambient-blob-3 {
-  width: 350px; height: 350px;
-  background: radial-gradient(circle, rgba(190,24,93,0.05) 0%, transparent 65%);
-  top: 45%; left: 35%;
-  animation: blobDrift1 22s ease-in-out infinite reverse;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
