@@ -4,8 +4,13 @@ export interface TTSChunk {
   endParagraphIdx: number;
 }
 
-const MIN_CHUNK_CHARS = 60;
-const MAX_CHUNK_CHARS = 250;
+// Cloud neural TTS (Edge) handles long utterances well. Larger chunks =
+// fewer HTTP round-trips + fewer audio handoffs → smoother like Read Aloud
+// (their cloud path uses ~750 chars). Cap below API max (800) in tts-server.
+// First chunk stays smaller so cold Play / prepare gets audio sooner.
+const MIN_CHUNK_CHARS = 120;
+const MAX_CHUNK_CHARS = 750;
+const FIRST_CHUNK_CHARS = 400;
 const SENTENCE_SEPARATOR = " ";
 
 // Placeholder swapped in for protected periods so they survive the split step.
@@ -77,6 +82,10 @@ export function buildTTSChunks(paragraphs: string[]) {
   let currentStartParagraphIdx = -1;
   let currentEndParagraphIdx = -1;
 
+  function chunkLimit() {
+    return chunks.length === 0 ? FIRST_CHUNK_CHARS : MAX_CHUNK_CHARS;
+  }
+
   function pushCurrentChunk() {
     if (!currentText) return;
 
@@ -97,11 +106,9 @@ export function buildTTSChunks(paragraphs: string[]) {
     sentences.forEach((sentence) => {
       const separator = currentText.length === 0 ? "" : SENTENCE_SEPARATOR;
       const nextText = `${currentText}${separator}${sentence}`;
+      const limit = chunkLimit();
 
-      if (
-        currentText &&
-        nextText.length > MAX_CHUNK_CHARS
-      ) {
+      if (currentText && nextText.length > limit) {
         pushCurrentChunk();
       }
 
@@ -110,8 +117,14 @@ export function buildTTSChunks(paragraphs: string[]) {
       }
 
       const nextSeparator = currentText.length === 0 ? "" : SENTENCE_SEPARATOR;
+      // If a single sentence exceeds the active limit, still accept it (splitLongSegment handled upstream)
       currentText = `${currentText}${nextSeparator}${sentence}`;
       currentEndParagraphIdx = paragraphIdx;
+
+      // Flush first chunk as soon as it reaches the short target (faster first audio)
+      if (chunks.length === 0 && currentText.length >= FIRST_CHUNK_CHARS) {
+        pushCurrentChunk();
+      }
     });
   });
 

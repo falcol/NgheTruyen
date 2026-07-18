@@ -406,6 +406,16 @@ function ReaderClientInner({
     if (paragraphs) prepare(chapterKey, paragraphs);
   }, [chapterKey, paragraphs, prepare]);
 
+  // Manual chapter change must kill in-flight TTS. Auto-next (end of chapter)
+  // sets autoPlayNext first, then navigates — keep pipeline for that path only.
+  const prevChapterIdxRef = useRef(activeChapterIdx);
+  useEffect(() => {
+    if (prevChapterIdxRef.current === activeChapterIdx) return;
+    prevChapterIdxRef.current = activeChapterIdx;
+    if (autoPlayNext) return;
+    tts.stop();
+  }, [activeChapterIdx, autoPlayNext, tts.stop]);
+
   // Keep latest values for the keyboard handler without re-binding listeners.
   useEffect(() => {
     latestRef.current = { tts, paragraphs, chapterKey };
@@ -435,6 +445,17 @@ function ReaderClientInner({
     if (idx < 0) tts.play(chapterKey, paragraphs);
     else tts.playFromParagraph(chapterKey, paragraphs, idx);
   };
+
+  /** Click a paragraph → play from that paragraph (Read Aloud-style). Skip if user is selecting text. */
+  const handleParagraphClick = useCallback(
+    (idx: number) => {
+      if (!paragraphs) return;
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) return;
+      tts.playFromParagraph(chapterKey, paragraphs, idx);
+    },
+    [paragraphs, chapterKey, tts],
+  );
 
   // Auto-follow: keep the speaking paragraph inside the comfortable reading band.
   useEffect(() => {
@@ -808,7 +829,9 @@ function ReaderClientInner({
                 ref={(el) => {
                   if (el) paragraphRefs.current[i] = el;
                 }}
-                className={`reader-paragraph ${i === 0 ? "drop-cap" : ""} ${
+                onClick={() => handleParagraphClick(i)}
+                title="Phát từ đoạn này"
+                className={`reader-paragraph cursor-pointer ${i === 0 ? "drop-cap" : ""} ${
                   tts.activeRange &&
                   i >= tts.activeRange.start &&
                   i <= tts.activeRange.end

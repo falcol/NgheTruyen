@@ -19,6 +19,7 @@ import {
   CircleNotch,
   PlayCircle,
 } from "@/components/icons";
+import type { EdgeTTSVoice } from "@/lib/tts-voices";
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
 
@@ -74,7 +75,7 @@ export default function Player({
   rate: number;
   currentIdx: number;
   totalParagraphs: number;
-  viVoices: SpeechSynthesisVoice[];
+  viVoices: EdgeTTSVoice[];
   selectedVoiceName: string | null;
   onPlay: () => void;
   onPlayFromHere?: () => void;
@@ -98,8 +99,6 @@ export default function Player({
 
   const progress =
     currentIdx >= 0 ? Math.round((currentIdx / totalParagraphs) * 100) : 0;
-
-  const noVoice = viVoices.length === 0;
 
   useEffect(() => {
     if (hidden && showSettings) {
@@ -155,7 +154,7 @@ export default function Player({
                     ? onResume
                     : onPlay
               }
-              disabled={loading || noVoice}
+              disabled={loading}
               className="w-14 h-14 rounded-full bg-[var(--color-accent)] text-black flex items-center justify-center disabled:opacity-50 active:scale-95 transition-transform duration-200"
               aria-label={playing && !paused ? "Tạm dừng" : "Phát"}
             >
@@ -192,13 +191,11 @@ export default function Player({
           </div>
 
           <div className="text-sm font-medium tracking-wide text-[var(--color-text-muted)] bg-black/20 px-3 py-1.5 rounded-full border border-white/5">
-            {noVoice
-              ? "Không có giọng VN"
-              : loading
-                ? "Đang tải..."
-                : currentIdx >= 0
-                  ? `${currentIdx + 1} / ${totalParagraphs}`
-                  : "Sẵn sàng"}
+            {loading
+              ? "Đang tải..."
+              : currentIdx >= 0
+                ? `${currentIdx + 1} / ${totalParagraphs}`
+                : "Sẵn sàng"}
           </div>
 
           <button
@@ -328,41 +325,30 @@ export default function Player({
                 <label className="text-xs text-[var(--color-text-muted)] block mb-3 font-semibold uppercase tracking-wider">
                   Giọng đọc & Tốc độ
                 </label>
-                {noVoice ? (
-                  <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 space-y-1">
-                    <p>Browser không có giọng tiếng Việt.</p>
-                    <p>Dùng Chrome hoặc Edge để có giọng đọc tốt nhất.</p>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {viVoices.map((v) => (
+                      <Chip
+                        key={v.name}
+                        active={selectedVoiceName === v.name}
+                        onClick={() => onVoiceChange(v.name)}
+                      >
+                        {v.label}
+                      </Chip>
+                    ))}
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {viVoices.map((v) => (
-                        <Chip
-                          key={v.name}
-                          active={selectedVoiceName === v.name}
-                          onClick={() => onVoiceChange(v.name)}
-                        >
-                          {v.name.includes("Google")
-                            ? "Google"
-                            : v.name.includes("Microsoft")
-                              ? "Microsoft"
-                              : v.name}
-                        </Chip>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {RATES.map((r) => (
-                        <Chip
-                          key={r}
-                          active={rate === r}
-                          onClick={() => onRateChange(r)}
-                        >
-                          {r}x
-                        </Chip>
-                      ))}
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {RATES.map((r) => (
+                      <Chip
+                        key={r}
+                        active={rate === r}
+                        onClick={() => onRateChange(r)}
+                      >
+                        {r}x
+                      </Chip>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
