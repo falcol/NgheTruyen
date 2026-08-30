@@ -43,6 +43,7 @@ from .metruyenchu import MetruyenchuCrawler
 from .metruyencv import MetruyencvCrawler
 from .truyenfullmoi import TruyenfullmoiCrawler
 from .sitruyencv import SitruyencvCrawler
+from .xtruyen import XtruyenCrawler
 
 CRAWLERS = {
     "truyenqq": TruyenQQCrawler,
@@ -50,6 +51,7 @@ CRAWLERS = {
     "metruyencv": MetruyencvCrawler,
     "truyenfullmoi": TruyenfullmoiCrawler,
     "sitruyencv": SitruyencvCrawler,
+    "xtruyen": XtruyenCrawler,
 }
 
 # Preset for --aggressive: maximize throughput, accept higher 429 risk.
