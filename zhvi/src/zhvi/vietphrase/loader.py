@@ -10,10 +10,11 @@ import hashlib
 import pickle
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from .layers import Layer, make_entry
+from .patterns import PatternRule, SLOT_RE, build_pattern_index, compile_rule
 
 TRUST_BY_FILE = {
     "ChinesePhienAmWords.txt": 5.0,
@@ -101,14 +102,17 @@ class Dictionary:
     trad_simp: dict[str, str]
     entry_count: int
     fingerprint: str  # SHA-256 cua toan bo nguon dict da nap
+    patterns: dict = field(default_factory=dict)  # bucket -> list[PatternRule] (muc 11.1 luat nhan)
 
 
 def dict_files_fingerprint(
     dict_dir: Path,
     manual_glossary: Path | None,
     global_glossary: Path | None = None,
+    patterns: bool = True,
 ) -> str:
     h = hashlib.sha256()
+    h.update(b"fmt:patterns-v1\x1f" if patterns else b"fmt:literal-only\x1f")  # cache cu tu invalid
     for name in LOAD_ORDER:
         path = dict_dir / name
         if path.is_file():
@@ -133,13 +137,15 @@ def load_dictionary(
     manual_glossary: Path | None = None,
     global_glossary: Path | None = None,
     cache_path: Path | None = None,
+    patterns: bool = True,
 ) -> Dictionary:
     """Nap toan bo layer vao trie. Neu cache_path hop le (fingerprint khop) -> pickle.
 
     Pickle chi dung cho cache tu sinh trong .zhvi/cache/ cua chinh may (self-generated,
     khong bao gio nap file tu nguon khong tin cay); fingerprint kiem tra tinh truc tiep.
+    patterns=False: bo qua luat nhan {s}/{n} (chi dung trie literal).
     """
-    fingerprint = dict_files_fingerprint(dict_dir, manual_glossary, global_glossary)
+    fingerprint = dict_files_fingerprint(dict_dir, manual_glossary, global_glossary, patterns)
     if cache_path is not None and cache_path.is_file():
         try:
             with cache_path.open("rb") as f:
@@ -151,6 +157,7 @@ def load_dictionary(
 
     trad_simp = load_trad_simp(dict_dir)
     root = TrieNode()
+    pattern_rules: list[PatternRule] = []
     count = 0
     load_index = 0
     for name in LOAD_ORDER:
@@ -173,6 +180,16 @@ def load_dictionary(
             if name in ("QualityOverrides.txt", "Custom.txt"):
                 layer = Layer.GLOBAL_MANUAL
             prec = (int(layer), trust, load_index)
+            if SLOT_RE.search(zh):
+                # luat nhan {s}/{n}: compile thanh pattern rule (khong nap trie
+                # literal — key chua '{' khong bao gio khop van ban that)
+                if not patterns:
+                    continue
+                rule = compile_rule(to_simplified(zh, trad_simp), vi, prec, _policy_for(layer))
+                if rule is not None:
+                    pattern_rules.append(rule)
+                    count += 1
+                continue
             _insert(root, zh, vi, prec, _policy_for(layer))
             if simp_keys:
                 simp = to_simplified(zh, trad_simp)
@@ -208,7 +225,13 @@ def load_dictionary(
                 _insert(root, simp, vi, prec, "PREFERRED")
             count += 1
 
-    dic = Dictionary(root=root, trad_simp=trad_simp, entry_count=count, fingerprint=fingerprint)
+    dic = Dictionary(
+        root=root,
+        trad_simp=trad_simp,
+        entry_count=count,
+        fingerprint=fingerprint,
+        patterns=build_pattern_index(pattern_rules),
+    )
     if cache_path is not None:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         tmp = cache_path.with_suffix(".tmp")

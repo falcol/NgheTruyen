@@ -52,6 +52,7 @@ class Config:
     lattice_beam: int = 4
     collapse_repetitions: bool = True
     qa_strip_junk: bool = True
+    pattern_rules: bool = True  # luat nhan {s}/{n} trong LuatNhan.txt (muc 11.1)
     # routing (M2 placeholders, fixed in fingerprint)
     audit_direct_vp_rate: float = 0.0
     # runtime (M2 placeholders)
@@ -136,6 +137,7 @@ output_policy = "strict-final"
 learning = "safe"
 collapse_repetitions = true  # loai lap artifact ('có chút có chút') giua 2 span khac nhau; giu reduplication goc (慢慢→chậm chậm)
 qa_strip_junk = true  # strip rac truyen web (watermark ⓣⓣⓚ, bookmark, anti-leech) tren source truoc khi dich
+pattern_rules = true  # luat nhan {s}/{n} (so/danh tu) trong LuatNhan.txt duoc match regex + dien capture
 global_glossary = "~/.config/zhvi/glossary.manual.tsv"  # term chuan moi truyen (Tieu Ban...); book manual van override duoc
 
 [input]

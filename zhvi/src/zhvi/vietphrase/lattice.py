@@ -16,6 +16,7 @@ from dataclasses import dataclass
 
 from .layers import Layer
 from .loader import Dictionary, TrieNode, normalize_nfc, to_simplified
+from .patterns import CJK_KEY, DIGIT_KEY, ENTITY_TRUSTS, PRONOUNS, PatternRule, fill_target, is_num_start
 from .trace import SourceSpan, VpDraft, VpSpan
 
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
@@ -44,6 +45,7 @@ W_SINGLE = 2.0          # phat single-char fallback
 W_FRAG = 1.5            # phat 2 single-char lien ke (phan manh)
 W_UNKNOWN = 5.0         # ky tu khong co entry nao
 W_DROP = 0.5            # thuong khi boc particle (giu hanh vi QuickTrans)
+W_PATTERN = 3.0         # phat luat nhan {s}/{n}: pattern la fallback cua literal
 
 
 @dataclass(frozen=True)
@@ -56,6 +58,7 @@ class Edge:
     entry_version_id: str | None
     score: float
     alternatives: tuple = ()
+    is_pattern: bool = False  # edge tu luat nhan {s}/{n} — thua literal cung do dai
 
 
 def _find_edges(root: TrieNode, text: str, pos: int) -> list[Edge]:
@@ -91,6 +94,64 @@ def _literal_edge(text: str, start: int) -> Edge:
     return Edge(start, j, text[start:j], (int(Layer.BASE_SINGLE), 0.0, -1), "CONTEXTUAL", None, 0.0)
 
 
+def _translate_capture(dic: Dictionary, seg: str) -> str:
+    """Dich mot capture {s}/{n} qua trie (tat pattern — chong de quy). Khong hoa
+    dau cau vi no nam giua chuoi target."""
+    if not seg:
+        return ""
+    edges = greedy_path(dic, seg, patterns=False)
+    return " ".join(e.target for e in edges if e.target != "").strip()
+
+
+def _entity_ok(dic: Dictionary, seg: str) -> bool:
+    """{n} chi hop le khi chinh no la mot entry entity (Names/overrides/manual)
+    hoac dai tu co trong tu dien — khong phai dong tu/dai tu chi thi."""
+    if not seg or seg[0] in PRONOUNS:
+        return False
+    node = dic.root
+    for ch in seg:
+        node = node.children.get(ch)
+        if node is None:
+            return False
+    return any(p[1] in ENTITY_TRUSTS for _t, p, _pol in node.entries)
+
+
+def _candidate_rules(dic: Dictionary, ch: str) -> list[PatternRule]:
+    """Rules co the match tai ky tu `ch` (bucket ky tu cu the + DIGIT/CJK)."""
+    if not dic.patterns:
+        return []
+    out: list[PatternRule] = list(dic.patterns.get(ch, ()))
+    if is_num_start(ch):
+        out += dic.patterns.get(DIGIT_KEY, ())
+    if CJK_RE.match(ch):
+        out += dic.patterns.get(CJK_KEY, ())
+    return out
+
+
+def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
+    """Edges tu luat nhan {s}/{n} match neo tai pos."""
+    edges: list[Edge] = []
+    for rule in _candidate_rules(dic, text[pos]):
+        m = rule.regex.match(text, pos)
+        if not m:
+            continue
+        if any(
+            kind == "n" and not _entity_ok(dic, m.group(i + 1) or "")
+            for i, kind in enumerate(rule.slots)
+        ):
+            continue  # {n} phai la entity that (ten/keyword), khong phai cum dong tu
+        filled = fill_target(rule, m, lambda s: _translate_capture(dic, s))
+        if not filled:
+            continue
+        length = m.end() - pos
+        score = rule.precedence[1] * W_TRUST + (length - 1) * W_LEN - W_PATTERN
+        edges.append(
+            Edge(pos, m.end(), filled, rule.precedence, rule.policy,
+                 f"{rule.precedence[0]}:{rule.key}", score, is_pattern=True)
+        )
+    return edges
+
+
 @dataclass
 class _Path:
     edges: list[Edge]
@@ -116,7 +177,7 @@ def _path_tiebreak_key(p: "_Path") -> tuple:
     return (-p.score, tuple(-(e.end - e.start) for e in p.edges))
 
 
-def best_paths(dic: Dictionary, text: str, k: int = 4) -> list[_Path]:
+def best_paths(dic: Dictionary, text: str, k: int = 4, *, patterns: bool = True) -> list[_Path]:
     """Top-K duong di qua toan bo text bang beam DP (parent pointers)."""
     n = len(text)
     states: list[_State] = [_State(0, 0.0, False, -1, None)]
@@ -130,8 +191,9 @@ def best_paths(dic: Dictionary, text: str, k: int = 4) -> list[_Path]:
         ids = ids[:k]
         frontier[pos] = ids
         # sinh edges tu pos
-        if CJK_RE.match(text[pos]):
-            candidates = _find_edges(dic.root, text, pos)
+        pat_edges = _pattern_edges(dic, text, pos) if patterns else []
+        if CJK_RE.match(text[pos]) or pat_edges:
+            candidates = _find_edges(dic.root, text, pos) + pat_edges
             if not candidates:
                 candidates = [
                     Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
@@ -164,18 +226,22 @@ def best_paths(dic: Dictionary, text: str, k: int = 4) -> list[_Path]:
     return materialized[:k]
 
 
-def greedy_path(dic: Dictionary, text: str) -> list[Edge]:
+def greedy_path(dic: Dictionary, text: str, *, patterns: bool = True) -> list[Edge]:
     """Duong di longest-match tai moi vi tri — baseline QuickTrans (engine cu).
 
     M1 dung path nay de render (parity voi chat luong da kiem chung); lattice
     top-K o tren dung de tinh margin/entropy/alternatives cho risk (M2 router).
+    patterns=False dung khi dich capture cua rule — tranh de quy vo han.
     """
     edges: list[Edge] = []
     n = len(text)
     pos = 0
     while pos < n:
-        if CJK_RE.match(text[pos]):
-            cands = _find_edges(dic.root, text, pos)
+        pat: list[Edge] = []
+        if patterns and (CJK_RE.match(text[pos]) or is_num_start(text[pos])):
+            pat = _pattern_edges(dic, text, pos)
+        if CJK_RE.match(text[pos]) or pat:
+            cands = _find_edges(dic.root, text, pos) + pat
             if not cands:
                 edges.append(
                     Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
@@ -183,11 +249,19 @@ def greedy_path(dic: Dictionary, text: str) -> list[Edge]:
                 pos += 1
                 continue
             longest = max(e.end for e in cands)
-            # trong cac match dai nhat, chon precedence cao nhat; bang nhau -> nap sau thang
-            # (dung hanh vi _upsert pri >= node.p cua engine cu)
+            # trong cac match dai nhat: literal thang pattern (pattern la fallback
+            # cho so/ten — '小天' co glossary khong bi '小{n}' nuot); cung loai
+            # -> precedence cao nhat, bang nhau thi nap sau thang (engine cu).
             best = None
             for e in cands:
-                if e.end == longest and (best is None or e.precedence >= best.precedence):
+                if e.end != longest:
+                    continue
+                if best is None:
+                    best = e
+                elif e.is_pattern == best.is_pattern:
+                    if e.precedence >= best.precedence:
+                        best = e
+                elif not e.is_pattern:
                     best = e
             if longest == pos + 1 and text[pos] in DROP_PARTICLES:
                 best = Edge(pos, longest, "", best.precedence, best.policy, best.entry_version_id, best.score + W_DROP)

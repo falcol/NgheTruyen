@@ -124,13 +124,14 @@ def _translate_locked(
     # 3. dictionary + glossary freeze
     glossary_hash, _ = _freeze_glossary(project)
     global_glossary = _resolve_global_glossary(cfg)
-    dict_fp = dict_files_fingerprint(dict_dir, project.manual_glossary, global_glossary)
+    dict_fp = dict_files_fingerprint(dict_dir, project.manual_glossary, global_glossary, cfg.pattern_rules)
     cache_path = project.cache_dir / f"dict-{dict_fp[:16]}.pkl"
     dic = load_dictionary(
         dict_dir,
         manual_glossary=project.manual_glossary,
         global_glossary=global_glossary,
         cache_path=cache_path,
+        patterns=cfg.pattern_rules,
     )
 
     # 4. fingerprint + run
