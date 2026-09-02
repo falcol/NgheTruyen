@@ -15,6 +15,7 @@ DICT_FILES: list[tuple[str, int]] = [
     ("ChinesePhienAmWords.txt", 5),
     ("VietPhrase_1.txt", 10),
     ("VietPhrase_2.txt", 10),
+    ("VietPhrase_3.txt", 10),
     ("LuatNhan.txt", 15),
     ("Names.txt", 20),
     ("QualityOverrides.txt", 25),

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zhvi"
+version = "0.1.0"
+description = "CLI dich truyen Trung -> Viet: VietPhrase-first, project engine co state, resumable va reproducible (thiet ke v2.0 Milestone 1)."
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+zhvi = "zhvi.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/zhvi"]
