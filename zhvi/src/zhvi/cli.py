@@ -198,13 +198,16 @@ def status(
     require_complete: bool = typer.Option(False, "--require-complete"),
 ) -> None:
     """Tien do run, route, cache, lloi, review."""
+    from .projection import reconcile_project
     from .state import State
 
     try:
         p = open_project(project)
+        # Story 2.4: reconciler startup — bundle thieu/hash sai la fatal.
+        reconcile_project(p)
         st = State(p.db_path)
         info = st.status_info()
-    except (ProjectError, OSError) as e:
+    except (ProjectError, OSError, RuntimeError) as e:
         _fail(EXIT_STATE, str(e))
     print(json.dumps(info, ensure_ascii=False, indent=2))
     if require_complete and info.get("status") != "exported":
@@ -242,12 +245,14 @@ def doctor(
     from .doctor import run_doctor
 
     cfg_dict_dir = dict_dir
-    if project is not None and cfg_dict_dir is None:
+    proj = None
+    if project is not None:
         try:
-            cfg_dict_dir = open_project(project).config().dict_dir
+            proj = open_project(project)
+            cfg_dict_dir = cfg_dict_dir or proj.config().dict_dir
         except ProjectError:
             pass
-    ok = run_doctor(err_console, Config(dict_dir=cfg_dict_dir or "crawler/vietphrase/dicts"))
+    ok = run_doctor(err_console, Config(dict_dir=cfg_dict_dir or "crawler/vietphrase/dicts"), project=proj)
     raise typer.Exit(code=EXIT_OK if ok else EXIT_PREFLIGHT)
 
 

@@ -25,6 +25,7 @@ from .export import ExportResult, export_run
 from .fingerprint import block_source_hash, build_run_fingerprint
 from .project import Project, create_project, project_lock, workspace_for
 from .qa import sanitize_source
+from .projection import reconcile_project
 from .revision import ensure_active_revision, load_revision_dictionary
 from .quality.invariants import run_invariants
 from .snapshot import SourceRevision, import_snapshot
@@ -130,6 +131,9 @@ def _translate_locked(
     # khong doc file mutable sau day. Bootstrap publish neu project chua co.
     # Glossary manual da nam trong revision (manifest layer manual:book) —
     # doi file giua chang khong lam fork run; revision moi (story 2.5) moi fork.
+    # Startup reconciler (story 2.4): bundle thieu/hash sai la fatal corruption;
+    # projection cu (crash giua publish) duoc dung lai tu active pointer.
+    reconcile_project(project)
     global_glossary = _resolve_global_glossary(cfg)
     revision_id = ensure_active_revision(
         dict_dir, project, global_glossary=global_glossary, patterns=cfg.pattern_rules

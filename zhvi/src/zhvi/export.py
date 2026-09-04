@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import PARSER_VERSION, PIPELINE_VERSION, QA_VERSION, SEGMENTER_VERSION
+from .fsutil import atomic_write as fsutil_atomic_write
 from .document import Document
 from .project import Project
 from .state import RunRow, State
@@ -31,14 +32,6 @@ class ExportResult:
     path: Path
     sha256: str
     manifest_path: Path
-
-
-def _fsync_dir(path: Path) -> None:
-    fd = os.open(path, os.O_RDONLY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
 
 
 def build_output(doc: Document, blocks_by_id: dict[str, dict]) -> str:
@@ -74,16 +67,9 @@ def verify_output(doc: Document, output: str, blocks_by_id: dict[str, dict]) -> 
 
 
 def atomic_write(destination: Path, content: bytes) -> str:
-    """Temp cung filesystem, fsync, os.replace, fsync dir (muc 30)."""
-    tmp = destination.with_name(destination.name + ".tmp")
-    with tmp.open("wb") as f:
-        f.write(content)
-        f.flush()
-        os.fsync(f.fileno())
-    digest = hashlib.sha256(content).hexdigest()
-    os.replace(tmp, destination)
-    _fsync_dir(destination.parent)
-    return digest
+    """Temp cung filesystem, fsync, os.replace, fsync dir (muc 30).
+    Story 2.4: thuc the dung lai o fsutil (kem ownership guard)."""
+    return fsutil_atomic_write(destination, content)
 
 
 def write_manifest(project: Project, run: RunRow, output: Path, digest: str, report: dict) -> Path:

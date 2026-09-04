@@ -1,7 +1,8 @@
 """zhvi doctor (thiet ke muc 35) — ban M1 toi thieu.
 
 Kiem tra: thu muc tu dien + du file nen, doc duoc, SQLite write duoc, disk con
-trong, smoke test convert mot cau.
+trong, smoke test convert mot cau. Story 2.4: kiem active revision bundle +
+projection qua reconciler (khi co --project).
 """
 from __future__ import annotations
 
@@ -11,9 +12,10 @@ import tempfile
 from pathlib import Path
 
 from .config import BASE_DICT_FILES, Config
+from .projection import reconcile_project
 
 
-def run_doctor(console, cfg: Config) -> bool:
+def run_doctor(console, cfg: Config, project=None) -> bool:
     ok = True
 
     def check(name: str, passed: bool, detail: str = "") -> None:
@@ -21,6 +23,14 @@ def run_doctor(console, cfg: Config) -> bool:
         mark = "[ok]  " if passed else "[FAIL]"
         console.print(f"{mark} {name}" + (f" — {detail}" if detail else ""))
         ok = ok and passed
+
+    # Story 2.4: revision bundle + projection khop active pointer
+    if project is not None:
+        try:
+            active = reconcile_project(project)
+            check("revision/projection", True, f"active {str(active)[:12] if active else 'chua co'}")
+        except Exception as e:  # noqa: BLE001
+            check("revision/projection", False, str(e))
 
     dict_dir = Path(cfg.dict_dir)
     missing: list[str] = []

@@ -24,6 +24,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .config import LOADER_VERSION, RENDERER_VERSION
+from .fsutil import assert_machine_writable, fsync_dir
+from .projection import materialize_projection
 from .project import Project, project_lock
 from .state import REV_ACTIVE, StaleActiveError, State
 from .vietphrase.layers import Layer, default_policy
@@ -285,15 +287,8 @@ def build_revision(
     )
 
 
-def _fsync_dir(path: Path) -> None:
-    fd = os.open(path, os.O_RDONLY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
-
-
 def _write_synced(path: Path, data: bytes) -> None:
+    assert_machine_writable(path)  # AD-5: writer may khong duoc ghi file human-owned
     with path.open("wb") as f:
         f.write(data)
         f.flush()
@@ -320,13 +315,13 @@ def _materialize_bundle(
         tmp / "dictionary.bin",
         pickle.dumps(dic, protocol=pickle.HIGHEST_PROTOCOL),
     )
-    _fsync_dir(tmp)
+    fsync_dir(tmp)
 
     out = project.revisions_dir / revision_id
     if out.exists():
         shutil.rmtree(out)  # bundle rac tu crash giua chang — thay the
     os.replace(tmp, out)
-    _fsync_dir(project.revisions_dir)
+    fsync_dir(project.revisions_dir)
     return out
 
 
@@ -353,7 +348,8 @@ def publish_revision(
     State.activate_revision — MOT transaction insert 'ready' + CAS active
     pointer tu `expected_active` sang revision moi. Stale -> StaleActiveError
     (rollback toan bo — bundle da rename thanh orphan, GC duoc). Projection
-    (AutoVietPhrase.txt) materialize SAU commit — thuoc story 2.4.
+    glossary.auto.tsv materialize SAU commit (story 2.4); AutoVietPhrase.txt
+    la projection toan cuc — chi global registry (epic 4) duoc materialize.
     """
     with project_lock(project, "publish"):  # AD-13: mot writer lock moi mutation scope
         bundle = build_revision(
@@ -379,6 +375,10 @@ def publish_revision(
         finally:
             if own:
                 st.close()
+        # Buoc 10 (AD-15): projection materialize SAU DB commit tu active
+        # pointer — crash giua hai buoc duoc reconciler startup dung lai.
+        if scope_type == "book":
+            materialize_projection(project, bundle.revision_id)
     return PublishResult(revision_id=bundle.revision_id, status=REV_ACTIVE, replaced=replaced)
 
 

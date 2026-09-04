@@ -117,6 +117,9 @@ def create_project(root: Path) -> Project:
             lines.append(f'book_id = "{uuid.uuid4().hex}"\n')
         toml_path.write_text("".join(lines), encoding="utf-8")
     if not project.manual_glossary.exists():
+        # Carve-out AD-5: tao-if-missing header bootstrap lan init — khong phai
+        # writer runtime (fsutil guard khong ap dung day); file ton tai la
+        # cua nguoi dung, may khong bao ghi lai.
         project.manual_glossary.write_text(
             "# source<TAB>target — term nguoi dung khoa cho truyen (book manual)\n",
             encoding="utf-8",
