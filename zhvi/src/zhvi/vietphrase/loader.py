@@ -13,7 +13,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .layers import Layer, make_entry
+from .layers import Layer, default_policy, make_entry
 from .patterns import PatternRule, SLOT_RE, build_pattern_index, compile_rule
 
 TRUST_BY_FILE = {
@@ -90,7 +90,7 @@ def _insert(root: TrieNode, key: str, target: str, precedence: tuple, policy: st
         node = node.children.setdefault(ch, TrieNode())
     for i, (t, p, _pol) in enumerate(node.entries):
         if t == target:
-            if p >= precedence:  # cung target: giu precedence cao hon
+            if precedence > p:  # cung target: giu precedence cao hon (AD-5)
                 node.entries[i] = (target, precedence, policy)
             return
     node.entries.append((target, precedence, policy))
@@ -242,8 +242,6 @@ def load_dictionary(
 
 
 def _policy_for(layer: Layer) -> str:
-    from .layers import default_policy
-
     return default_policy(layer)
 
 

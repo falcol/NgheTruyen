@@ -12,6 +12,10 @@ PARSER_VERSION = "zhvi-parser-1"
 SEGMENTER_VERSION = "zhvi-segmenter-1"
 QA_VERSION = "zhvi-qa-1"
 PIPELINE_VERSION = "zhvi-m3-0.1.0"
+# Version cua logic nap tu dien / render target — tham gia canonical manifest
+# cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
+LOADER_VERSION = "zhvi-loader-1"
+RENDERER_VERSION = "zhvi-renderer-1"
 # Route duy nhat cua duong dich VP-only (SPEC CAP-9: run moi chi ghi route nay).
 ROUTE_VIETPHRASE = "VIETPHRASE"
 

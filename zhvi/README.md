@@ -327,6 +327,10 @@ cd zhvi && ../.venv/bin/python -m pytest tests/ -q
       config schema 3.0, migration additive (cache model-era invalid), đường dịch
       deterministic AD-9, test baseline (deterministic SHA-256 + resume parity).
 - [ ] **Epic 2**: immutable dictionary revisions (bundle, publish, rollback).
+      Story 2.1 xong: revision bundle builder + canonical manifest
+      (`zhvi/src/zhvi/revision.py`) — build từ base/auto/manual layers, validate
+      auto conflict, `dictionary_revision_id = SHA-256(manifest)`, bundle
+      content-addressed `manifest.json`/`entries.tsv`/`patterns.jsonl`/`dictionary.bin`.
 - [ ] **Epic 3**: book learner (discovery, candidate, evidence, promotion gates).
 - [ ] **Epic 4**: global learner & registry (cross-book evidence, fail-closed).
 - [ ] **Epic 5**: QA structural gates, golden tooling, metamorphic tests.

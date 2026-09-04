@@ -11,12 +11,13 @@ from enum import IntEnum
 # Thu tu tang dan: cao = thang.
 class Layer(IntEnum):
     BASE_SINGLE = 0      # Han-Viet fallback (ChinesePhienAmWords + single-char khac)
-    BOOK_AUTO = 1        # entity tu hoc, chi fill-only (trong o M1)
-    BASE_MULTI = 2       # phrase/name tu bo nen (VietPhrase, LuatNhan, Names)
-    GLOBAL_MANUAL = 3    # Custom.txt, QualityOverrides.txt — da duyet toan cuc
-    SERIES_MANUAL = 4    # term dung cho mot series
-    BOOK_MANUAL = 5      # glossary.manual.tsv cua truyen
-    USER_SEGMENT = 6     # block nguoi dung khoa
+    AUTO_GLOBAL = 1      # auto entry toan cuc (registry) — thap hon auto book (AD-5)
+    BOOK_AUTO = 2        # entity tu hoc theo truyen, chi fill-only (trong o M1)
+    BASE_MULTI = 3       # phrase/name tu bo nen (VietPhrase, LuatNhan, Names)
+    GLOBAL_MANUAL = 4    # Custom.txt, QualityOverrides.txt — da duyet toan cuc
+    SERIES_MANUAL = 5    # term dung cho mot series
+    BOOK_MANUAL = 6      # glossary.manual.tsv cua truyen
+    USER_SEGMENT = 7     # block nguoi dung khoa
 
 
 @dataclass(frozen=True, order=True)

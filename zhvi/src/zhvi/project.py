@@ -38,6 +38,10 @@ class Project:
         return self.state_dir / "dictionaries"
 
     @property
+    def revisions_dir(self) -> Path:
+        return self.state_dir / "revisions"
+
+    @property
     def runs_dir(self) -> Path:
         return self.state_dir / "runs"
 
