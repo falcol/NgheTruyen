@@ -1,1318 +1,671 @@
-# Thiết kế CLI dịch truyện Trung → Việt
+# Thiết kế hệ thống dịch truyện Trung → Việt bằng VietPhrase
 
-## VietPhrase-first, HachimiMT fallback, Qwen selective repair
+## VietPhrase-only, tự nâng cấp từ điển, không AI hậu biên tập
 
-> **[Suy luận]** Đây là thiết kế kiến trúc CLI được tối ưu cho luồng: crawler tạo TXT → chạy CLI → nhận TXT tiếng Việt. Tôi không thể xác minh đây là phương án tốt nhất tuyệt đối nếu chưa benchmark trên bộ từ điển, model Qwen và corpus truyện thực tế của bạn. Các ngưỡng trong tài liệu là cấu hình khởi tạo, không phải chất lượng đã được kiểm định.
+Phiên bản thiết kế: 3.0  
+Trạng thái: final  
+Phạm vi: CLI `zhvi`, dữ liệu từ điển dùng chung trong `crawler/vietphrase/dicts/`
 
-Phiên bản thiết kế: 2.0 — CLI-first.
+> `[ASSUMPTION]` Các ngưỡng học tự động trong tài liệu là giá trị khởi tạo an toàn. Các file `raw_china/expect*.txt` và file legacy viết sai tên `raw_china/excpect*.txt` hiện chỉ là candidate reference, chưa phải golden đã duyệt; global auto-promotion phải giữ khóa cho tới khi có golden manifest hợp lệ.
 
-## 1. Quyết định kiến trúc cuối cùng
+## 1. Quyết định kiến trúc
 
-CLI được xây như một **translation project engine có state**, không phải script đọc từng dòng rồi gọi model.
+`zhvi` trở thành một **translation memory compiler dựa hoàn toàn trên VietPhrase**.
 
-Luồng chuẩn:
+Hệ thống chỉ có một đường sinh văn bản:
 
-~~~text
-TXT snapshot
-→ parse lossless
-→ quét toàn truyện
-→ phát hiện entity/cụm chưa biết
-→ tạo và đóng băng book glossary
-→ dựng VietPhrase lattice
-→ router chọn block cần hỗ trợ
-→ Hachimi hoặc Qwen chỉ xử lý block yếu
-→ QA theo block và toàn chương
-→ commit checkpoint
-→ export TXT atomic
-→ lưu observation/candidate cho revision sau
-~~~
+```text
+Chinese source + Dictionary revision + Deterministic rules
+                         ↓
+                  VietPhrase engine
+                         ↓
+                    Vietnamese TXT
+```
 
-Các nguyên tắc bất biến:
+Không có HachimiMT, Qwen, Ollama, prompt, model router, local patch hay AI post-edit. Không có engine thứ hai để “sửa” kết quả VietPhrase.
 
-1. VietPhrase là nền tảng dịch mặc định.
-2. AI không chạy trên block VietPhrase được xác định là đủ tin cậy, trừ audit sampling được bật rõ ràng.
-3. Mỗi run dùng một source revision, dictionary snapshot, model và config bất biến.
-4. Không cập nhật dictionary giữa một final pass.
-5. Tên và thuật ngữ được khóa theo **từng occurrence**, không replace chuỗi mù.
-6. Output cuối chỉ được publish sau khi hoàn tất kiểm tra.
-7. Chạy lại cùng input/config không dịch lại.
-8. Crash hoặc Ctrl-C không làm mất các block đã commit.
-9. AI output không phải ground truth và không tự động trở thành dictionary.
-10. Từ tự học mặc định chỉ có scope một truyện.
+Mọi cải thiện chất lượng phải đi qua vòng lặp:
 
-## 2. Điểm thay đổi so với thiết kế trước
+```text
+phát hiện cụm yếu
+→ tạo ứng viên VietPhrase bằng dữ liệu và quy tắc xác định
+→ kiểm định trên corpus
+→ promote thành dictionary revision mới
+→ dịch lại các block bị ảnh hưởng
+```
 
-### Giữ lại
+### Invariant bắt buộc
 
-- VietPhrase → Hachimi → Qwen.
-- SQLite cho state và audit.
-- structured output từ Ollama.
-- glossary guard, QA và rollback.
-- book-level learning, global manual.
+1. VietPhrase là engine dịch duy nhất.
+2. Một run chỉ đọc một dictionary revision bất biến.
+3. Không sửa trực tiếp văn bản đích sau khi dịch.
+4. Mọi thay đổi bản dịch phải truy được về entry/rule và revision đã tạo ra nó.
+5. File thủ công không bao giờ bị tiến trình học tự động ghi đè.
+6. Cùng source revision, dictionary revision và config phải tạo cùng output.
+7. Một promotion thất bại regression phải bị reject, không được “cố dùng rồi cảnh báo”.
 
-### Thay đổi
+## 2. Mục tiêu và phi mục tiêu
 
-| Thiết kế cũ | Thiết kế CLI-first |
+### Mục tiêu
+
+- Dịch TXT nhanh, offline và tái lập hoàn toàn.
+- Tập trung công sức vào chất lượng VietPhrase thay vì hậu biên tập từng đoạn.
+- Tự phát hiện cụm từ, tên riêng và cách phân đoạn làm bản dịch khó đọc.
+- Tự tạo và promote entry an toàn ở phạm vi một truyện.
+- Tích lũy bằng chứng qua nhiều truyện để nâng cấp VietPhrase toàn cục.
+- Rollback được mọi thay đổi tự học.
+- Giữ snapshot lossless, checkpoint/resume, cache và atomic export hiện có.
+
+### Phi mục tiêu
+
+- Dịch bằng mô hình ngôn ngữ hoặc mô hình máy dịch.
+- Viết lại câu cho “mượt” sau khi VietPhrase đã sinh kết quả.
+- Tự đoán nghĩa mới khi từ điển hiện tại không cung cấp đủ dữ liệu.
+- Tự ghi vào `Custom.txt`, `QualityOverrides.txt` hoặc `VietPhrase_*.txt`.
+- Tối ưu văn phong từng câu bằng thông tin không thể biểu diễn thành entry/rule.
+- Chạy như service phân tán; CLI foreground vẫn là sản phẩm chính.
+
+## 3. Paradigm: pipes-and-filters hai pha
+
+Hệ thống chia thành hai pha độc lập:
+
+```mermaid
+flowchart LR
+    S[TXT snapshot] --> P[Parse lossless]
+    P --> D[Discovery]
+    D --> C[Candidate builder]
+    C --> E[Evidence evaluator]
+    E --> R[Dictionary revision]
+    R --> F[Freeze]
+    F --> T[VietPhrase translate]
+    T --> Q[Structural QA]
+    Q --> X[Atomic export]
+    T --> O[Observations for next revision]
+```
+
+### Pha LEARN
+
+LEARN được phép đọc corpus, tạo candidate, chạy mô phỏng và tạo dictionary revision mới. Pha này không tạo bản dịch cuối cùng.
+
+### Pha TRANSLATE
+
+TRANSLATE chỉ đọc source snapshot và dictionary revision đã freeze. Pha này không được học, promote hay thay đổi bất kỳ file từ điển nào.
+
+Ranh giới này ngăn cùng một run dịch chương đầu và chương cuối bằng hai phiên bản từ điển khác nhau.
+
+## 4. Quyền sở hữu và thứ tự ưu tiên từ điển
+
+Từ thấp đến cao:
+
+| Lớp | Artifact | Chủ sở hữu | Phạm vi | Máy được ghi? |
+|---|---|---|---|---|
+| Phiên âm | `ChinesePhienAmWords.txt` | dữ liệu nền | toàn cục | không |
+| VietPhrase nền | `VietPhrase_1.txt`…`VietPhrase_3.txt` | dữ liệu nền | toàn cục | không |
+| Luật nhân | `LuatNhan.txt` | dữ liệu nền | toàn cục | không |
+| Tên nền | `Names.txt` | dữ liệu nền | toàn cục | không |
+| Học tự động toàn cục | `AutoVietPhrase.txt` | learner | toàn cục | có, qua revision builder |
+| Học tự động theo truyện | `glossary.auto.tsv` | learner | một truyện | có, qua revision builder |
+| Quality override | `QualityOverrides.txt` | người dùng | toàn cục | không |
+| Custom | `Custom.txt` | người dùng | toàn cục | không |
+| Glossary thủ công toàn cục | `~/.config/zhvi/glossary.manual.tsv` | người dùng | toàn cục | không |
+| Glossary thủ công theo truyện | `glossary.manual.tsv` | người dùng | một truyện | không |
+
+Quy tắc precedence dưới đây áp dụng khi các candidate phủ **cùng normalized source key/span**:
+
+```text
+manual book
+> manual global
+> Custom / QualityOverrides
+> auto book
+> auto global
+> Names / LuatNhan / VietPhrase nền / phiên âm
+```
+
+Matcher vẫn chọn span dài nhất trước. Vì vậy manual entry ngắn không tự động bẻ một base phrase dài hơn; muốn override segmentation, người dùng phải thêm manual entry cho toàn bộ key dài cần thay thế.
+
+Nếu hai auto entry cùng scope/lớp có cùng key nhưng khác target, revision builder phải báo conflict và không build. Corpus nền và file human-owned được giữ quy tắc tương thích hiện tại: source/file/load order đã khai báo tạo tie-break xác định, đồng thời builder phát diagnostic để người dùng dọn dần. Không dùng “dòng cuối thắng” cho dữ liệu tự sinh.
+
+`AutoVietPhrase.txt` là projection tương thích cho crawler/engine cũ, không phải artifact mà một run `zhvi` được pin trực tiếp. Global learner duy nhất sở hữu file này thông qua registry đặt tại `<dict_dir>/.zhvi-registry/`; book project không được tự ghi vào đó.
+
+Mỗi run `zhvi` đọc một **content-addressed revision bundle** chứa snapshot hợp nhất của tất cả layer. Vì vậy việc `Custom.txt`, glossary hoặc auto projection thay đổi sau đó không làm thay nội dung của run đang chạy hoặc run được resume.
+
+## 5. Đơn vị dịch
+
+Parser vẫn giữ nguyên cấu trúc TXT và tạo các translatable block ổn định. VietPhrase dịch từng block nhưng trace phải lưu theo source span.
+
+Trước matcher có một deterministic preprocessing view được version hóa. Junk stripping chỉ được xóa span khi rule trả về source offsets và reason code; source snapshot không đổi. Repetition collapse là quy tắc của renderer trên ranh giới hai target span, không phải thao tác QA. Cả hai transformation phải xuất trace để cùng fingerprint luôn tái lập cùng output.
+
+Đường dịch chính dùng:
+
+1. chuẩn hóa phồn thể → giản thể để match nhưng giữ source gốc trong trace;
+2. trie lookup;
+3. longest-match;
+4. precedence theo lớp;
+5. literal thắng pattern khi cùng độ dài;
+6. tie-break cố định theo `entry_id`, không phụ thuộc thứ tự hash/map;
+7. render target và dựng lại structural span.
+
+Lattice/top-K không còn quyết định route. Nếu giữ lại, nó chỉ là bộ phân tích offline để tìm segmentation không ổn định cho LEARN.
+
+## 6. Pipeline đầy đủ
+
+### Bước 1 — Snapshot nguồn
+
+- Import TXT thành source revision bất biến.
+- Tính SHA-256 trên bytes và lưu encoding.
+- Parse lossless; phần không dịch được giữ nguyên byte-equivalent khi export.
+- Source byte-identical là no-op.
+
+### Bước 2 — Discovery toàn truyện
+
+Discovery chạy trước khi dịch và thu thập:
+
+- CJK n-gram dài 2–8 ký tự;
+- tần suất tuyệt đối và theo chương;
+- left/right context diversity;
+- PMI hoặc association score;
+- các chuỗi hiện bị tách thành nhiều entry một ký tự;
+- unknown span;
+- segmentation có nhiều phương án gần điểm nhau;
+- pattern tên người, địa danh, môn phái, công pháp và cảnh giới;
+- cụm lặp lại nhưng render hiện tại không ổn định.
+
+Discovery chỉ tạo observation. Observation không được nạp vào engine.
+
+### Bước 3 — Sinh target không dùng AI
+
+Candidate builder chỉ được dùng các nguồn xác định sau:
+
+1. target đã tồn tại trong lớp VietPhrase thấp hơn;
+2. phép ghép longest-match từ các entry con đã biết;
+3. phiên âm Hán–Việt từ `ChinesePhienAmWords.txt` cho candidate được phân loại là tên riêng;
+4. template trong `LuatNhan.txt`;
+5. correction/glossary do người dùng nhập;
+6. target đã được accept ở truyện khác và còn đầy đủ provenance.
+
+Candidate không có target từ các nguồn trên phải mang trạng thái `unresolved`. Hệ thống không được bịa target để đạt coverage.
+
+### Bước 4 — Chuẩn hóa candidate
+
+- Key chuẩn hóa NFC và giản thể cho việc so khớp.
+- Source gốc vẫn được lưu để audit.
+- Target chuẩn hóa khoảng trắng và dấu câu theo rule xác định.
+- Candidate ghép từ entry con chỉ đủ điều kiện auto-promote khi mỗi entry con có đúng một target được ưu tiên.
+- Target chứa lựa chọn mơ hồ kiểu `a/b`, placeholder hoặc ký tự CJK bị loại khỏi auto-promote.
+- Candidate trùng manual entry bị loại; manual entry luôn là kết quả cuối.
+
+### Bước 5 — Tính evidence
+
+Mỗi candidate có evidence độc lập với output cuối:
+
+| Nhóm | Tín hiệu |
 |---|---|
-| Route từng câu độc lập | Route block ngữ nghĩa có context |
-| Longest-match greedy | Lattice + top-K path |
-| Coverage là tín hiệu chính | Risk nhiều feature + lattice margin |
-| Học và promote trong lúc dịch | Discovery trước, snapshot bất biến |
-| Một dictionary entry luôn bị khóa | HARD, PREFERRED hoặc CONTEXTUAL theo occurrence |
-| Replace term hậu kỳ | Alignment-safe patch hoặc reject |
-| Queue/worker kiểu service | Một foreground controller có checkpoint |
-| FastAPI từ đầu | Hoãn; CLI là sản phẩm chính |
-| DB chứa toàn bộ dictionary nền | Base dictionary là file; DB lưu state/revision/cache |
-| Export nối chuỗi trực tiếp | Rebuild từ structural spans rồi atomic replace |
+| Độ mạnh cụm | frequency, PMI, left/right entropy |
+| Độ ổn định | cùng một segmentation và target qua các occurrence |
+| Lợi ích | giảm unknown, giảm single-character span, giảm fragmentation |
+| Rủi ro | overlap conflict, target ambiguity, manual conflict, junk likelihood |
+| Phạm vi | số chương, số truyện và thể loại xuất hiện |
+| Regression | số block đổi, golden diff, invariant failures |
 
-### Loại khỏi MVP
+Điểm số chỉ dùng để xếp hạng. Promotion phải qua hard gate; tổng điểm cao không được bù cho một hard gate thất bại.
 
-- FastAPI.
-- Redis, Celery hoặc server job queue.
-- EPUB/HTML adapters.
-- nhiều Qwen request đồng thời.
-- online fine-tune.
-- auto-promote global.
-- summary tự do do LLM sinh làm bộ nhớ chuẩn.
+### Bước 6 — Promotion theo tầng
 
-## 3. Trải nghiệm CLI
+```mermaid
+stateDiagram-v2
+    [*] --> observed
+    observed --> unresolved: không dựng được target
+    observed --> candidate: có target + provenance
+    candidate --> rejected: hard gate fail
+    candidate --> book_auto: đủ evidence trong một truyện
+    book_auto --> global_candidate: xuất hiện ở truyện khác
+    global_candidate --> global_auto: cross-book + regression pass
+    book_auto --> revoked: regression mới phát hiện lỗi
+    global_auto --> revoked: regression mới phát hiện lỗi
+    revoked --> candidate: sửa evidence hoặc target
+```
 
-### 3.1. Happy path: một lệnh
+#### Book-auto
 
-~~~bash
-zhvi translate ./crawl/truyen.txt \
-  --output ./dist/truyen.vi.txt \
-  --profile balanced \
-  --style convert-qt
-~~~
+`[ASSUMPTION]` Mặc định ban đầu:
 
-Nếu chưa có project, CLI tự tạo workspace cạnh input:
+- tên riêng: tối thiểu 3 occurrence ở ít nhất 2 chương;
+- cụm thông thường: tối thiểu 5 occurrence ở ít nhất 2 chương;
+- target stability = 100%;
+- không conflict với manual;
+- coverage hoặc fragmentation phải cải thiện;
+- mọi structural invariant phải pass;
+- số block thay đổi phải đúng tập block chứa candidate.
 
-~~~text
-truyen.txt
-truyen.zhvi/
-└── ...
-~~~
+Book-auto được ghi vào `glossary.auto.tsv` và chỉ ảnh hưởng truyện đó.
 
-Lệnh translate tự thực hiện:
+#### Global-auto
 
-1. preflight;
-2. snapshot TXT;
-3. inspect cấu trúc;
-4. analyze toàn truyện;
-5. freeze glossary;
-6. resume run trùng fingerprint nếu có;
-7. dịch/checkpoint;
-8. QA;
-9. export atomic;
-10. in báo cáo.
+`[ASSUMPTION]` Candidate chỉ được promote toàn cục khi:
 
-Nếu cùng fingerprint đã hoàn thành, lệnh là no-op và trả lại thông tin output hiện có.
+- xuất hiện trong ít nhất 3 truyện độc lập;
+- có ít nhất 20 occurrence tổng;
+- target agreement = 100%;
+- không có manual conflict ở bất kỳ project nào đã đăng ký;
+- pass toàn bộ golden corpus;
+- không làm tăng unknown, CJK residue hoặc structural failure;
+- diff ngoài các block chứa key bằng 0.
 
-### 3.2. Project workflow cho truyện cập nhật nhiều lần
+Nếu chưa có golden corpus đại diện, hệ thống chỉ được auto-promote đến `book_auto`; `global_candidate` phải chờ duyệt hoặc chờ đủ regression evidence.
 
-~~~bash
-zhvi init ./books/pham-nhan --source ./crawl/pham-nhan.txt
-zhvi inspect --project ./books/pham-nhan
-zhvi translate --project ./books/pham-nhan
-zhvi status --project ./books/pham-nhan
-zhvi review --project ./books/pham-nhan
-zhvi export --project ./books/pham-nhan -o ./dist/pham-nhan.vi.txt
-~~~
+Candidate reference trong `raw_china/` không tự động trở thành golden chỉ vì tên file là `expect`/`excpect`. Một case chỉ được dùng làm global gate sau khi có entry trong golden manifest gồm source hash, expected hash, phạm vi assertion, provenance và dấu duyệt của người dùng.
 
-Khi crawler thêm chương:
+### Bước 7 — Build dictionary revision
 
-~~~bash
-zhvi import ./crawl/pham-nhan.txt --project ./books/pham-nhan --update
-zhvi translate --project ./books/pham-nhan
-~~~
+Revision builder:
 
-- Source byte-identical: no-op.
-- Chỉ append chương: tạo source revision mới và tái dùng block cũ hợp lệ.
-- Nội dung cũ bị sửa/xóa: hiển thị diff summary và yêu cầu cờ xác nhận rõ ràng.
-- Không trộn checkpoint của source revision cũ vào run mới mà không kiểm tra cache key.
+1. đọc immutable base files;
+2. đọc các auto entry đã được promote từ book/global state store;
+3. đọc manual layers;
+4. validate format, duplicate và conflict;
+5. tạo canonical manifest gồm hash của từng layer, loader/renderer version và precedence policy;
+6. tính `dictionary_revision_id = SHA-256(canonical_manifest)`;
+7. materialize merged entries, pattern index và trace metadata vào bundle tạm;
+8. chạy smoke corpus và xác minh lại mọi hash;
+9. fsync bundle rồi atomic rename thành `revisions/<dictionary_revision_id>/`;
+10. trong một SQLite transaction, insert revision `ready` và CAS active pointer từ revision kỳ vọng sang revision mới;
+11. sau commit, cập nhật các projection tương thích như `AutoVietPhrase.txt`; crash ở bước này được reconciler dựng lại từ active pointer.
 
-## 4. Bộ lệnh chính thức
+Run mới chỉ được TRANSLATE bằng active revision. Resume/reproduce được đọc bundle đã pin ở trạng thái `ready`, `superseded` hoặc `revoked`, nhưng không được dùng các revision lịch sử đó để tạo run mới.
 
-### Lệnh dùng thường xuyên
+Bundle đã rename nhưng chưa được ghi vào DB là orphan vô hại và có thể garbage-collect. DB commit không bao giờ trỏ đến bundle chưa hoàn chỉnh. Translation không đọc projection mutable nên không có yêu cầu atomic xuyên SQLite và filesystem.
+
+### Bước 8 — Dịch
+
+- Freeze `dictionary_revision_id` khi tạo run.
+- Cache key gồm source block hash, dictionary revision, parser version, renderer version và QA version.
+- Block cache cũ chỉ được dùng khi toàn bộ key trùng.
+- Không học hoặc promote trong vòng lặp dịch.
+- Ctrl-C giữ các block đã commit; resume phải dùng đúng revision cũ.
+
+### Bước 9 — QA và export
+
+QA không sửa văn bản. QA chỉ pass hoặc chặn export:
+
+- đủ block, đúng thứ tự;
+- không duplicate/missing block;
+- structural span dựng lại được;
+- không có placeholder nội bộ;
+- tỷ lệ CJK residue không vượt policy;
+- không xuất hiện artifact lặp do ghép span;
+- entity dùng nhất quán theo dictionary revision;
+- output hash và manifest khớp.
+
+Nếu fail, run có trạng thái `needs_dictionary_fix`. Người dùng sửa/promote/revoke entry rồi tạo revision mới và chạy lại block bị ảnh hưởng.
+
+## 7. Correction policy: sửa từ điển, không sửa output
+
+CLI không cung cấp editor sửa từng block. Review chỉ hiển thị:
+
+- source span;
+- segmentation trace;
+- entry nào tạo từng target span;
+- lớp và revision của entry;
+- candidate liên quan;
+- các block khác sẽ bị ảnh hưởng nếu đổi entry.
+
+Khi người dùng sửa một cụm, thao tác tạo hoặc cập nhật entry trong `glossary.manual.tsv`, sau đó hệ thống:
+
+1. build revision mới;
+2. xác định affected blocks bằng trace/source index;
+3. dịch lại affected blocks;
+4. chạy chapter/global QA;
+5. export lại atomically.
+
+Không lưu “bản text đã sửa” như một nguồn chân lý thứ hai.
+
+## 8. State và dữ liệu
+
+Nguồn chân lý được phân quyền rõ:
+
+- base/manual files là nguồn chân lý do người sở hữu;
+- book SQLite sở hữu observation, candidate, evidence và promotion theo truyện;
+- registry SQLite tại `<dict_dir>/.zhvi-registry/state.sqlite3` sở hữu evidence, entry và active revision toàn cục;
+- content-addressed revision bundle là input bất biến mà run thực sự nạp;
+- `AutoVietPhrase.txt` và `glossary.auto.tsv` chỉ là projection có thể dựng lại.
+
+Một book project gửi evidence bất biến kèm `book_id`, source revision và occurrence identity vào global registry; nó không được mutate global candidate hoặc global revision trực tiếp. `book_id` được tạo một lần khi `zhvi init`; registry deduplicate theo `(book_id, source_revision_id, candidate_id, occurrence_span)` và chỉ tính evidence từ active source revision của mỗi book. Vì vậy copy project hoặc import lại cùng source không làm tăng cross-book count.
+
+### Các entity chính
+
+```mermaid
+erDiagram
+    SOURCE_REVISION ||--o{ RUN : translated_by
+    DICTIONARY_REVISION ||--o{ RUN : frozen_for
+    DICTIONARY_REVISION ||--o{ ENTRY_VERSION : contains
+    TERM_CANDIDATE ||--o{ EVIDENCE : supported_by
+    TERM_CANDIDATE ||--o{ PROMOTION : transitions
+    ENTRY_VERSION ||--o{ TRACE_SPAN : renders
+    RUN ||--o{ BLOCK_RESULT : contains
+    BLOCK_RESULT ||--o{ TRACE_SPAN : explains
+    REGRESSION_SUITE ||--o{ REGRESSION_RESULT : produces
+    DICTIONARY_REVISION ||--o{ REGRESSION_RESULT : evaluated_by
+```
+
+### Bảng cần có
+
+- `source_revisions`
+- `dictionary_revisions`
+- `entry_versions`
+- `observations`
+- `term_candidates`
+- `candidate_evidence`
+- `promotion_events`
+- `regression_suites`
+- `regression_results`
+- `runs`
+- `blocks`
+- `trace_spans`
+- `block_cache`
+- `feedback_events`
+
+Mọi mutation candidate/entry/revision phải ghi event append-only gồm `before`, `after`, actor, timestamp và provenance. Entry identity là hash của canonical tuple `(scope, normalized_source, kind)`; entry version identity bổ sung target, policy và provenance hash.
+
+### Trạng thái revision
+
+```text
+building → validating → ready → active
+                    ↘ rejected
+active → superseded
+active → revoked
+```
+
+`ready` nghĩa là bundle đã tồn tại, fsync, hash-pass và có row đã commit. Mỗi scope có đúng một active pointer trong bảng `active_revisions(scope_type, scope_id, revision_id)` với unique key `(scope_type, scope_id)`. Activation dùng compare-and-swap; stale writer phải build/evaluate lại trên active revision mới.
+
+Rollback không sửa revision cũ; nó tạo revision mới có tập entry tương đương revision an toàn đã chọn. Bundle superseded/revoked vẫn được giữ để reproduce run lịch sử; run mới chỉ được pin active revision.
+
+## 9. Layout project
+
+```text
+book-project/
+  zhvi.toml                 # chứa stable book_id
+  glossary.manual.tsv
+  glossary.auto.tsv
+  dist/
+    book.vi.txt
+    book.vi.manifest.json
+  .zhvi/
+    state.sqlite3
+    sources/
+    revisions/
+      <dictionary_revision_id>/
+        manifest.json
+        entries.tsv
+        patterns.jsonl
+        dictionary.bin
+    runs/
+    cache/
+    reports/
+    locks/
+```
+
+Trong dictionary root:
+
+```text
+crawler/vietphrase/dicts/
+  ChinesePhienAmWords.txt
+  VietPhrase_1.txt
+  VietPhrase_2.txt
+  VietPhrase_3.txt
+  LuatNhan.txt
+  Names.txt
+  AutoVietPhrase.txt       # machine-owned, generated
+  QualityOverrides.txt
+  Custom.txt               # human-owned
+  trad-simp.txt
+  .zhvi-registry/
+    state.sqlite3
+    revisions/
+    locks/
+```
+
+## 10. Hợp đồng CLI
+
+### Happy path
+
+```bash
+zhvi translate truyen.txt -o truyen.vi.txt
+```
+
+Mặc định lệnh chạy:
+
+```text
+snapshot → discover → book-auto learn → freeze revision
+→ translate → QA → export → report candidates còn lại
+```
+
+### Các lệnh chính
 
 | Command | Mục đích |
 |---|---|
-| zhvi doctor | kiểm tra dictionary, Hachimi, Ollama/Qwen, disk và smoke test |
-| zhvi translate | happy path; analyze, resume, dịch và export |
-| zhvi status | tiến độ, route, cache, lỗi, review |
-| zhvi review | xem/sửa block không chắc chắn |
-| zhvi terms | xem, accept, reject, edit và rollback term |
-| zhvi export | dựng lại TXT từ một run cụ thể |
-
-### Lệnh nâng cao
-
-~~~bash
-zhvi init PROJECT --source FILE
-zhvi import FILE --project PROJECT --update
-zhvi inspect --project PROJECT --sample 200
-zhvi config show --resolved
-zhvi config validate
-zhvi runs list
-zhvi runs show RUN_ID
-zhvi logs RUN_ID --follow
-zhvi verify RUN_ID
-zhvi benchmark runtime --input representative.txt --write-profile
-zhvi rerun RUN_ID --affected
-~~~
-
-### Resume
-
-- Có đúng một run chưa hoàn thành và fingerprint trùng hoàn toàn: translate tự resume.
-- Có nhiều candidate run hoặc người dùng chỉ định run: dùng resume RUN_ID.
-- Config/model/dictionary/source khác: tạo run mới; không âm thầm dùng checkpoint cũ.
-- Muốn thử model/profile mới: tạo child run bằng cờ rõ ràng.
-
-~~~bash
-zhvi resume RUN_ID
-zhvi resume RUN_ID --retry-transient
-zhvi translate --project PROJECT --fork-run --profile quality
-~~~
-
-## 5. Project layout
-
-~~~text
-book-project/
-├── zhvi.toml
-├── glossary.manual.tsv
-├── dist/
-│   ├── book.vi.txt
-│   └── book.vi.manifest.json
-└── .zhvi/
-    ├── state.sqlite3
-    ├── sources/
-    │   └── <source-revision>.txt
-    ├── dictionaries/
-    │   └── <dictionary-snapshot>.tsv
-    ├── runs/
-    │   └── <run-id>/
-    │       ├── manifest.json
-    │       ├── report.json
-    │       └── review.jsonl
-    ├── logs/
-    │   └── <run-id>.jsonl
-    ├── cache/
-    └── locks/
-~~~
-
-- zhvi.toml: cấu hình project do người dùng quản lý.
-- glossary.manual.tsv: term người dùng khóa cho truyện.
-- sources: snapshot TXT bất biến.
-- dictionaries: glossary snapshot chính xác của từng run.
-- state.sqlite3: run, block, attempt, candidate, feedback và revision.
-- cache: compiled trie/lattice và model result có thể tạo lại.
-- logs: event có cấu trúc.
-- dist: artifact được publish.
-
-Không ghi runtime state vào source TXT.
-
-## 6. Hợp đồng với crawler
-
-CLI chỉ cần TXT, nhưng crawler nên:
-
-1. xuất UTF-8 mặc định;
-2. giữ heading chương trên dòng riêng;
-3. giữ paragraph/newline cần thiết;
-4. ghi file tạm rồi rename;
-5. tùy chọn tạo sidecar JSON gồm source URL, crawl time, chapter count và hash.
-
-CLI không phụ thuộc sidecar.
-
-### Snapshot an toàn
-
-Khi import:
-
-1. đọc stat trước;
-2. copy bytes vào snapshot tạm;
-3. tính SHA-256 trong lúc copy;
-4. đọc stat lại;
-5. nếu file thay đổi, bỏ snapshot và retry hữu hạn hoặc fail;
-6. fsync và atomic rename snapshot.
-
-Không auto-detect encoding âm thầm. Default UTF-8; encoding khác phải chỉ định:
-
-~~~bash
-zhvi import book.txt --encoding gb18030
-~~~
-
-Nếu decode lỗi, lệnh dừng và báo byte offset.
-
-## 7. Parse TXT lossless
-
-Parser lưu:
-
-~~~text
-StructuralNode:
-  heading, newline, whitespace, separator, metadata
-
-TranslatableNode:
-  paragraph, dialogue, narration
-~~~
-
-Mỗi node có:
-
-~~~text
-source_revision
-byte_start / byte_end
-char_start / char_end
-ordinal
-raw_text
-normalized_text
-node_type
-chapter_id
-~~~
-
-Output được dựng lại từ structural nodes và final translation của translatable nodes. Paragraph, heading, blank line và dấu thoại không bị mất do split/join tùy tiện.
-
-### Chapter detection
-
-Parser hỗ trợ:
-
-- regex cấu hình;
-- preset cho 第...章, 第...回, 第...节;
-- fallback theo paragraph nếu không có heading.
-
-Inspect báo:
-
-- số heading;
-- heading nghi ngờ;
-- đoạn quá dài;
-- dấu ngoặc/quote không cân bằng;
-- tỷ lệ Hán tự;
-- newline style.
-
-Nếu chapter detection mơ hồ vượt policy, strict mode dừng trước khi gọi model.
-
-## 8. Stable identity, fingerprint và cache
-
-Không dùng một ID cho cả vị trí tài liệu và cache.
-
-### Document identity
-
-~~~text
-segment_id = source_revision + chapter_ordinal + block_ordinal
-~~~
-
-Hai câu giống nhau ở hai vị trí vẫn có segment_id khác.
-
-### Run fingerprint
-
-~~~text
-SHA256(
-  source_revision_hash
-  + encoding
-  + parser_version
-  + resolved_config_hash
-  + base_dictionary_hash
-  + book_glossary_snapshot_hash
-  + style_profile_hash
-  + router_version
-  + qa_version
-  + prompt_schema_hash
-  + Hachimi_model_digest
-  + Qwen_model_digest
-  + pipeline_version
-)
-~~~
-
-### Model-result cache
-
-~~~text
-SHA256(
-  normalized_source
-  + context_fingerprint
-  + occurrence_constraints
-  + relevant_terms_fingerprint
-  + style
-  + engine/model digest
-  + tokenizer revision
-  + generation options
-  + prompt/schema version
-)
-~~~
-
-Manifest ghi full dictionary revision để audit, nhưng cache chỉ phụ thuộc term có thể ảnh hưởng block. Một term không liên quan không nên làm vô hiệu toàn bộ cache.
-
-## 9. Pipeline hai pha
-
-~~~mermaid
-flowchart TD
-    A["TXT snapshot"] --> B["Book pre-scan"]
-    B --> C["Entity & unknown discovery"]
-    C --> D["Book glossary snapshot"]
-    D --> E["Chapter/block planning"]
-    E --> F["VietPhrase lattice"]
-    F --> G{"Baseline risk"}
-    G -->|thấp| H["DIRECT_VP"]
-    G -->|cục bộ| I["LOCAL_PATCH"]
-    G -->|trung bình| J["Hachimi candidate"]
-    G -->|cao| K["Qwen post-edit"]
-    J --> L{"Candidate gate"}
-    L -->|đạt| M["Chapter QA"]
-    L -->|trượt| K
-    H --> M
-    I --> M
-    K --> M
-    M --> N["Checkpoint"]
-    N --> O["Atomic export"]
-    N --> P["Observation cho revision sau"]
-~~~
-
-### Phase A — discovery/bootstrap
-
-Quét toàn TXT theo stream và index vào SQLite:
-
-- unknown span lặp;
-- tên người/địa danh/môn phái/cảnh giới/vật phẩm;
-- alias;
-- dictionary collision;
-- occurrence và context hash.
-
-Với learning safe:
-
-1. candidate đủ recurrence mới được phân tích;
-2. Hachimi và Qwen induction chạy độc lập;
-3. Qwen blind induction không nhìn Hachimi output;
-4. hard gate và replay;
-5. chỉ entity book-local đạt policy mới active;
-6. commit dictionary revision;
-7. freeze snapshot cho final pass.
-
-### Phase B — final translation
-
-- Snapshot không đổi trong toàn run.
-- Candidate mới chỉ được observe.
-- Muốn áp dụng candidate sau run: tạo revision và affected rerun.
-- Không có output chứa block dịch bằng nhiều dictionary revision.
-
-## 10. Semantic block thay cho sentence đơn
-
-Quy tắc:
-
-1. Heading là block riêng.
-2. Không cắt trong quote/ngoặc lồng.
-3. Một lượt thoại ngắn giữ cùng câu dẫn.
-4. Đoạn dài cắt tại clause boundary ngoài quote.
-5. Adjacent risky sentences có thể gom thành một target unit.
-6. Kích thước cuối dựa trên tokenizer và context budget.
-
-Qwen nhận:
-
-- target block;
-- source block lân cận;
-- final translation đã commit ở phía trước;
-- entity ledger có evidence;
-- occurrence constraints;
-- style profile.
-
-Context chỉ để tham khảo. Structured response phải trả đúng target block IDs. Không gửi toàn chương vào Qwen.
-
-## 11. VietPhrase Core tốt hơn longest-match
-
-### 11.1. Dictionary layers
-
-| Layer | Vai trò |
-|---|---|
-| user segment override | block người dùng khóa |
-| book manual | term người dùng khóa trong truyện |
-| series manual | term dùng cho một series |
-| global manual | term toàn cục đã duyệt |
-| base multi-char | phrase/name từ bộ nền |
-| book auto fill-only | entity tự học, không đè manual/base multi-char |
-| base single-char | Hán-Việt fallback |
-
-Không dùng một priority integer tùy ý để phá policy. Precedence được mã hóa theo loại, scope và trust.
-
-### 11.2. Lattice
-
-Matcher giữ mọi match chồng lấn:
-
-~~~text
-source position
-→ candidate entries
-→ edges tới end position
-→ top-K paths bằng dynamic programming/beam
-~~~
-
-Path score dùng:
-
-- scope/trust;
-- phrase length;
-- learned weight;
-- penalty single-character fallback;
-- penalty segmentation phân mảnh;
-- correction history;
-- sense constraint theo occurrence.
-
-Risk features:
-
-- margin top-1/top-2;
-- path entropy;
-- bất đồng forward/reverse/best-path;
-- số contextual entry chưa giải quyết.
-
-Longest-match có thể là baseline, không phải confidence duy nhất.
-
-### 11.3. Trace
-
-~~~python
-@dataclass(frozen=True)
-class VpSpan:
-    occurrence_id: str
-    source_start: int
-    source_end: int
-    source: str
-    target: str
-    alternatives: tuple[str, ...]
-    entry_version_id: str | None
-    policy: Literal["HARD", "PREFERRED", "CONTEXTUAL"]
-    path_score: float
-
-@dataclass(frozen=True)
-class VpDraft:
-    text: str
-    spans: tuple[VpSpan, ...]
-    unknown_spans: tuple[SourceSpan, ...]
-    single_char_ratio: float
-    lattice_margin: float
-    lattice_entropy: float
-    warnings: tuple[str, ...]
-~~~
-
-## 12. Router: selective prediction
-
-Không có detector rule-only nào biết hoàn hảo bản VietPhrase có đúng nghĩa. Router phải có nhánh abstain và được hiệu chỉnh từ feedback.
-
-### Baseline risk features
-
-- unknown span theo độ dài/độ hiếm;
-- tỷ lệ single-character fallback;
-- lattice margin/entropy;
-- segmentation instability;
-- unresolved entity/alias;
-- contextual/đa nghĩa;
-- phủ định hoặc phủ định kép;
-- 把/被, văn ngôn, thành ngữ;
-- số lượng–đơn vị, tiền, cấp bậc;
-- câu nhiều mệnh đề;
-- đổi lượt thoại/đại từ;
-- history correction;
-- known bad pattern.
-
-### Bốn route
-
-| Route | Khi dùng | Engine |
-|---|---|---|
-| DIRECT_VP | risk thấp và invariant gate đạt | không gọi model |
-| LOCAL_PATCH | chỉ vài source span yếu | deterministic hoặc structured patch |
-| HACHIMI_CANDIDATE | VP khó đọc/risk trung bình | HachimiMT |
-| QWEN_POSTEDIT | cấu trúc khó, Hachimi trượt/bất đồng lớn | Qwen |
-
-Mỗi decision lưu reason code, không chỉ một score:
-
-~~~text
-UNKNOWN_LONG_SPAN
-LOW_LATTICE_MARGIN
-ENTITY_UNRESOLVED
-CONTEXTUAL_SENSE
-NEGATION_RISK
-LONG_MULTI_CLAUSE
-HACHIMI_GATE_FAILED
-USER_HISTORY_RISK
-~~~
-
-### Hiệu chỉnh
-
-Ban đầu dùng weighted rules. Khi có corpus review:
-
-- train logistic regression hoặc boosted tree nhỏ;
-- label là user accepted/edited/hard-failed;
-- calibrate DIRECT_VP cho precision cao;
-- giữ hard rules ngoài model;
-- version router.
-
-Audit sampling là tùy chọn, mặc định tắt:
-
-~~~toml
-[routing]
-audit_direct_vp_rate = 0.0
-~~~
-
-## 13. LOCAL_PATCH
-
-Nếu VP đúng phần lớn block, không yêu cầu Qwen viết lại toàn bộ.
-
-Response mẫu:
-
-~~~json
-{
-  "patches": [
-    {
-      "span_id": "s4",
-      "source_start": 18,
-      "source_end": 26,
-      "replacement": "..."
-    }
-  ]
-}
-~~~
-
-Composer chỉ thay token range tương ứng source occurrence. Nếu patch cần thay thứ tự ngoài vùng hoặc phá syntax, nâng lên QWEN_POSTEDIT. Không replace chuỗi target tùy tiện.
-
-## 14. Occurrence constraints
-
-~~~python
-class OccurrenceConstraint(BaseModel):
-    occurrence_id: str
-    source_start: int
-    source_end: int
-    entry_version_id: str
-    entity_id: str | None
-    canonical_target: str
-    allowed_aliases: list[str]
-    policy: Literal["HARD", "PREFERRED", "CONTEXTUAL"]
-~~~
-
-- HARD: tên đã xác nhận, số, cảnh giới/vật phẩm cố định.
-- PREFERRED: term ưu tiên nhưng cho phép biến thể ngữ pháp.
-- CONTEXTUAL: source có nhiều sense; không ép một target mọi nơi.
-
-Guard kiểm tra số occurrence và alignment, không chỉ tìm target substring. Placeholder chỉ bật sau khi test tokenizer/model.
-
-## 15. HachimiMT
-
-Hachimi là candidate engine cho block risk trung bình:
-
-- CTranslate2 INT8 trên CPU;
-- model load một lần trong resident subprocess;
-- batch theo token budget;
-- output qua candidate gate;
-- không replace term mù;
-- fail gate thì đưa Qwen.
-
-Model card cung cấp ví dụ Transformers và CTranslate2 INT8, đồng thời mô tả model hướng tới giọng convert: [HachimiMT-60-QT](https://huggingface.co/ngocdang83/HachimiMT-60-QT).
-
-## 16. Qwen qua Ollama
-
-Hai mode:
-
-1. LOCAL_PATCH: trả patch theo source offsets.
-2. POSTEDIT: trả target blocks với ID giữ nguyên.
-
-Payload gồm source target, read-only context, VP draft, Hachimi candidate nếu có, occurrence constraints, entity ledger, style profile và output JSON Schema.
-
-Ollama Generate API hỗ trợ JSON/JSON Schema qua trường format: [Ollama Generate API](https://docs.ollama.com/api/generate).
-
-Qwen term proposal chỉ là observation, không tự sửa dictionary.
-
-## 17. QA ba lớp
-
-### Invariant gate
-
-Hard error:
-
-- output rỗng/truncated;
-- invalid structured output;
-- mất/thêm số, tiền, đơn vị, cấp bậc;
-- mất phủ định/modal;
-- entity hoặc HARD occurrence sai;
-- quote/bracket/tag/heading hỏng;
-- Hán tự sót ngoài allowlist;
-- lặp block;
-- prompt leakage;
-- block ID thiếu/thừa.
-
-### Candidate acceptability
-
-- source-target alignment coverage;
-- semantic anchors thiếu/thừa;
-- candidate disagreement;
-- robust length deviation;
-- untranslated/repetition/language ratio;
-- PREFERRED term consistency;
-- correction history.
-
-Embedding, back-translation và Qwen self-score chỉ là tín hiệu phụ.
-
-### Chapter consistency audit
-
-- entity có nhiều target;
-- alias/xưng hô đổi bất thường;
-- cảnh giới/chức danh/vật phẩm không nhất quán;
-- speaker/pronoun bất thường;
-- duplicated/missing block.
-
-Chỉ auto-fix deterministic khi alignment một-một. Fallback hữu hạn:
-
-~~~text
-VP → Hachimi → Qwen → một constrained repair → NEEDS_REVIEW
-~~~
-
-## 18. Context và Entity Ledger
-
-~~~text
-entity_id
-source_forms[]
-canonical_target
-entity_type
-aliases[]
-gender/status nếu có bằng chứng
-evidence_occurrence_ids[]
-state = observed | confirmed | conflicted
-~~~
-
-Qwen chỉ đề xuất. Luồng cập nhật:
-
-~~~text
-proposal → validator → evidence store → ledger revision
-~~~
-
-Gender, quan hệ và speaker không active từ một suy đoán duy nhất.
-
-## 19. Tách ba loại bộ nhớ
-
-1. Dictionary: source → target có thể dùng lặp lại.
-2. Entity memory: tên/alias/hệ thống trong một truyện.
-3. Translation memory: source + context + glossary + model/prompt → translation.
-
-Không promote translation memory thành dictionary chỉ vì output lặp. Style/xưng hô là profile hoặc memory riêng.
-
-## 20. Learning modes
-
-~~~text
---learn off
---learn observe
---learn safe
-~~~
-
-Default đề xuất: safe.
-
-- off: không tạo candidate.
-- observe: tạo candidate nhưng không active.
-- safe: bootstrap và auto-active entity book-local vượt hard gates.
-
-Không có aggressive mode trong MVP.
-
-## 21. Auto-learning hard gates
-
-Whitelist:
-
-- person;
-- place;
-- organization/sect;
-- realm;
-- skill;
-- item;
-- coined entity book-local.
-
-Manual-only:
-
-- common phrase/idiom;
-- verb/adjective/function word;
-- single character;
-- pronoun/kinship/xưng hô;
-- gender inference;
-- sentence hoàn chỉnh;
-- source đã có manual/base multi-char;
-- source có nhiều sense.
-
-Candidate book-auto chỉ qua nếu đồng thời:
-
-1. source là substring thật trong TXT;
-2. đủ distinct occurrence/context/chapter;
-3. duplicate crawl/rerun bị collapse;
-4. normalized target support thống nhất;
-5. có ít nhất hai provenance chain độc lập;
-6. Qwen evidence độc lập không nhìn Hachimi output;
-7. không uncertain, hard fail hoặc truncation;
-8. target pass sanitizer;
-9. không collision manual/base multi-char;
-10. không user reject/tombstone;
-11. replay không tăng hard error;
-12. không thay block user-approved;
-13. chỉ fill unknown/single-char fallback;
-14. mọi occurrence ảnh hưởng được index.
-
-Các baseline như 5 occurrence, 2 chapter, 3 context và 90% target support chỉ là config khởi tạo cần calibrate.
-
-## 22. Learning lifecycle
-
-~~~text
-OBSERVED → CANDIDATE → SHADOW → VALIDATED → ACTIVE_BOOK_AUTO
-             └──────→ REJECTED
-ACTIVE_BOOK_AUTO → QUARANTINED
-manual edit → SUPERSEDED + ACTIVE_BOOK_MANUAL
-~~~
-
-- Reject tạo tombstone.
-- Đổi model/prompt/base dictionary buộc evidence revalidate.
-- Không expire chỉ dựa trên số ngày.
-- Explicit user correction thắng auto evidence.
-
-## 23. Feedback semantics
-
-~~~bash
-zhvi review export RUN_ID --format jsonl
-zhvi segment accept SEGMENT_ID
-zhvi segment correct SEGMENT_ID --file corrected.txt
-zhvi term accept CANDIDATE_ID --target "..." --scope book
-zhvi term reject CANDIDATE_ID --reason "..."
-zhvi term edit ENTRY_ID --target "..."
-zhvi feedback apply feedback.jsonl --dry-run
-zhvi feedback apply feedback.jsonl --retranslate-affected
-~~~
-
-- segment correct khóa final block, không tự tạo term mapping.
-- term accept/edit mới là explicit mapping evidence.
-- extraction từ sentence diff chỉ tạo shadow proposal.
-- không học từ NEEDS_REVIEW, truncated, hard-failed hoặc rejected.
-- dry-run hiện dictionary diff, collision và affected blocks.
-
-## 24. Revision và rollback
-
-~~~text
-dictionary_revision:
-  id, parent_id, status, actor, reason, run_id, checksum
-
-dictionary_event:
-  revision_id, action, entry_id, before_json, after_json
-
-term_usage:
-  entry_version_id, segment_id, source_start, source_end
-~~~
-
-Rollback tạo revision mới chứa inverse events, không xóa lịch sử.
-
-~~~bash
-zhvi terms revisions
-zhvi terms diff REV_A REV_B
-zhvi terms rollback --to REV_A --dry-run
-zhvi terms rollback --to REV_A --retranslate-affected
-~~~
-
-Affected rerun dùng term_usage + overlap index, stage result, QA rồi mới publish revision/output mới.
-
-## 25. Runtime cho máy 12 GB VRAM
-
-~~~text
-CLI controller — một process, SQLite writer duy nhất
-Hachimi worker — một resident subprocess CPU
-Ollama/Qwen — daemon GPU, concurrency 1
-Metrics sampler — một thread nhẹ tùy chọn
-~~~
-
-Tôi không thể xác minh Qwen nằm hoàn toàn trong 12 GB VRAM vì chưa có model name, quantization, context và kết quả ollama ps.
-
-Scheduler:
-
-~~~text
-bounded planning window
-→ VietPhrase/router
-→ Hachimi token batches
-→ Qwen priority queue
-→ ordinal reorder buffer
-→ chapter audit
-→ checkpoint
-~~~
-
-- Không giữ cả cuốn trong RAM.
-- Qwen concurrency 1.
-- Hachimi batch theo token budget.
-- Backpressure khi queue/buffer đầy.
-- Ưu tiên ordinal thấp.
-- Chỉ overlap CPU/GPU sau benchmark.
-
-Ollama có endpoint liệt kê model đang chạy và runtime info: [Ollama PS API](https://docs.ollama.com/api/ps).
-
-Hachimi subprocess dùng multiprocessing spawn; controller là DB writer; watchdog restart hữu hạn; không truncation input âm thầm.
-
-## 26. Timeout, retry và circuit breaker
-
-Tách preload timeout, warm request timeout, Hachimi batch timeout và export error.
-
-Retry hữu hạn cho connection error, timeout, 429, 5xx.
-
-Không retry vô hạn config error, model not found, OOM cùng payload, invalid source hoặc dictionary corruption.
-
-Invalid JSON: một structured-repair attempt, sau đó NEEDS_REVIEW.
-
-Khi AI lane bắt buộc nhưng unavailable, default pause/fail có state; không âm thầm lấy VP/Hachimi làm final.
-
-## 27. State machine
-
-~~~mermaid
-stateDiagram-v2
-    [*] --> CREATED
-    CREATED --> RUNNING
-    RUNNING --> PAUSED
-    PAUSED --> RUNNING
-    RUNNING --> NEEDS_REVIEW
-    NEEDS_REVIEW --> RUNNING
-    RUNNING --> FAILED
-    RUNNING --> COMPLETED
-    COMPLETED --> EXPORTED
-~~~
-
-Block:
-
-~~~text
-PENDING → VP_READY → ROUTED → CANDIDATE_READY → VALIDATED → COMMITTED
-nhánh: RETRY_WAIT | NEEDS_REVIEW | FAILED | STALE
-~~~
-
-Block chỉ COMMITTED khi output, trace, route, QA và attempt metadata vào cùng transaction.
-
-## 28. SQLite schema tối thiểu
-
-~~~sql
-CREATE TABLE source_revisions (
-    id TEXT PRIMARY KEY,
-    content_hash TEXT NOT NULL UNIQUE,
-    encoding TEXT NOT NULL,
-    byte_size INTEGER NOT NULL,
-    snapshot_path TEXT NOT NULL,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE runs (
-    id TEXT PRIMARY KEY,
-    source_revision_id TEXT NOT NULL,
-    fingerprint TEXT NOT NULL,
-    dictionary_revision_id TEXT NOT NULL,
-    resolved_config_json TEXT NOT NULL,
-    status TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    UNIQUE(fingerprint)
-);
-
-CREATE TABLE blocks (
-    id TEXT PRIMARY KEY,
-    run_id TEXT NOT NULL,
-    chapter_ordinal INTEGER NOT NULL,
-    block_ordinal INTEGER NOT NULL,
-    source_start INTEGER NOT NULL,
-    source_end INTEGER NOT NULL,
-    source_hash TEXT NOT NULL,
-    status TEXT NOT NULL,
-    final_text TEXT,
-    qa_json TEXT
-);
-
-CREATE TABLE attempts (
-    id TEXT PRIMARY KEY,
-    block_id TEXT NOT NULL,
-    engine TEXT NOT NULL,
-    model_digest TEXT,
-    prompt_hash TEXT,
-    input_hash TEXT NOT NULL,
-    output_json TEXT,
-    status TEXT NOT NULL,
-    duration_ms INTEGER,
-    created_at TEXT NOT NULL
-);
-
-CREATE TABLE route_decisions (
-    block_id TEXT PRIMARY KEY,
-    route TEXT NOT NULL,
-    reasons_json TEXT NOT NULL,
-    features_json TEXT NOT NULL,
-    router_version TEXT NOT NULL
-);
-
-CREATE TABLE term_candidates (
-    id TEXT PRIMARY KEY,
-    book_id TEXT NOT NULL,
-    source TEXT NOT NULL,
-    proposed_target TEXT NOT NULL,
-    kind TEXT NOT NULL,
-    status TEXT NOT NULL,
-    provenance_json TEXT NOT NULL
-);
-
-CREATE TABLE feedback_events (
-    id TEXT PRIMARY KEY,
-    action TEXT NOT NULL,
-    segment_id TEXT,
-    candidate_id TEXT,
-    entry_id TEXT,
-    before_json TEXT,
-    after_json TEXT,
-    created_at TEXT NOT NULL
-);
-~~~
-
-Production bổ sung chapter/structural nodes, evidence typed, revisions/events, term usage, tombstones, manifests và cache.
-
-SQLite WAL cho phép reader tiếp tục trong khi writer append WAL; thiết kế vẫn giữ một controller writer: [SQLite WAL](https://sqlite.org/wal.html).
-
-## 29. Checkpoint và crash recovery
-
-- Transaction theo committed block hoặc batch nhỏ.
-- Attempt hoàn tất được cache trước engine tiếp theo.
-- Ctrl-C lần 1: ngừng block mới, checkpoint, PAUSED, exit 130.
-- Ctrl-C lần 2: thoát ngay; attempt chưa commit chạy lại.
-- Khi resume, block RUNNING chưa commit về PENDING.
-- Project lock ngăn hai translate process cùng ghi.
-- Disk/DB error là fatal; output cũ không bị thay.
-
-Không cần distributed lease cho một foreground CLI.
-
-## 30. Atomic export
-
-Chỉ export final khi mọi block COMMITTED, không hard fail, không review bắt buộc, count/order khớp source và không còn placeholder.
-
-~~~python
-def atomic_export(destination: Path, content: bytes) -> str:
-    tmp = destination.with_name(destination.name + ".tmp")
-    with tmp.open("wb") as f:
-        f.write(content)
-        f.flush()
-        os.fsync(f.fileno())
-    digest = sha256(content).hexdigest()
-    os.replace(tmp, destination)
-    fsync_directory(destination.parent)
-    return digest
-~~~
-
-Temp file phải ở cùng filesystem với destination.
-
-Output ngoài project đã tồn tại cần cờ replace rõ ràng. Partial output phải có tên .partial.txt và sidecar review.
-
-## 31. Progress, stdout và logs
-
-TTY:
-
-~~~text
-Ch 38/420 | block 12,480/93,201 | VP 72% H 21% Q 7%
-41.2 char/s | ETA 34m | review 6 | retries 1
-~~~
-
-- progress/log người đọc ở stderr;
-- stdout dành cho JSON;
-- non-TTY không animation;
-- tôn trọng NO_COLOR;
-- --json và --json-events.
-
-Typer hỗ trợ command/subcommand theo type hints: [Typer commands](https://typer.tiangolo.com/tutorial/commands/). Rich hỗ trợ progress nhiều task: [Rich Progress](https://rich.readthedocs.io/en/stable/progress.html).
-
-Log mặc định không ghi toàn source/prompt/raw output. Bật bằng cờ debug-content.
-
-## 32. Manifest
-
-Manifest lưu:
-
-- tool/pipeline/schema version;
-- source revision/path/hash/encoding;
-- parser version;
-- dictionary revision/checksum;
-- resolved config/style/profile;
-- Qwen name/digest/quantization/context nếu có;
-- Hachimi snapshot/tokenizer/CTranslate2;
-- prompt/schema/router/QA versions;
-- route/cache/retry/review totals;
-- time và output hash;
-- fallback/degraded events;
-- segment-to-run trace reference.
-
-Không lấy được digest thì ghi null/unavailable, không suy đoán.
-
-## 33. Profiles và config
-
-~~~toml
+| `zhvi init PROJECT` | tạo book project |
+| `zhvi import FILE -p PROJECT` | tạo source revision |
+| `zhvi learn -p PROJECT` | discovery, candidate, evaluate và book promotion |
+| `zhvi learn -p PROJECT --global` | đánh giá cross-book/global promotion |
+| `zhvi translate FILE` | happy path VietPhrase-only |
+| `zhvi translate -p PROJECT --no-learn` | dịch bằng revision active hiện tại |
+| `zhvi terms list -p PROJECT` | xem candidate/evidence/trạng thái |
+| `zhvi terms accept ID -p PROJECT` | tạo manual entry từ candidate |
+| `zhvi terms reject ID -p PROJECT` | reject candidate có audit event |
+| `zhvi terms revoke ID -p PROJECT` | thu hồi auto entry và build revision mới |
+| `zhvi dict diff REV_A REV_B` | xem entry và affected-block diff |
+| `zhvi dict rollback REV -p PROJECT` | tạo revision mới từ revision an toàn |
+| `zhvi explain TEXT -p PROJECT` | xem segmentation và provenance |
+| `zhvi status -p PROJECT` | run/revision/candidate/regression status |
+| `zhvi export -p PROJECT` | dựng lại TXT từ run hoàn tất |
+| `zhvi doctor` | kiểm tra dictionary, DB, disk và smoke translation |
+
+Các cờ `--hachimi`, `--qwen` và profile `fast|balanced|quality` bị loại bỏ. Chỉ còn các cấu hình làm thay đổi hành vi VietPhrase hoặc learning policy.
+
+## 11. Cấu hình đề xuất
+
+```toml
 style = "convert-qt"
-pipeline = "balanced"
 output_policy = "strict-final"
-learning = "safe"
-~~~
+encoding = "utf-8"
+dict_dir = "crawler/vietphrase/dicts"
+global_glossary = "~/.config/zhvi/glossary.manual.tsv"
+pattern_rules = true
+collapse_repetitions = true
+qa_strip_junk = true
 
-Pipeline:
+[learning]
+enabled = true
+auto_scope = "book"
+max_phrase_chars = 8
+min_name_occurrences = 3
+min_term_occurrences = 5
+min_chapters = 2
+require_unambiguous_target = true
+require_affected_block_isolation = true
+global_min_books = 3
+global_min_occurrences = 20
+global_require_golden_suite = true
 
-- fast: ưu tiên VP, fallback hạn chế.
-- balanced: VP → patch/Hachimi → Qwen.
-- quality: route bảo thủ hơn, fallback nhiều hơn.
+[runtime]
+checkpoint_blocks = 50
+```
 
-Output:
+Các field ảnh hưởng dictionary hoặc output phải nằm trong fingerprint. Thay ngưỡng learning tạo evaluation mới; thay tập entry active tạo dictionary revision mới.
 
-- strict-final: không publish khi hard fail/review bắt buộc.
-- best-effort: best candidate + review sidecar.
+## 12. Concurrency, recovery và tính nguyên tử
 
-Precedence:
+- Một project chỉ có một writer lock.
+- Có thể có nhiều reader dùng revision `ready`.
+- Mọi đường dẫn `dict_dir` phải resolve symlink/realpath trước khi xác định registry; mỗi resolved dictionary root có đúng một global registry và một writer lock.
+- Chỉ global registry được promote global entry hoặc materialize `AutoVietPhrase.txt`.
+- Không giữ global lock trong suốt quá trình discovery; chỉ lock khi build/activate revision.
+- SQLite dùng WAL và `synchronous=FULL` cho mutation quan trọng.
+- Block chỉ `committed` khi output, trace và QA metadata cùng transaction.
+- Revision bundle và output dùng temp → fsync file → fsync directory → atomic rename.
+- Active pointer chỉ được CAS sau khi immutable bundle hoàn chỉnh; crash trước DB commit để lại orphan, crash sau DB commit chỉ có thể để projection cũ.
+- Startup reconciler kiểm tra active pointer, bundle hash và projection; projection cũ được dựng lại, bundle thiếu/hash sai là fatal corruption.
+- Crash khi revision ở `building`/`validating` không làm thay active revision.
+- Resume run phải pin revision cũ; muốn dùng revision mới phải fork run.
 
-~~~text
-CLI → environment endpoint/runtime → project config
-→ named runtime profile → user config → defaults
-~~~
+## 13. Regression không cần model
 
-config show --resolved hiển thị effective config. Resume dùng config snapshot cũ.
+Ba lớp kiểm định:
 
-## 34. Exit codes
+### Dictionary unit tests
 
-| Code | Nghĩa |
-|---:|---|
-| 0 | hoàn tất và final output hợp lệ |
-| 2 | CLI usage/config |
-| 3 | input/import/parse |
-| 4 | dependency/model preflight |
-| 5 | lock/state/resume conflict |
-| 6 | run failed |
-| 7 | review required/partial |
-| 8 | export/write error |
-| 9 | integrity/verify error |
-| 130 | Ctrl-C |
-| 143 | SIGTERM |
-
-status mặc định trả 0 nếu query thành công; --require-complete trả code theo state.
-
-## 35. Doctor và benchmark
-
-Doctor kiểm tra dictionary, chapter regex, encoding, SQLite/disk, Hachimi load, Ollama/Qwen, JSON Schema và context admission.
-
-~~~bash
-zhvi doctor --project PROJECT
-zhvi benchmark runtime --input representative.txt --write-profile workstation-12gb
-~~~
-
-Benchmark đo cold/warm Qwen, Hachimi token-batch/beam, end-to-end routes, latency, chars/s, RAM/VRAM, queue, QA fail, crash/resume và reproducibility.
-
-Runtime profile pin theo hardware, Ollama version, Qwen digest/quantization, Hachimi snapshot/CTranslate2 và prompt/schema.
-
-Không chọn batch/thread chỉ theo tốc độ; loại cấu hình vi phạm quality/memory trước.
-
-## 36. Code layout
-
-~~~text
-src/zhvi/
-├── cli.py
-├── config.py
-├── project.py
-├── document.py
-├── pipeline.py
-├── scheduler.py
-├── state.py
-├── export.py
-├── vietphrase/
-│   ├── importer.py
-│   ├── trie.py
-│   ├── lattice.py
-│   ├── renderer.py
-│   └── trace.py
-├── routing/
-│   ├── features.py
-│   ├── rules.py
-│   └── model.py
-├── engines/
-│   ├── hachimi_worker.py
-│   └── ollama_qwen.py
-├── quality/
-│   ├── invariants.py
-│   ├── acceptability.py
-│   └── chapter_audit.py
-├── memory/
-│   ├── entities.py
-│   ├── terms.py
-│   ├── translation.py
-│   └── revisions.py
-└── review.py
-~~~
-
-Chỉ giữ interface ở boundary thay thế được: translation engine, dictionary compiler, state store và exporter.
-
-## 37. Core orchestration
-
-~~~python
-def translate_project(project: Project, request: TranslateRequest) -> RunResult:
-    preflight(project, request)
-    source = import_snapshot(request.source)
-    config = resolve_config(project, request)
-    book_index = analyze_book(source, config.parser)
-    glossary = bootstrap_and_freeze(book_index, config.learning)
-
-    fingerprint = build_run_fingerprint(source, config, glossary)
-    run = state.resume_or_create(fingerprint)
-    run.pin(glossary=glossary, config=config)
-
-    for chapter in book_index.pending_chapters(run):
-        blocks = semantic_segment(chapter, config.segmenter)
-        vp_plans = vietphrase.plan_many(blocks, glossary)
-
-        for block, vp in bounded_schedule(blocks, vp_plans):
-            decision = router.decide(block, vp, run.context)
-            candidate = execute_route(decision, block, vp, run.context)
-            accepted = quality.bounded_validate_repair(candidate)
-            state.stage_block(run, block, accepted)
-
-        audited = quality.audit_chapter(state.staged_chapter(run, chapter))
-        state.commit_chapter(run, audited)
-        state.checkpoint_observations(run, chapter)
-
-    final_report = quality.audit_book(run)
-    if final_report.publishable:
-        output = exporter.atomic_publish(run, request.output)
-        state.mark_exported(run, output)
-    else:
-        state.mark_needs_review(run, final_report)
-
-    return state.result(run)
-~~~
-
-## 38. Failure policy
-
-Transient: timeout, reset, Ollama 429/5xx, Hachimi crash lần đầu. Retry hữu hạn + backoff/jitter.
-
-Content failure: invalid JSON, QA hard fail, alignment fail, context overflow, repetition. Một repair rồi NEEDS_REVIEW.
-
-Fatal: snapshot hỏng, DB/disk lỗi, dictionary corruption, model/config thiếu, export integrity fail.
-
-Không silent fallback hoặc tự đổi model. Degraded behavior phải là policy rõ và ghi manifest.
-
-## 39. Test bắt buộc
-
-### Document
-
-- encoding, CRLF/LF, blank line, heading;
-- quote/ngoặc lồng, đoạn dài;
-- lossless structural round-trip.
-
-### VietPhrase
-
-- overlapping phrase/top-K lattice;
-- scope/trust precedence;
-- HARD/PREFERRED/CONTEXTUAL;
-- book auto fill-only;
-- single-char fallback/collision.
-
-### Pipeline
-
-- DIRECT_VP không gọi model;
-- patch chỉ đổi allowed span;
-- Hachimi fail gọi Qwen;
-- Qwen fail → một repair → review;
-- snapshot bất biến;
-- chapter consistency.
-
-### Recovery/cache/export
-
-- kill tại mọi transition;
-- Ctrl-C, restart Ollama, Hachimi crash, disk full, OOM;
-- resume không gọi lại attempt đã commit;
-- same fingerprint no-op;
-- append chương tái dùng phần cũ;
-- relevant term invalid đúng block;
-- output cũ không hỏng khi run mới fail;
-- không publish partial như final;
-- block không thiếu/nhân đôi/reorder.
-
-### Learning
-
-- duplicate evidence không bơm support;
-- Qwen nhìn Hachimi không tính independent;
-- reject tạo tombstone;
-- sentence correction không auto tạo term;
-- rollback tạo inverse revision;
-- affected rerun đúng.
+- parse mọi dòng;
+- auto entry không duplicate/conflict cùng scope/lớp; conflict legacy dùng tie-break đã freeze và phải phát diagnostic;
+- precedence đúng;
+- traditional/simplified alias đúng;
+- rule pattern không nuốt literal dài hơn;
+- output deterministic.
 
 ### Golden corpus
 
-Bao phủ tiên hiệp/huyền huyễn, đô thị, hội thoại, tỉnh lược, phủ định, 把/被, thành ngữ, tên hiếm, cảnh giới/pháp bảo, số/tiền/đơn vị và câu nhiều mệnh đề.
+- dùng manifest tại `zhvi/tests/golden/manifest.json` làm danh sách case đã duyệt;
+- có thể nhập `raw_china/expect*.txt` và `raw_china/excpect*.txt` làm candidate rồi tạo báo cáo diff để người dùng duyệt;
+- chỉ case có source/expected hash và trạng thái `approved` mới tham gia promotion gate;
+- chạy pipeline VietPhrase-only trên source đã pin trong manifest;
+- so sánh byte hoặc approved structural diff với expected đã pin;
+- mỗi diff phải truy được tới candidate/entry;
+- global promotion không được tạo unreviewed diff ngoài affected blocks.
 
-Metric chính: số ký tự user sửa/1.000 ký tự, accept rate theo route, entity consistency, locked violation, DIRECT_VP false-negative, route ratio, chars/s và time/chapter.
+Trong brownfield hiện tại chưa có golden manifest được duyệt, nên global auto-promotion mặc định bị khóa dù có `raw_china/expect.txt` và `raw_china/excpect2.txt`.
 
-## 40. Thứ tự triển khai
+### Metamorphic tests
 
-### Milestone 1 — CLI deterministic
+- thêm entry không xuất hiện trong source không được đổi output;
+- reorder file auto không được đổi output;
+- dịch toàn truyện bằng một lần và theo từng chương phải giống nhau;
+- resume phải giống clean run;
+- rollback rồi chạy lại phải khôi phục output hash tương ứng;
+- phồn thể/giản thể alias phải chọn cùng entry khi policy yêu cầu.
 
-- project/import/snapshot;
-- lossless parser;
-- dictionary importer;
-- VietPhrase lattice/trace;
-- SQLite/checkpoint;
-- VP-only;
-- atomic export;
-- crash/resume tests.
+## 14. Báo cáo chất lượng
 
-### Milestone 2 — Hybrid
+Mỗi run xuất các chỉ số:
 
-- Hachimi resident worker;
-- Ollama structured client;
-- router bốn route;
-- occurrence constraints;
-- QA block/chapter;
-- review JSONL.
+- `dictionary_revision_id`;
+- coverage theo ký tự và source span;
+- unknown spans;
+- single-character span ratio;
+- fragmentation ratio;
+- candidate count theo trạng thái;
+- số entry book-auto/global-auto được dùng;
+- affected blocks do revision mới;
+- regression pass/fail;
+- output SHA-256;
+- elapsed time và chars/s.
 
-### Milestone 3 — Learning safe
+Không dùng một “quality score” tổng hợp để tuyên bố bản dịch hay. Các metric chỉ đo độ phủ, độ ổn định và khả năng audit.
 
-- tách entity/term/translation memory;
-- discovery/bootstrap;
-- book auto fill-only;
-- evidence/revision/tombstone/rollback;
-- affected rerun.
+## 15. Migration từ thiết kế 2.0
 
-### Milestone 4 — Calibration
+Đây là target architecture, không phải mô tả trạng thái runtime hiện tại. Tại thời điểm thiết kế, code vẫn chứa router, `LOCAL_PATCH`, Hachimi/Qwen modules và model-related config. Milestone 1 phải tạo test baseline VietPhrase-only trước khi tuyên bố cutover; root test collection cũng phải khai báo đủ dependency hiện đang được import, thay vì dựa vào package cài sẵn ngoài `zhvi`.
 
-- review CLI;
-- golden corpus;
-- router model nhỏ;
-- runtime benchmark/profile;
-- hiệu chỉnh threshold.
+### Giữ lại
 
-## 41. Default đề xuất
+- CLI Typer và project workflow;
+- snapshot/import lossless;
+- document parser và stable block identity;
+- trie, longest-match, pattern rules và trace;
+- dictionary fingerprint/cache;
+- SQLite state, checkpoint/resume;
+- structural QA, chapter audit;
+- atomic export và manifest;
+- manual global/book glossary.
 
-~~~toml
-style = "convert-qt"
-pipeline = "balanced"
-output_policy = "strict-final"
-learning = "safe"
+### Loại bỏ
 
-[input]
-encoding = "utf-8"
-chapter_detection = "auto"
+- `engines/hachimi_worker.py`;
+- `engines/ollama_qwen.py`;
+- router bốn route và `execute_route`;
+- model download/cache/digest;
+- prompt schema và structured model output;
+- model candidate acceptability gate;
+- masked-term round-trip phục vụ model;
+- CLI/config `use_hachimi`, `use_qwen`, `qwen_*`, `hachimi_*`;
+- route metrics `HACHIMI_CANDIDATE`, `LOCAL_PATCH`, `QWEN_POSTEDIT`;
+- profile chỉ khác nhau ở việc gọi model.
 
-[routing]
-audit_direct_vp_rate = 0.0
+### Thay đổi schema
 
-[runtime]
-qwen_concurrency = 1
-hachimi_device = "cpu"
-hachimi_compute_type = "int8_float32"
-overlap = "auto"
+- tăng `SCHEMA_VERSION`;
+- migration giữ source revision, run và block lịch sử;
+- route cũ được giữ read-only để audit nhưng run mới chỉ có `VIETPHRASE`;
+- thêm revision/evidence/promotion/regression tables;
+- cache cũ có prompt/model fingerprint không được tái dùng;
+- không drop lịch sử trong migration tự động.
 
-[failure]
-engine_unavailable = "pause"
-content_failure = "review"
-max_content_repair = 1
-~~~
+## 16. Kế hoạch triển khai
 
-Token budget, Hachimi batch tokens, timeout và context không gắn cứng trước benchmark.
+### Milestone 1 — VietPhrase-only cutover
 
-## 42. Cần cung cấp trước khi viết code
+- bỏ model flags và model initialization;
+- rút pipeline về một đường VietPhrase;
+- đổi fingerprint/version;
+- cập nhật doctor, status, README và tests;
+- chứng minh output deterministic và resume parity.
 
-1. Output ollama list và ollama ps.
-2. Dictionary files và 5–10 dòng mẫu mỗi loại.
-3. Một TXT thật khoảng 2–5 chương.
-4. Heading chương crawler giữ lại.
-5. Python/Ubuntu version.
-6. CPU, RAM và GPU chính xác.
-7. Chỉ convert hay thêm profile hiện đại.
+### Milestone 2 — Revision và auto layer
 
-## 43. Kết luận
+- thêm `AutoVietPhrase.txt` và `glossary.auto.tsv`;
+- thêm dictionary revision builder;
+- thêm provenance/trace → affected-block index;
+- hỗ trợ diff và rollback.
 
-Thiết kế phù hợp nhất cho yêu cầu hiện tại là:
+### Milestone 3 — Book learner
 
-**một CLI project-oriented, two-pass, lossless, resumable và reproducible; VietPhrase tạo lattice/trace, Hachimi làm candidate, Qwen chỉ patch/post-edit block rủi ro; dictionary được đóng băng theo run và tự học chỉ tạo book-local revision có hard gates.**
+- n-gram discovery;
+- proper-name heuristic;
+- deterministic target composition;
+- evidence evaluator;
+- book-auto hard gates;
+- regression trước promotion.
 
-Giới hạn: không thể phát hiện hoàn hảo mọi câu VietPhrase sai nghĩa chỉ bằng rule và coverage. Cơ chế thực tế là selective routing + abstain + QA + feedback calibration + audit sampling tùy chọn.
+### Milestone 4 — Global learner
 
-## 44. Nguồn công nghệ đã kiểm tra
+- global evidence store;
+- cross-book agreement;
+- golden suite gate;
+- atomic global promotion/revocation;
+- báo cáo drift theo revision.
 
-- [Ollama Generate API](https://docs.ollama.com/api/generate)
-- [Ollama running models API](https://docs.ollama.com/api/ps)
-- [HachimiMT-60-QT model card](https://huggingface.co/ngocdang83/HachimiMT-60-QT)
-- [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)
-- [Typer commands](https://typer.tiangolo.com/tutorial/commands/)
-- [Rich progress display](https://rich.readthedocs.io/en/stable/progress.html)
+## 17. Acceptance criteria
+
+Thiết kế được coi là triển khai đúng khi:
+
+1. Không còn runtime dependency, network call hoặc process nào dành cho model dịch/edit.
+2. Mọi block output có trace 100% tới literal source hoặc VietPhrase entry/rule.
+3. Cùng fingerprint tạo cùng output SHA-256.
+4. Auto learner không bao giờ ghi vào file human-owned.
+5. Dịch không quan sát promotion giữa run.
+6. Candidate không có deterministic target luôn ở `unresolved`.
+7. Book promotion rollback được và chỉ làm đổi affected blocks.
+8. Global promotion không chạy nếu thiếu cross-book evidence hoặc golden manifest đã duyệt.
+9. QA không sửa output; fail phải dẫn tới dictionary fix và rerun.
+10. Pipeline chạy và xuất diff report với toàn bộ candidate reference `raw_china/expect*.txt` và `raw_china/excpect*.txt`; chỉ case đã duyệt mới quyết định pass/fail global gate.
+
+## 18. Deferred
+
+- Tự chọn ranh giới từ bằng tokenizer ngoài VietPhrase: hoãn; discovery n-gram đủ cho bản đầu.
+- Đồng bộ auto dictionary giữa nhiều máy: hoãn; export/import revision manifest trước.
+- UI web để duyệt candidate: hoãn; CLI là nguồn thao tác chính.
+- Tự promote target có nhiều nghĩa theo context: hoãn; cần context-sensitive rule rõ ràng, không chọn mơ hồ.
+- Service/API và worker queue: hoãn đến khi CLI ổn định.
+
+## 19. Kết luận
+
+Chất lượng không còn đến từ việc một model sửa từng đoạn sau khi dịch. Nó đến từ một vòng lặp có thể kiểm chứng:
+
+```text
+dịch bằng VietPhrase
+→ đo chỗ từ điển yếu
+→ nâng cấp VietPhrase
+→ regression
+→ tạo revision
+→ dịch lại
+```
+
+Kết quả là hệ thống đơn giản hơn, offline, nhanh, tái lập và càng dùng càng tích lũy đúng tài sản cần cải thiện: **VietPhrase**.

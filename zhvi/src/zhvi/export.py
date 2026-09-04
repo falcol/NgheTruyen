@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .config import PARSER_VERSION, PIPELINE_VERSION, QA_VERSION, ROUTER_VERSION
+from .config import PARSER_VERSION, PIPELINE_VERSION, QA_VERSION, SEGMENTER_VERSION
 from .document import Document
 from .project import Project
 from .state import RunRow, State
@@ -89,13 +89,12 @@ def atomic_write(destination: Path, content: bytes) -> str:
 def write_manifest(project: Project, run: RunRow, output: Path, digest: str, report: dict) -> Path:
     manifest = {
         "tool_version": PIPELINE_VERSION,
-        "schema_versions": {"parser": PARSER_VERSION, "router": ROUTER_VERSION, "qa": QA_VERSION},
+        "schema_versions": {"parser": PARSER_VERSION, "segmenter": SEGMENTER_VERSION, "qa": QA_VERSION},
         "source": json.loads(run.resolved_config_json).get("_source", {}),
         "run_id": run.id,
         "fingerprint": run.fingerprint,
         "dictionary_revision": run.dictionary_revision_id,
         "resolved_config": run.resolved_config,
-        "models": {"hachimi": None, "qwen": None},  # M1: khong goi model
         "output": {"path": str(output), "sha256": digest},
         "totals": {
             "blocks": report.get("blocks"),

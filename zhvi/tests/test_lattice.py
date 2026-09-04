@@ -46,12 +46,6 @@ def test_multi_char_beats_single_fallback():
 
 def test_fragmentation_penalty():
     """3 single-char lien ke bi phat nang hon 1 phrase dai."""
-    dic = mini_dict([
-        ("ABC", "abc", Layer.BASE_MULTI),
-        ("A", "a", Layer.BASE_SINGLE),
-        ("B", "b", Layer.BASE_SINGLE),
-        ("C", "c", Layer.BASE_SINGLE),
-    ])
     # CJK moi duoc tinh; dung CJK that
     dic2 = mini_dict([
         ("天地人", "thiên địa nhân", Layer.BASE_MULTI),
@@ -194,3 +188,85 @@ def test_collapse_disabled_by_flag():
     ])
     draft = vp_plan(dic, "有些有些担心", collapse_reps=False)
     assert draft.text == "Có chút có chút lo lắng"
+
+
+# ---- AD-9: duong dich deterministic (story 1.4) ----
+
+def test_ad9_same_layer_entry_id_tiebreak():
+    """Cung (layer, trust), 2 target -> tie-break entry_id lexical, khong phu thuoc thu tu nap."""
+    dic_a = mini_dict([
+        ("青龙", "Alpha", Layer.GLOBAL_MANUAL),
+        ("青龙", "Beta", Layer.GLOBAL_MANUAL),
+    ])
+    dic_b = mini_dict([  # dao thu tu nap
+        ("青龙", "Beta", Layer.GLOBAL_MANUAL),
+        ("青龙", "Alpha", Layer.GLOBAL_MANUAL),
+    ])
+    out_a = vp_plan(dic_a, "青龙").text
+    out_b = vp_plan(dic_b, "青龙").text
+    assert out_a == out_b == "Alpha"
+
+
+def test_ad9_entry_version_id_unique_per_target():
+    """2 entry cung (layer, span) khac target -> entry_version_id khac nhau.
+
+    entry_version_id la dinh danh entry (AD-9 tie-break dung truong nay) —
+    trung id khi khac target la sai voi data-model entry_versions.
+    """
+    from zhvi.vietphrase.lattice import _find_edges
+
+    dic = mini_dict([
+        ("青龙", "Alpha", Layer.GLOBAL_MANUAL),
+        ("青龙", "Beta", Layer.GLOBAL_MANUAL),
+    ])
+    edges = [e for e in _find_edges(dic.root, "青龙", 0) if e.end == 2]
+    ids = [e.entry_version_id for e in edges]
+    assert len(ids) == 2
+    assert len(set(ids)) == 2  # id phai duy nhat moi entry
+
+
+def test_ad9_layer_precedence_beats_entry_id():
+    """Layer cao hon thang tuyet doi du entry_id lexical lon hon."""
+    dic = mini_dict([
+        ("青龙", "zzz-base", Layer.BASE_MULTI),
+        ("青龙", "mmm-manual", Layer.BOOK_MANUAL),
+    ])
+    assert vp_plan(dic, "青龙").text == "Mmm-manual"
+
+
+def test_ad9_literal_beats_pattern_same_layer():
+    """Pattern rule va literal cung do dai, cung (layer, trust) -> literal thang."""
+    from zhvi.vietphrase.patterns import build_pattern_index, compile_rule
+
+    dic = mini_dict([
+        ("天", "Thiên", Layer.BASE_MULTI),  # trust 20 -> {n} entity ok
+        ("小天", "Tiểu Thiên Literal", Layer.BASE_MULTI),
+    ])
+    rule = compile_rule("小{n}", "tiểu {1} pattern", (int(Layer.BASE_MULTI), 20.0, 0), "CONTEXTUAL")
+    dic.patterns = build_pattern_index([rule])
+    draft = vp_plan(dic, "小天")
+    assert "Literal" in draft.text  # literal thang pattern cung do dai
+
+
+def test_ad9_trad_source_kept_in_trace():
+    """Span match bang key giản thể nhung trace luu source GOC (phồn thể)."""
+    dic = mini_dict([("龙", "long", Layer.BASE_MULTI)])
+    dic.trad_simp = {"龍": "龙"}
+    draft = vp_plan(dic, "龍")
+    assert draft.text == "Long"
+    assert draft.spans[0].source == "龍"
+
+
+def test_ad9_load_order_independence_real_files(tmp_path):
+    """Hai dict dir giong nhau chi khac thu tu dong cung key -> cung output."""
+    def make_dict_dir(lines: list[str]) -> Path:
+        d = tmp_path / ("d" + str(abs(hash(tuple(lines))) % 10**8))
+        d.mkdir()
+        (d / "QualityOverrides.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return d
+
+    dir_a = make_dict_dir(["凌天=Alpha", "凌天=Beta"])
+    dir_b = make_dict_dir(["凌天=Beta", "凌天=Alpha"])
+    dic_a = load_dictionary(dir_a)
+    dic_b = load_dictionary(dir_b)
+    assert vp_plan(dic_a, "凌天").text == vp_plan(dic_b, "凌天").text == "Alpha"

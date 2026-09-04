@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -101,7 +101,8 @@ CREATE TABLE IF NOT EXISTS block_cache (
     cache_key TEXT PRIMARY KEY,
     final_text TEXT NOT NULL,
     qa_json TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    invalid INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_blocks_run ON blocks(run_id, status);
@@ -149,15 +150,29 @@ class State:
         self.conn.executescript(_SCHEMA)
         cur = self.conn.execute("SELECT value FROM meta WHERE key='schema_version'")
         row = cur.fetchone()
-        if row is None:
+        db_version = int(row[0]) if row is not None else 0
+        if db_version > SCHEMA_VERSION:
+            raise RuntimeError(f"DB schema {db_version} moi hon binary {SCHEMA_VERSION}")
+        if db_version < SCHEMA_VERSION:
+            self._migrate(db_version)
+        self.conn.commit()
+
+    def _migrate(self, from_version: int) -> None:
+        """Migration additive (SPEC AD-19): chi add/transform — khong drop/rewrite lich su."""
+        with self.conn:
+            if from_version < 2:
+                # v1 -> v2 (story 1.3): moi cache v1 sinh voi cache key model-era
+                # (chua prompt/router fingerprint) -> danh dau invalid, khong tai dung.
+                cols = {r[1] for r in self.conn.execute("PRAGMA table_info(block_cache)")}
+                if "invalid" not in cols:
+                    self.conn.execute(
+                        "ALTER TABLE block_cache ADD COLUMN invalid INTEGER NOT NULL DEFAULT 0"
+                    )
+                self.conn.execute("UPDATE block_cache SET invalid=1")
             self.conn.execute(
-                "INSERT INTO meta(key, value) VALUES('schema_version', ?)",
+                "INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
             )
-            self.conn.commit()
-        elif int(row[0]) > SCHEMA_VERSION:
-            raise RuntimeError(f"DB schema {row[0]} moi hon binary {SCHEMA_VERSION}")
-        self.conn.commit()
 
     def close(self) -> None:
         self.conn.close()
@@ -274,13 +289,14 @@ class State:
             )
             if cache_key is not None:
                 self.conn.execute(
-                    "INSERT OR REPLACE INTO block_cache VALUES (?,?,?,?)",
+                    "INSERT OR REPLACE INTO block_cache VALUES (?,?,?,?,0)",
                     (cache_key, final_text, json.dumps(qa, ensure_ascii=False), _now()),
                 )
 
     def cache_lookup(self, cache_key: str) -> dict | None:
         row = self.conn.execute(
-            "SELECT final_text, qa_json FROM block_cache WHERE cache_key=?", (cache_key,)
+            "SELECT final_text, qa_json FROM block_cache WHERE cache_key=? AND invalid=0",
+            (cache_key,),
         ).fetchone()
         if row is None:
             return None
@@ -308,20 +324,26 @@ class State:
         return self.conn.execute(q, args).fetchone()[0]
 
     # ---- status / report ----
+    def route_counts(self, run_id: str) -> dict[str, int]:
+        """Dem block committed theo route — tu route_decisions (join blocks).
+
+        Nguon duy nhat cho metric routes: moi block staged (ke ca cache-hit)
+        deu co row route_decisions (CAP-9).
+        """
+        cur = self.conn.execute(
+            "SELECT r.route, COUNT(*) FROM route_decisions r JOIN blocks b ON b.id=r.block_id "
+            "WHERE b.run_id=? GROUP BY r.route",
+            (run_id,),
+        )
+        return {route: cnt for route, cnt in cur.fetchall()}
+
     def status_info(self) -> dict:
         run = self.latest_run()
         if run is None:
             return {"status": "no-run"}
         total = self.block_count(run.id)
         committed = self.block_count(run.id, "committed")
-        routes: dict[str, int] = {}
-        cur = self.conn.execute(
-            "SELECT r.route, COUNT(*) FROM route_decisions r JOIN blocks b ON b.id=r.block_id "
-            "WHERE b.run_id=? GROUP BY r.route",
-            (run.id,),
-        )
-        for route, cnt in cur.fetchall():
-            routes[route] = cnt
+        routes = self.route_counts(run.id)
         return {
             "run_id": run.id,
             "status": run.status,

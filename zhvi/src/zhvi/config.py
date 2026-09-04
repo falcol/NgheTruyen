@@ -10,10 +10,10 @@ from pathlib import Path
 
 PARSER_VERSION = "zhvi-parser-1"
 SEGMENTER_VERSION = "zhvi-segmenter-1"
-ROUTER_VERSION = "zhvi-router-1"  # M1: VP-only router
 QA_VERSION = "zhvi-qa-1"
-PROMPT_SCHEMA_VERSION = "none-m1"
-PIPELINE_VERSION = "zhvi-m1-0.1.0"
+PIPELINE_VERSION = "zhvi-m3-0.1.0"
+# Route duy nhat cua duong dich VP-only (SPEC CAP-9: run moi chi ghi route nay).
+ROUTE_VIETPHRASE = "VIETPHRASE"
 
 # Base dictionary files, in load order (same layout as crawler/vietphrase/dicts).
 BASE_DICT_FILES = (
@@ -34,12 +34,36 @@ DEFAULT_GLOBAL_GLOSSARY = "~/.config/zhvi/glossary.manual.tsv"
 
 
 @dataclass(frozen=True)
+class LearningConfig:
+    """Nguong learning (SPEC pipeline-contract 'Config schema du kien').
+
+    Default khoi tao an toan — khong phai invariant (SPEC Assumptions).
+    Logic learner thuoc epic 3/4; day chi la config schema.
+    """
+
+    enabled: bool = True
+    auto_scope: str = "book"  # book | global
+    max_phrase_chars: int = 8
+    min_name_occurrences: int = 3
+    min_term_occurrences: int = 5
+    min_chapters: int = 2
+    require_unambiguous_target: bool = True
+    require_affected_block_isolation: bool = True
+    global_min_books: int = 3
+    global_min_occurrences: int = 20
+    global_require_golden_suite: bool = True
+
+
+@dataclass(frozen=True)
+class RuntimeConfig:
+    checkpoint_blocks: int = 50
+
+
+@dataclass(frozen=True)
 class Config:
-    # style / pipeline / policy (muc 33)
+    # style / policy
     style: str = "convert-qt"
-    pipeline: str = "balanced"
     output_policy: str = "strict-final"
-    learning: str = "safe"
     # input
     encoding: str = "utf-8"
     chapter_detection: str = "auto"  # auto | strict | none
@@ -53,11 +77,9 @@ class Config:
     collapse_repetitions: bool = True
     qa_strip_junk: bool = True
     pattern_rules: bool = True  # luat nhan {s}/{n} trong LuatNhan.txt (muc 11.1)
-    # routing (M2 placeholders, fixed in fingerprint)
-    audit_direct_vp_rate: float = 0.0
-    # runtime (M2 placeholders)
-    qwen_concurrency: int = 1
-    hachimi_device: str = "cpu"
+    # sections
+    learning: LearningConfig = LearningConfig()
+    runtime: RuntimeConfig = RuntimeConfig()
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -68,10 +90,6 @@ class Config:
 
 def config_hash(cfg: Config) -> str:
     return hashlib.sha256(cfg.json().encode("utf-8")).hexdigest()
-
-
-def style_profile_hash(cfg: Config) -> str:
-    return hashlib.sha256(f"{cfg.style}:{cfg.pipeline}".encode()).hexdigest()
 
 
 def load_project_config(project_root: Path) -> Config:
@@ -87,7 +105,7 @@ def load_project_config(project_root: Path) -> Config:
 def apply_toml(cfg: Config, raw: dict) -> Config:
     known = {k: v for k, v in raw.items() if k in cfg.to_dict() and not isinstance(v, dict)}
     sections: dict = {}
-    for name in ("input", "routing", "runtime"):
+    for name in ("input", "learning", "runtime"):
         if isinstance(raw.get(name), dict):
             sections[name] = raw[name]
     updates = dict(known)
@@ -98,14 +116,14 @@ def apply_toml(cfg: Config, raw: dict) -> Config:
         updates["chapter_detection"] = str(inp["chapter_detection"])
     if "chapter_regex" in inp:
         updates["chapter_regex"] = str(inp["chapter_regex"])
-    rt = sections.get("runtime", {})
-    if "qwen_concurrency" in rt:
-        updates["qwen_concurrency"] = int(rt["qwen_concurrency"])
-    if "hachimi_device" in rt:
-        updates["hachimi_device"] = str(rt["hachimi_device"])
-    routing = sections.get("routing", {})
-    if "audit_direct_vp_rate" in routing:
-        updates["audit_direct_vp_rate"] = float(routing["audit_direct_vp_rate"])
+    learn_raw = sections.get("learning", {})
+    if learn_raw:
+        learn = {k: v for k, v in learn_raw.items() if k in LearningConfig.__dataclass_fields__}
+        updates["learning"] = replace(cfg.learning, **learn)
+    rt_raw = sections.get("runtime", {})
+    if rt_raw:
+        rt = {k: v for k, v in rt_raw.items() if k in RuntimeConfig.__dataclass_fields__}
+        updates["runtime"] = replace(cfg.runtime, **rt)
     return replace(cfg, **updates)
 
 
@@ -130,11 +148,9 @@ def resolve_config(
     return cfg
 
 
-PROJECT_TOML_TEMPLATE = """# zhvi project config (thiet ke v2.0, muc 33/41)
+PROJECT_TOML_TEMPLATE = """# zhvi project config (SPEC zhvi-vietphrase-only, pipeline-contract 'Config schema')
 style = "convert-qt"
-pipeline = "balanced"
 output_policy = "strict-final"
-learning = "safe"
 collapse_repetitions = true  # loai lap artifact ('có chút có chút') giua 2 span khac nhau; giu reduplication goc (慢慢→chậm chậm)
 qa_strip_junk = true  # strip rac truyen web (watermark ⓣⓣⓚ, bookmark, anti-leech) tren source truoc khi dich
 pattern_rules = true  # luat nhan {s}/{n} (so/danh tu) trong LuatNhan.txt duoc match regex + dien capture
@@ -145,10 +161,19 @@ encoding = "utf-8"
 chapter_detection = "auto"
 # chapter_regex = ""
 
-[routing]
-audit_direct_vp_rate = 0.0
+[learning]
+enabled = true
+auto_scope = "book"
+max_phrase_chars = 8
+min_name_occurrences = 3
+min_term_occurrences = 5
+min_chapters = 2
+require_unambiguous_target = true
+require_affected_block_isolation = true
+global_min_books = 3
+global_min_occurrences = 20
+global_require_golden_suite = true
 
 [runtime]
-qwen_concurrency = 1
-hachimi_device = "cpu"
+checkpoint_blocks = 50
 """

@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import json
 import sys
+from difflib import SequenceMatcher, unified_diff
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import typer
 from rich.console import Console
@@ -11,7 +13,11 @@ from rich.console import Console
 from . import __version__
 from .config import Config
 from .project import Project, ProjectError, create_project, open_project, workspace_for
+from .review import ReviewError, ReviewStore
 from .snapshot import SnapshotError, import_snapshot
+
+if TYPE_CHECKING:  # annotation-only — pipeline keo engines nang o import-time
+    from .pipeline import PipelineResult
 
 app = typer.Typer(
     name="zhvi",
@@ -118,7 +124,6 @@ def translate(
     file: Path = typer.Argument(None, help="TXT nguon (happy path 1 lenh)."),
     output: Path = typer.Option(None, "-o", "--output"),
     project: Path = typer.Option(None, "--project", "-p"),
-    profile: str = typer.Option("balanced", "--profile", help="fast | balanced | quality."),
     style: str = typer.Option("convert-qt", "--style"),
     encoding: str = typer.Option("utf-8", "--encoding"),
     dict_dir: str = typer.Option(None, "--dict-dir"),
@@ -126,7 +131,6 @@ def translate(
 ) -> None:
     """Happy path: snapshot -> parse -> VP -> checkpoint -> atomic export."""
     from .pipeline import TranslateRequest, translate_project
-    from .pipeline import PipelineResult
 
     try:
         if file is None and project is None:
@@ -135,7 +139,6 @@ def translate(
         req = TranslateRequest(
             source=file,
             output=output,
-            profile=profile,
             style=style,
             encoding=encoding,
             dict_dir=dict_dir,
@@ -230,6 +233,53 @@ def doctor(
             pass
     ok = run_doctor(err_console, Config(dict_dir=cfg_dict_dir or "crawler/vietphrase/dicts"))
     raise typer.Exit(code=EXIT_OK if ok else EXIT_PREFLIGHT)
+
+
+@app.command()
+def review(
+    project: Path = typer.Option(..., "--project", "-p"),
+    run: str = typer.Option(None, "--run", help="Run ID cu the (mac dinh: run moi nhat)."),
+    output: Path = typer.Option(None, "--output", "-o", help="File review.jsonl (mac dinh: .zhvi/runs/<run>/review.jsonl)."),
+    list_only: bool = typer.Option(False, "--list", help="In ds block can review ra stdout (JSON)."),
+) -> None:
+    """Xem/xuat cac block can review (muc 4/23)."""
+    try:
+        store = ReviewStore(project)
+        if list_only:
+            entries = store.list_review(run_id=run)
+            print(json.dumps({"count": len(entries), "entries": [e.to_json() for e in entries]},
+                             ensure_ascii=False, indent=2))
+        else:
+            out = store.export_review(run_id=run, output=output)
+            print(json.dumps({"output": str(out)}, ensure_ascii=False))
+    except (ReviewError, ProjectError, OSError) as e:
+        _fail(EXIT_STATE, str(e))
+
+
+@app.command()
+def compare(
+    output: Path = typer.Argument(..., help="File output can so sanh."),
+    expect: Path = typer.Argument(..., help="File chuan (reference)."),
+) -> None:
+    """Do gan output voi chuan: similarity ratio + so dong doi (VP-first metric)."""
+    try:
+        a = expect.read_text(encoding="utf-8")
+        b = output.read_text(encoding="utf-8")
+    except OSError as e:
+        _fail(EXIT_INPUT, str(e))
+    ratio = SequenceMatcher(None, a, b, autojunk=False).ratio()
+    la, lb = a.splitlines(), b.splitlines()
+    changed = sum(
+        1
+        for line in unified_diff(la, lb, lineterm="", n=0)
+        if line[:1] in "+-" and line[:3] not in ("+++", "---")
+    )
+    print(json.dumps({
+        "similarity": round(ratio, 4),
+        "expect_lines": len(la),
+        "output_lines": len(lb),
+        "changed_lines": changed,
+    }, ensure_ascii=False))
 
 
 def main() -> None:

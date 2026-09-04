@@ -81,7 +81,7 @@ def _find_edges(root: TrieNode, text: str, pos: int) -> list[Edge]:
                 score -= W_SINGLE
                 if text[pos] in DROP_PARTICLES:
                     edges.append(Edge(pos, j, "", prec, policy, None, score + W_DROP))
-            edges.append(Edge(pos, j, target, prec, policy, f"{prec[0]}:{text[pos:j]}", score))
+            edges.append(Edge(pos, j, target, prec, policy, f"{prec[0]}:{text[pos:j]}:{target}", score))
     return edges
 
 
@@ -147,7 +147,7 @@ def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
         score = rule.precedence[1] * W_TRUST + (length - 1) * W_LEN - W_PATTERN
         edges.append(
             Edge(pos, m.end(), filled, rule.precedence, rule.policy,
-                 f"{rule.precedence[0]}:{rule.key}", score, is_pattern=True)
+                 f"{rule.precedence[0]}:{rule.key}:{rule.target}", score, is_pattern=True)
         )
     return edges
 
@@ -249,20 +249,21 @@ def greedy_path(dic: Dictionary, text: str, *, patterns: bool = True) -> list[Ed
                 pos += 1
                 continue
             longest = max(e.end for e in cands)
-            # trong cac match dai nhat: literal thang pattern (pattern la fallback
-            # cho so/ten — '小天' co glossary khong bi '小{n}' nuot); cung loai
-            # -> precedence cao nhat, bang nhau thi nap sau thang (engine cu).
-            best = None
-            for e in cands:
-                if e.end != longest:
-                    continue
-                if best is None:
-                    best = e
-                elif e.is_pattern == best.is_pattern:
-                    if e.precedence >= best.precedence:
-                        best = e
-                elif not e.is_pattern:
-                    best = e
+            # AD-9 (story 1.4): trong cac match dai nhat — layer precedence
+            # (layer, trust) truoc, roi literal thang pattern, roi tie-break
+            # theo entry_version_id (lexical). entry_version_id la derived id
+            # on dinh (layer:span:target) — KHONG dung load_index: output
+            # khong phu thuoc thu tu nap tu dien. Epic 2 thay bang id that
+            # cua entry_versions.
+            best = min(
+                (e for e in cands if e.end == longest),
+                key=lambda e: (
+                    -e.precedence[0],
+                    -e.precedence[1],
+                    e.is_pattern,
+                    e.entry_version_id or "",
+                ),
+            )
             if longest == pos + 1 and text[pos] in DROP_PARTICLES:
                 best = Edge(pos, longest, "", best.precedence, best.policy, best.entry_version_id, best.score + W_DROP)
             edges.append(best)
@@ -364,6 +365,9 @@ def vp_plan(
     if not text.strip():
         return VpDraft(text=text, spans=(), unknown_spans=(), single_char_ratio=0.0,
                        lattice_margin=1.0, lattice_entropy=0.0)
+    # AD-9 trace (story 1.4): giu ban goc (phồn thể) de span.source luu nguon
+    # that; to_simplified thay tung ky tu nen offset simplified == offset goc.
+    orig = normalize_nfc(text)
     text = normalize_nfc(to_simplified(text, dic.trad_simp))
     paths = best_paths(dic, text, k=max(2, beam))
     if not paths:
@@ -390,7 +394,7 @@ def vp_plan(
     cjk_count = 0
     warnings: list[str] = []
     for idx, edge in enumerate(best.edges):
-        src = text[edge.start : edge.end]
+        src = orig[edge.start : edge.end]  # source GOC (phồn thể) — key match la giản thể
         if not CJK_RE.search(src):
             continue
         cjk_count += sum(1 for ch in src if CJK_RE.match(ch))

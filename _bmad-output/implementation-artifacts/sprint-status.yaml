@@ -1,0 +1,83 @@
+# generated: 2026-09-03
+# last_updated: 2026-09-03
+# project: NgheTruyen
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; sprint-status surfaces open ones
+
+generated: 2026-09-03
+last_updated: 2026-09-04
+project: NgheTruyen
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  epic-1: in-progress
+  1-1-go-engine-hachimi-qwen-router-va-post-edit-khoi-duong-dich: review
+  1-2-don-config-cli-flags-va-fingerprint-khong-con-thanh-phan-model: review
+  1-3-migration-schema-additive-giu-lich-su-invalidate-cache-model-era: review
+  1-4-duong-dich-deterministic-theo-ad-9: review
+  1-5-test-baseline-vietphrase-only-doctor-status-readme-cap-nhat: review
+  epic-1-retrospective: optional
+  epic-2: backlog
+  2-1-revision-bundle-builder-va-canonical-manifest: backlog
+  2-2-publish-protocol-atomic-rename-transaction-cas-activation: backlog
+  2-3-run-pin-revision-loader-doc-bundle-resume-dung-bundle: backlog
+  2-4-projection-auto-startup-reconciler-ownership-guard: backlog
+  2-5-diff-rollback-va-affected-block-rerun: backlog
+  2-6-versioned-preprocessing-view-fr13: backlog
+  epic-2-retrospective: optional
+  epic-3: backlog
+  3-1-discovery-toan-truyen-tao-observation: backlog
+  3-2-candidate-builder-target-xac-dinh-hoac-unresolved: backlog
+  3-3-evidence-evaluator: backlog
+  3-4-book-auto-promotion-qua-hard-gates: backlog
+  3-5-terms-cli-explain-review-display: backlog
+  epic-3-retrospective: optional
+  epic-4: backlog
+  4-1-registry-tai-dictionary-root-book-id-realpath-writer-lock: backlog
+  4-2-cross-book-evidence-ingest-dedupe: backlog
+  4-3-global-promotion-fail-closed-drift-report: backlog
+  epic-4-retrospective: optional
+  epic-5: backlog
+  5-1-qa-structural-gates-run-report-metric: backlog
+  5-2-golden-manifest-tooling-diff-report-candidate-reference: backlog
+  5-3-metamorphic-dictionary-unit-test-suite: backlog
+  5-4-cli-integration-end-to-end-documentation: backlog
+  epic-5-retrospective: optional

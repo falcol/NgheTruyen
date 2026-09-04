@@ -12,12 +12,20 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .config import ROUTER_VERSION, Config, resolve_config
-from .document import Document, parse_document
+from .config import (
+    PARSER_VERSION,
+    QA_VERSION,
+    ROUTE_VIETPHRASE,
+    SEGMENTER_VERSION,
+    Config,
+    resolve_config,
+)
+from .document import parse_document
 from .export import ExportResult, export_run
 from .fingerprint import block_source_hash, build_run_fingerprint, glossary_file_hash
 from .project import Project, create_project, project_lock, workspace_for
 from .qa import sanitize_source
+from .quality.invariants import run_invariants
 from .snapshot import SourceRevision, import_snapshot
 from .state import State
 from .vietphrase.lattice import vp_plan
@@ -36,7 +44,6 @@ class PreflightFailure(RuntimeError):
 class TranslateRequest:
     source: Path | None = None
     output: Path | None = None
-    profile: str = "balanced"
     style: str = "convert-qt"
     encoding: str = "utf-8"
     dict_dir: str | None = None
@@ -98,8 +105,6 @@ def resolve_dict_overrides(cfg: Config, request: TranslateRequest) -> Config:
     from dataclasses import replace
 
     overrides: dict = {}
-    if request.profile and request.profile != cfg.pipeline:
-        overrides["pipeline"] = request.profile
     if request.style and request.style != cfg.style:
         overrides["style"] = request.style
     if request.encoding and request.encoding != cfg.encoding:
@@ -170,13 +175,12 @@ def _translate_locked(
         resolved_config={**cfg.to_dict(), "_source": {"path": str(request.source), "revision": rev.id}},
     )
 
-    # 5. DV-only: tung translatable node = 1 block
+    # 5. VP plan tung block -> invariant gate -> stage_block (VP-only, story 1.1)
     committed = st.committed_blocks(run.id)
     nodes = doc.translatable_nodes()
     total = len(nodes)
     n_committed = len(committed)
     n_warnings = 0
-    interrupted = False
     from .progress import Progress
 
     prog = Progress(total)
@@ -190,9 +194,11 @@ def _translate_locked(
             prev = committed.get(bid)
             if prev and prev["source_hash"] == src_hash:
                 continue  # tai dung block da commit trong run (muc 3.1 resume)
-            # block cache theo (source_hash + dict fingerprint + qa rules) — tai dung qua revision
+            # Block cache theo AD-11: source block hash + dictionary revision +
+            # parser/segmenter/QA version + config anh huong preprocessing.
             cache_key = block_source_hash(
-                f"{src_hash}\x1f{dict_fp}\x1f{int(cfg.collapse_repetitions)}\x1f{int(cfg.qa_strip_junk)}"
+                f"{src_hash}\x1f{dict_fp}\x1f{PARSER_VERSION}\x1f{SEGMENTER_VERSION}"
+                f"\x1f{QA_VERSION}\x1f{int(cfg.collapse_repetitions)}\x1f{int(cfg.qa_strip_junk)}"
             )
             cached = st.cache_lookup(cache_key)
             if cached is not None:
@@ -203,8 +209,8 @@ def _translate_locked(
                     run_id=run.id, block_id=bid, chapter_ordinal=node.chapter_id,
                     block_ordinal=i, source_start=node.char_start, source_end=node.char_end,
                     source_hash=src_hash, final_text=draft_text, qa=qa,
-                    route="DIRECT_VP", reasons=["CACHE_HIT"], features={},
-                    router_version=ROUTER_VERSION,
+                    route=ROUTE_VIETPHRASE, reasons=["CACHE_HIT"], features={},
+                    router_version="none",
                     attempt={"id": uuid.uuid4().hex, "engine": "cache", "input_hash": src_hash,
                              "status": "ok", "duration_ms": 0},
                     cache_key=cache_key,
@@ -219,7 +225,35 @@ def _translate_locked(
                 occurrence_prefix=bid,
                 collapse_reps=cfg.collapse_repetitions,
             )
+
+            # VP-only (story 1.1): moi block di direct VP, khong router/agent.
             n_warnings += len(draft.warnings) + len(qa_rules)
+
+            final_text = draft.text
+            attempt = {
+                "id": uuid.uuid4().hex,
+                "engine": "vietphrase-lattice",
+                "input_hash": src_hash,
+                "status": "ok",
+            }
+
+            # Invariant gate (hard checks). No qi: cjk_allowlist rong.
+            inv = run_invariants(source=vp_input, output=final_text, block_id=bid)
+            if not inv.ok:
+                # Khong con engine fallback -> giu VP draft, ghi NEEDS_REVIEW.
+                n_warnings += len(inv.errors)
+                attempt["status"] = "failed"
+                attempt["error"] = f"INVARIANT:{','.join(inv.errors)}"
+
+            qa = {
+                "unknown_spans": len(draft.unknown_spans),
+                "single_char_ratio": round(draft.single_char_ratio, 4),
+                "lattice_margin": round(draft.lattice_margin, 4),
+                "lattice_entropy": round(draft.lattice_entropy, 4),
+                "coverage": round(draft.coverage, 4),
+                "warnings": [*qa_rules, *draft.warnings],
+                "invariant_errors": list(inv.errors),
+            }
             st.stage_block(
                 run_id=run.id,
                 block_id=bid,
@@ -228,40 +262,31 @@ def _translate_locked(
                 source_start=node.char_start,
                 source_end=node.char_end,
                 source_hash=src_hash,
-                final_text=draft.text,
-                qa={
-                    "unknown_spans": len(draft.unknown_spans),
-                    "single_char_ratio": round(draft.single_char_ratio, 4),
-                    "lattice_margin": round(draft.lattice_margin, 4),
-                    "lattice_entropy": round(draft.lattice_entropy, 4),
-                    "coverage": round(draft.coverage, 4),
-                    "warnings": [*qa_rules, *draft.warnings],
-                },
-                route="DIRECT_VP",
+                final_text=final_text,
+                qa=qa,
+                route=ROUTE_VIETPHRASE,
                 reasons=[*qa_rules, *draft.warnings],
-                features={"cjk_len": sum(1 for ch in node.content if ch >= "\u3400")},
-                router_version=ROUTER_VERSION,
-                attempt={
-                    "id": uuid.uuid4().hex,
-                    "engine": "vietphrase-lattice",
-                    "input_hash": src_hash,
-                    "status": "ok",
-                    "duration_ms": 0,
-                },
+                features={},
+                router_version="none",
+                attempt=attempt,
                 cache_key=cache_key,
             )
             n_committed += 1
             prog.update(i + 1, n_committed, n_warnings)
     except KeyboardInterrupt:
-        interrupted = True
         prog.finish()
         st.set_run_status(run.id, "paused")
+        # Dem tu DB (route_decisions) — dung cho block staged truoc interrupt.
+        routes = st.route_counts(run.id)
+        vp_ratio = routes.get(ROUTE_VIETPHRASE, 0) / total if total else 1.0
         st.close()
         return PipelineResult(
             run_id=run.id,
             exit_code=130,
-            report={"run_id": run.id, "paused": True, "blocks": n_committed, "vp_ratio": 1.0,
-                    "warnings": n_warnings, "elapsed_s": time.monotonic() - t0, "output": None},
+            report={"run_id": run.id, "paused": True, "blocks": n_committed,
+                    "vp_ratio": round(vp_ratio, 4), "warnings": n_warnings,
+                    "elapsed_s": time.monotonic() - t0, "output": None,
+                    "routes": routes},
         )
 
     # 6. export
@@ -275,18 +300,23 @@ def _translate_locked(
         source_text=text,
         doc=doc,
     )
+    # Metric routes tu DB: block cache-hit / nap lai tu run interrupted cung
+    # co row route_decisions — dem local trong loop se bo sot chung.
+    routes = st.route_counts(run.id)
     st.close()
     elapsed = time.monotonic() - t0
+    vp_ratio = routes.get(ROUTE_VIETPHRASE, 0) / total if total else 1.0
     report = {
         "run_id": run.id,
         "noop": False,
         "blocks": total,
-        "vp_ratio": 1.0,
+        "vp_ratio": round(vp_ratio, 4),
         "warnings": n_warnings,
         "elapsed_s": round(elapsed, 2),
         "chars_per_s": round(len(text) / elapsed) if elapsed > 0 else None,
         "output": str(result.path),
         "sha256": result.sha256,
+        "routes": routes,
     }
     return PipelineResult(run_id=run.id, exit_code=0, report=report, output=result)
 

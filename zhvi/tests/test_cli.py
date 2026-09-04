@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -90,3 +89,75 @@ def test_export_command(tmp_path):
     assert r2.returncode == 0, r2.stderr
     payload = json.loads(r2.stdout)
     assert Path(payload["output"]).read_bytes() == out2.read_bytes()
+
+
+@pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
+def test_vp_only_route_stats(tmp_path):
+    """Story 1.1/1.3: pipeline VP-only — moi block route VIETPHRASE, khong model digest."""
+    src = tmp_path / "truyen.txt"
+    # Mot block sach (khong Han) + mot block co chu Han.
+    src.write_text("第一章\n\nHello world.\n\n凌天看着远方。\n", encoding="utf-8")
+    proj = tmp_path / "truyen.zhvi"
+    r0 = run_cli("init", str(proj))
+    assert r0.returncode == 0, r0.stderr
+    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"),
+                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--json")
+    assert r.returncode == 0, r.stderr
+    report = json.loads(r.stdout)
+    assert "routes" in report
+    assert report["routes"] == {"VIETPHRASE": report["blocks"]}
+    # VP-only: khong con truong model digest nao trong report
+    assert not any("digest" in key for key in report)
+
+
+@pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
+def test_review_command(tmp_path):
+    """M2: `zhvi review --list` in ra block can review (fallback/abstain)."""
+    src = tmp_path / "truyen.txt"
+    src.write_text("第一章\n\n天地不仁以万物为刍狗。\n", encoding="utf-8")
+    proj = tmp_path / "truyen.zhvi"
+    r0 = run_cli("init", str(proj))
+    assert r0.returncode == 0, r0.stderr
+    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"),
+                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--json")
+    assert r.returncode == 0, r.stderr
+    rv = run_cli("review", "--project", str(proj), "--list")
+    assert rv.returncode == 0, rv.stderr
+    payload = json.loads(rv.stdout)
+    assert "count" in payload
+
+
+def test_model_flags_removed(tmp_path):
+    """Story 1.2: --hachimi/--qwen/--profile da bien mat — usage error (exit 2)."""
+    src = tmp_path / "truyen.txt"
+    src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
+    for flag in ("--hachimi", "--no-qwen", "--profile", "fast"):
+        r = run_cli("translate", str(src), flag)
+        assert r.returncode == 2, f"{flag} van duoc chap nhan"
+
+
+def test_config_load_from_template(tmp_path):
+    """Story 1.2: config load duoc tu PROJECT_TOML_TEMPLATE (schema SPEC 3.0)."""
+    from zhvi.config import PROJECT_TOML_TEMPLATE, LearningConfig, load_project_config
+
+    root = tmp_path
+    (root / "zhvi.toml").write_text(PROJECT_TOML_TEMPLATE, encoding="utf-8")
+    cfg = load_project_config(root)
+    assert cfg.style == "convert-qt"
+    assert cfg.output_policy == "strict-final"
+    assert cfg.collapse_repetitions is True
+    assert cfg.qa_strip_junk is True
+    assert cfg.pattern_rules is True
+    assert cfg.encoding == "utf-8"
+    assert cfg.learning == LearningConfig()
+    assert cfg.runtime.checkpoint_blocks == 50
+    # Override qua TOML phan [learning]
+    (root / "zhvi.toml").write_text(
+        PROJECT_TOML_TEMPLATE.replace("enabled = true", "enabled = false", 1)
+        .replace("min_chapters = 2", "min_chapters = 7", 1),
+        encoding="utf-8",
+    )
+    cfg2 = load_project_config(root)
+    assert cfg2.learning.enabled is False
+    assert cfg2.learning.min_chapters == 7
+

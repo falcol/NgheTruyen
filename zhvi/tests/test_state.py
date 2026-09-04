@@ -1,7 +1,6 @@
 """Tests cho state.py + fingerprint + resume/crash (thiet ke muc 8/27/29/39)."""
 from __future__ import annotations
 
-import json
 import sqlite3
 from pathlib import Path
 
@@ -9,7 +8,6 @@ import pytest
 
 from zhvi.fingerprint import build_run_fingerprint
 from zhvi.config import Config
-from zhvi.project import create_project
 from zhvi.state import State
 
 
@@ -145,3 +143,111 @@ def test_db_reopen_persists(tmp_path):
     s2 = State(tmp_path / "db.sqlite3")
     assert s2.get_block("b1")["final_text"] == "dịch"
     s2.close()
+
+
+# Schema v1 (thiet ke 2.0, truoc story 1.3): block_cache chua co cot invalid.
+_SCHEMA_V1 = """
+CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE source_revisions (
+    id TEXT PRIMARY KEY, content_hash TEXT NOT NULL UNIQUE, encoding TEXT NOT NULL,
+    byte_size INTEGER NOT NULL, snapshot_path TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE runs (
+    id TEXT PRIMARY KEY, source_revision_id TEXT NOT NULL, fingerprint TEXT NOT NULL,
+    dictionary_revision_id TEXT NOT NULL, resolved_config_json TEXT NOT NULL,
+    status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE(fingerprint));
+CREATE TABLE blocks (
+    id TEXT PRIMARY KEY, run_id TEXT NOT NULL, chapter_ordinal INTEGER NOT NULL,
+    block_ordinal INTEGER NOT NULL, source_start INTEGER NOT NULL, source_end INTEGER NOT NULL,
+    source_hash TEXT NOT NULL, status TEXT NOT NULL, final_text TEXT, qa_json TEXT,
+    UNIQUE(run_id, chapter_ordinal, block_ordinal));
+CREATE TABLE attempts (
+    id TEXT PRIMARY KEY, block_id TEXT NOT NULL, engine TEXT NOT NULL, model_digest TEXT,
+    prompt_hash TEXT, input_hash TEXT NOT NULL, output_json TEXT, status TEXT NOT NULL,
+    duration_ms INTEGER, created_at TEXT NOT NULL);
+CREATE TABLE route_decisions (
+    block_id TEXT PRIMARY KEY, route TEXT NOT NULL, reasons_json TEXT NOT NULL,
+    features_json TEXT NOT NULL, router_version TEXT NOT NULL);
+CREATE TABLE block_cache (
+    cache_key TEXT PRIMARY KEY, final_text TEXT NOT NULL, qa_json TEXT NOT NULL,
+    created_at TEXT NOT NULL);
+"""
+
+
+def _make_v1_db(db_path: Path, model_era_cache_key: str) -> None:
+    """Fixture: DB thiet ke 2.0 — run cu voi route model + cache model-era."""
+    conn = sqlite3.connect(db_path)
+    conn.executescript(_SCHEMA_V1)
+    conn.execute("INSERT INTO meta VALUES('schema_version', '1')")
+    conn.execute(
+        "INSERT INTO source_revisions VALUES('rev1','hash1','utf-8',100,'/tmp/rev1.txt','2026-01-01T00:00:00+00:00')"
+    )
+    conn.execute(
+        "INSERT INTO runs VALUES('r1','rev1','fp-model-era','d','{}','completed',"
+        "'2026-01-01T00:00:00+00:00','2026-01-01T00:00:00+00:00')"
+    )
+    conn.execute(
+        "INSERT INTO blocks VALUES('b1','r1',0,1,0,10,'h1','committed','kết quả cũ','{}')"
+    )
+    conn.execute(
+        "INSERT INTO attempts VALUES('a1','b1','hachimi-ct2','digest-x','prompt-y','h1',"
+        "'{}','ok',10,'2026-01-01T00:00:00+00:00')"
+    )
+    conn.execute(
+        "INSERT INTO route_decisions VALUES('b1','HACHIMI_CANDIDATE','[]','{}','zhvi-router-3')"
+    )
+    conn.execute(
+        "INSERT INTO block_cache VALUES(?,?,?,'2026-01-01T00:00:00+00:00')",
+        (model_era_cache_key, "kết quả cache model-era", "{}"),
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_migrate_v1_db_additive_and_cache_invalidated(tmp_path):
+    """Story 1.3: mo DB 2.0 bang binary 3.0 — history giu nguyen, cache model-era invalid."""
+    from zhvi.config import ROUTE_VIETPHRASE
+    from zhvi.state import SCHEMA_VERSION
+
+    db = tmp_path / "old.sqlite3"
+    old_cache_key = "model-era-cache-key"
+    _make_v1_db(db, old_cache_key)
+
+    st = State(db)  # migrate ngay khi mo
+    try:
+        # schema version tang
+        ver = st.conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0]
+        assert int(ver) == SCHEMA_VERSION == 2
+
+        # history doc duoc, khong rewrite: run/block/route model-era giu nguyen
+        assert st.latest_source_revision().id == "rev1"
+        run = st.get_run("r1")
+        assert run.status == "completed"
+        blk = st.get_block("b1")
+        assert blk["final_text"] == "kết quả cũ"
+        rd = st.conn.execute("SELECT route FROM route_decisions WHERE block_id='b1'").fetchone()
+        assert rd[0] == "HACHIMI_CANDIDATE"  # read-only, khong chuyen hoa
+
+        # cache model-era bi danh dau invalid -> khong hit
+        row = st.conn.execute(
+            "SELECT invalid FROM block_cache WHERE cache_key=?", (old_cache_key,)
+        ).fetchone()
+        assert row[0] == 1
+        assert st.cache_lookup(old_cache_key) is None
+
+        # run moi chi ghi route VIETPHRASE
+        st.resume_or_create("r2", "fp-v3", "rev1", "d2", {})
+        _stage_vietphrase(st, "r2", "b2")
+        rd2 = st.conn.execute("SELECT route FROM route_decisions WHERE block_id='b2'").fetchone()
+        assert rd2[0] == ROUTE_VIETPHRASE
+    finally:
+        st.close()
+
+
+def _stage_vietphrase(s: State, run_id: str, block_id: str) -> None:
+    s.stage_block(
+        run_id=run_id, block_id=block_id, chapter_ordinal=0, block_ordinal=2,
+        source_start=0, source_end=10, source_hash="h2",
+        final_text="kết quả mới", qa={"coverage": 1.0},
+        route="VIETPHRASE", reasons=[], features={}, router_version="none",
+        attempt={"id": "a2", "engine": "vietphrase-lattice", "input_hash": "h2", "status": "ok"},
+    )

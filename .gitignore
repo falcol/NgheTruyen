@@ -1,5 +1,4 @@
 # crawler/data is committed for Vercel deployment
-# crawler/data/*
 __pycache__/
 *.pyc
 .env
@@ -17,3 +16,11 @@ _bmad/
 .agent/
 CLAUDE.md
 skills-lock.json
+
+# zhvi auto-generated workspaces + caches
+*.zhvi/
+zhvi/.pytest_cache/
+.claude/.story-automator-active
+
+# raw crawler output (regenerable, too large for repo)
+raw_china/
