@@ -57,7 +57,7 @@ development_status:
   epic-1-retrospective: optional
   epic-2: in-progress
   2-1-revision-bundle-builder-va-canonical-manifest: done
-  2-2-publish-protocol-atomic-rename-transaction-cas-activation: backlog
+  2-2-publish-protocol-atomic-rename-transaction-cas-activation: done
   2-3-run-pin-revision-loader-doc-bundle-resume-dung-bundle: backlog
   2-4-projection-auto-startup-reconciler-ownership-guard: backlog
   2-5-diff-rollback-va-affected-block-rerun: backlog

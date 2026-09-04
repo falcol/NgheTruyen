@@ -24,7 +24,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .config import LOADER_VERSION, RENDERER_VERSION
-from .project import Project
+from .project import Project, project_lock
+from .state import REV_ACTIVE, StaleActiveError, State
 from .vietphrase.layers import Layer, default_policy
 from .vietphrase.loader import (
     LOAD_ORDER,
@@ -40,6 +41,13 @@ from .vietphrase.loader import (
     parse_dict_line,
     to_simplified,
 )
+
+__all__ = [
+    "AUTO_TRUST", "AUTO_LAYER_BY_SCOPE", "AutoEntry", "BUNDLE_FILES",
+    "BuildError", "Conflict", "PublishResult", "REVISION_FORMAT",
+    "RevisionBundle", "StaleActiveError", "build_revision",
+    "gc_orphan_revisions", "publish_revision",
+]
 
 REVISION_FORMAT = "zhvi-revision-1"
 AUTO_TRUST = 30.0  # auto tren base, duoi manual (QO 25, Custom 100)
@@ -270,22 +278,130 @@ def build_revision(
             _insert(dic.root, simp, a.target, prec, default_policy(a.layer))
     dic = _rebuild_canonical(dic, revision_id)
 
+    tmp_out = _materialize_bundle(project, canonical, revision_id, dic)
+    return RevisionBundle(
+        revision_id, tmp_out, manifest, entry_count=manifest["entry_count"]
+    )
+
+
+def _fsync_dir(path: Path) -> None:
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def _write_synced(path: Path, data: bytes) -> None:
+    with path.open("wb") as f:
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
+
+
+def _materialize_bundle(
+    project: Project, canonical: str, revision_id: str, dic: Dictionary
+) -> Path:
+    """Buoc 7-9 (AD-15): ghi 4 file vao dir tam (fsync tung file + dir), atomic
+    rename thanh revisions/<id>/. Crash giua chang de lai dir tam hoac bundle
+    orphan — khong bao gio hong active revision."""
     tmp = project.revisions_dir / f".tmp-{uuid.uuid4().hex}"
     tmp.mkdir(parents=True, exist_ok=True)
-    (tmp / "manifest.json").write_bytes(canonical.encode("utf-8"))
+    _write_synced(tmp / "manifest.json", canonical.encode("utf-8"))
     rows = sorted(
         f"{prec[0]}\t{_scope_of(prec[0])}\t{source}\t{target}\t{policy}"
         for source, target, prec, policy in _trie_rows(dic.root)
     )
-    (tmp / "entries.tsv").write_text("\n".join(rows) + "\n", encoding="utf-8")
-    (tmp / "patterns.jsonl").write_text(_patterns_jsonl(dic), encoding="utf-8")
+    _write_synced(tmp / "entries.tsv", ("\n".join(rows) + "\n").encode("utf-8"))
+    _write_synced(tmp / "patterns.jsonl", _patterns_jsonl(dic).encode("utf-8"))
     # Pickle self-generated content-addressed — chi nap lai khi manifest hash khop.
-    (tmp / "dictionary.bin").write_bytes(pickle.dumps(dic, protocol=pickle.HIGHEST_PROTOCOL))
+    _write_synced(
+        tmp / "dictionary.bin",
+        pickle.dumps(dic, protocol=pickle.HIGHEST_PROTOCOL),
+    )
+    _fsync_dir(tmp)
 
+    out = project.revisions_dir / revision_id
     if out.exists():
         shutil.rmtree(out)  # bundle rac tu crash giua chang — thay the
     os.replace(tmp, out)
-    return RevisionBundle(revision_id, out, manifest, entry_count=manifest["entry_count"])
+    _fsync_dir(project.revisions_dir)
+    return out
+
+
+@dataclass(frozen=True)
+class PublishResult:
+    revision_id: str
+    status: str
+    replaced: str | None
+
+
+def publish_revision(
+    dict_dir: Path,
+    project: Project,
+    auto_entries: list[AutoEntry] | None = None,
+    *,
+    global_glossary: Path | None = None,
+    patterns: bool = True,
+    scope_type: str = "book",
+    scope_id: str | None = None,
+    expected_active: str | None = None,
+    state: State | None = None,
+) -> PublishResult:
+    """Buoc 8-10 (AD-15/AD-13): build + fsync + rename (build_revision), roi
+    State.activate_revision — MOT transaction insert 'ready' + CAS active
+    pointer tu `expected_active` sang revision moi. Stale -> StaleActiveError
+    (rollback toan bo — bundle da rename thanh orphan, GC duoc). Projection
+    (AutoVietPhrase.txt) materialize SAU commit — thuoc story 2.4.
+    """
+    with project_lock(project, "publish"):  # AD-13: mot writer lock moi mutation scope
+        bundle = build_revision(
+            dict_dir,
+            project,
+            auto_entries,
+            global_glossary=global_glossary,
+            patterns=patterns,
+        )
+        sid = scope_id if scope_id is not None else project.book_id
+        manifest_json = json.dumps(bundle.manifest, sort_keys=True, ensure_ascii=False)
+        st = state if state is not None else State(project.db_path)
+        own = state is None
+        try:
+            replaced = st.activate_revision(
+                bundle.revision_id,
+                manifest_json,
+                str(bundle.path),
+                scope_type,
+                sid,
+                expected_active,
+            )
+        finally:
+            if own:
+                st.close()
+    return PublishResult(revision_id=bundle.revision_id, status=REV_ACTIVE, replaced=replaced)
+
+
+def gc_orphan_revisions(project: Project) -> int:
+    """Xoa dir tam (.tmp-*) + bundle da rename nhung khong co row DB (crash
+    sau rename truoc commit) — orphan vo hai. Tra so entry da don.
+
+    Lay cung writer lock 'publish' (AD-13): tranh race xoa bundle vua rename
+    khi publisher chua kip commit row.
+    """
+    if not project.revisions_dir.exists():
+        return 0
+    with project_lock(project, "publish"):
+        st = State(project.db_path)
+        try:
+            known = {r[0] for r in st.conn.execute("SELECT id FROM dictionary_revisions")}
+        finally:
+            st.close()
+        removed = 0
+        for p in project.revisions_dir.iterdir():
+            if p.name.startswith(".tmp-") or (p.is_dir() and p.name not in known):
+                shutil.rmtree(p)
+                removed += 1
+    return removed
 
 
 def _patterns_jsonl(dic: Dictionary) -> str:

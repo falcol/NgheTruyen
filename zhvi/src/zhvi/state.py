@@ -12,7 +12,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
+
+# Trang thai dictionary revision (data-model): building/validating la phase
+# in-memory cua builder; row DB chi ton tai tu 'ready'. 'rejected' = build
+# fail (BuildError) — khong tao row.
+REV_READY = "ready"
+REV_ACTIVE = "active"
+REV_SUPERSEDED = "superseded"
+REV_REVOKED = "revoked"  # story 2.5: rollback/revoke tao revision thay the
+REV_REJECTED = "rejected"
+
+
+class StaleActiveError(RuntimeError):
+    """Active revision da doi giua chung (writer khac activate truoc) — caller
+    phai doc active moi va evaluate/build lai (SPEC AD-13 CAS)."""
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -104,13 +118,28 @@ CREATE TABLE IF NOT EXISTS block_cache (
     created_at TEXT NOT NULL,
     invalid INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS dictionary_revisions (
+    id TEXT PRIMARY KEY,
+    status TEXT NOT NULL,
+    manifest_json TEXT NOT NULL,
+    bundle_path TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    activated_at TEXT
+);
+CREATE TABLE IF NOT EXISTS active_revisions (
+    scope_type TEXT NOT NULL,
+    scope_id TEXT NOT NULL,
+    revision_id TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (scope_type, scope_id)
+);
 
 CREATE INDEX IF NOT EXISTS idx_blocks_run ON blocks(run_id, status);
 CREATE INDEX IF NOT EXISTS idx_attempts_block ON attempts(block_id);
 """
 
 
-def _now() -> str:
+def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
@@ -169,6 +198,8 @@ class State:
                         "ALTER TABLE block_cache ADD COLUMN invalid INTEGER NOT NULL DEFAULT 0"
                     )
                 self.conn.execute("UPDATE block_cache SET invalid=1")
+            # v2 -> v3 (story 2.2): bang dictionary_revisions + active_revisions
+            # tao boi _SCHEMA (CREATE IF NOT EXISTS) — additive, khong invalidate cache.
             self.conn.execute(
                 "INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
@@ -177,13 +208,79 @@ class State:
     def close(self) -> None:
         self.conn.close()
 
+    # ---- dictionary revisions (story 2.2, AD-13/AD-15) ----
+    def activate_revision(
+        self,
+        revision_id: str,
+        manifest_json: str,
+        bundle_path: str,
+        scope_type: str,
+        scope_id: str,
+        expected_active: str | None,
+    ) -> str | None:
+        """MOT transaction: insert revision 'ready' + CAS active pointer.
+
+        CAS that (AD-13): pointer chi doi khi van dang tro expected_active —
+        UPDATE ... WHERE revision_id=expected (atomic theo row, khong TOCTOU);
+        kich hoat lan dau dung INSERT, writer khac den truoc -> unique key
+        raise -> StaleActiveError. Stale: rollback toan bo (khong row moi),
+        bundle da rename thanh orphan — GC don. Tra revision active cu
+        (replaced) hoac None.
+        """
+        now = utc_now()
+        with self.conn:
+            self.conn.execute(
+                "INSERT OR REPLACE INTO dictionary_revisions VALUES (?,?,?,?,?,?)",
+                (revision_id, REV_READY, manifest_json, bundle_path, now, None),
+            )
+            if expected_active is None:
+                try:
+                    self.conn.execute(
+                        "INSERT INTO active_revisions VALUES (?,?,?,?)",
+                        (scope_type, scope_id, revision_id, now),
+                    )
+                except sqlite3.IntegrityError as exc:
+                    raise StaleActiveError(
+                        f"active revision da ton tai cho scope ({scope_type},{scope_id})"
+                        " — evaluate/build lai tren active moi"
+                    ) from exc
+            else:
+                cur = self.conn.execute(
+                    "UPDATE active_revisions SET revision_id=?, updated_at=?"
+                    " WHERE scope_type=? AND scope_id=? AND revision_id=?",
+                    (revision_id, now, scope_type, scope_id, expected_active),
+                )
+                if cur.rowcount == 0:
+                    raise StaleActiveError(
+                        f"active revision da doi (ky vong {expected_active})"
+                        " — evaluate/build lai tren active moi"
+                    )
+            replaced = expected_active if expected_active != revision_id else None
+            if replaced is not None:
+                self.conn.execute(
+                    "UPDATE dictionary_revisions SET status=? WHERE id=?",
+                    (REV_SUPERSEDED, replaced),
+                )
+            self.conn.execute(
+                "UPDATE dictionary_revisions SET status=?, activated_at=? WHERE id=?",
+                (REV_ACTIVE, now, revision_id),
+            )
+        return replaced
+
+    def active_revision_id(self, scope_type: str, scope_id: str) -> str | None:
+        row = self.conn.execute(
+            "SELECT revision_id FROM active_revisions WHERE scope_type=? AND scope_id=?",
+            (scope_type, scope_id),
+        ).fetchone()
+        return row[0] if row else None
+
     # ---- source revisions ----
     def upsert_source_revision(
         self, id_: str, content_hash: str, encoding: str, byte_size: int, snapshot_path: str
     ) -> None:
         self.conn.execute(
             "INSERT OR IGNORE INTO source_revisions VALUES (?,?,?,?,?,?)",
-            (id_, content_hash, encoding, byte_size, snapshot_path, _now()),
+            (id_, content_hash, encoding, byte_size, snapshot_path, utc_now()),
         )
         self.conn.commit()
 
@@ -214,10 +311,10 @@ class State:
                 "UPDATE blocks SET status='pending' WHERE run_id=? AND status='running'",
                 (run.id,),
             )
-            self.conn.execute("UPDATE runs SET status='running', updated_at=? WHERE id=?", (_now(), run.id))
+            self.conn.execute("UPDATE runs SET status='running', updated_at=? WHERE id=?", (utc_now(), run.id))
             self.conn.commit()
             return RunRow(*self.conn.execute("SELECT * FROM runs WHERE id=?", (run.id,)).fetchone()), False
-        now = _now()
+        now = utc_now()
         self.conn.execute(
             "INSERT INTO runs VALUES (?,?,?,?,?,?,?,?)",
             (run_id, source_revision_id, fingerprint, dictionary_revision_id,
@@ -242,7 +339,7 @@ class State:
 
     def set_run_status(self, run_id: str, status: str) -> None:
         self.conn.execute(
-            "UPDATE runs SET status=?, updated_at=? WHERE id=?", (status, _now(), run_id)
+            "UPDATE runs SET status=?, updated_at=? WHERE id=?", (status, utc_now(), run_id)
         )
         self.conn.commit()
 
@@ -285,12 +382,12 @@ class State:
                 (attempt["id"], block_id, attempt["engine"], attempt.get("model_digest"),
                  attempt.get("prompt_hash"), attempt["input_hash"],
                  json.dumps(attempt.get("output", {}), ensure_ascii=False),
-                 attempt["status"], attempt.get("duration_ms"), _now()),
+                 attempt["status"], attempt.get("duration_ms"), utc_now()),
             )
             if cache_key is not None:
                 self.conn.execute(
                     "INSERT OR REPLACE INTO block_cache VALUES (?,?,?,?,0)",
-                    (cache_key, final_text, json.dumps(qa, ensure_ascii=False), _now()),
+                    (cache_key, final_text, json.dumps(qa, ensure_ascii=False), utc_now()),
                 )
 
     def cache_lookup(self, cache_key: str) -> dict | None:

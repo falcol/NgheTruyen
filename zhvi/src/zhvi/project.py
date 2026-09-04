@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import fcntl
 import os
+import tomllib
+import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -65,6 +67,16 @@ class Project:
     def manual_glossary(self) -> Path:
         return self.root / "glossary.manual.tsv"
 
+    @property
+    def book_id(self) -> str:
+        """ID on dinh cua truyen (data-model: tao 1 lan khi init; copy project
+        giu ID — khong tinh la truyen doc lap)."""
+        data = tomllib.loads((self.root / "zhvi.toml").read_text(encoding="utf-8"))
+        book_id = data.get("book_id")
+        if not book_id:
+            raise ProjectError(f"{self.root}/zhvi.toml thieu book_id — chay zhvi init")
+        return str(book_id)
+
     def config(self, dict_dir: str | None = None) -> Config:
         return resolve_config(self.root, dict_dir=dict_dir)
 
@@ -93,6 +105,17 @@ def create_project(root: Path) -> Project:
     toml_path = root / "zhvi.toml"
     if not toml_path.exists():
         toml_path.write_text(PROJECT_TOML_TEMPLATE, encoding="utf-8")
+    toml_text = toml_path.read_text(encoding="utf-8")
+    if "book_id" not in tomllib.loads(toml_text):
+        lines = toml_text.splitlines(keepends=True)
+        # chen truoc section dau tien — book_id phai la key top-level
+        for idx, line in enumerate(lines):
+            if line.strip().startswith("["):
+                lines.insert(idx, f'# stable book identity (data-model: tao 1 lan, khong doi)\nbook_id = "{uuid.uuid4().hex}"\n')
+                break
+        else:
+            lines.append(f'book_id = "{uuid.uuid4().hex}"\n')
+        toml_path.write_text("".join(lines), encoding="utf-8")
     if not project.manual_glossary.exists():
         project.manual_glossary.write_text(
             "# source<TAB>target — term nguoi dung khoa cho truyen (book manual)\n",

@@ -13,6 +13,7 @@ from rich.console import Console
 from . import __version__
 from .config import Config
 from .project import Project, ProjectError, create_project, open_project, workspace_for
+from .revision import gc_orphan_revisions
 from .review import ReviewError, ReviewStore
 from .snapshot import SnapshotError, import_snapshot
 
@@ -25,6 +26,21 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 err_console = Console(stderr=True)
+
+dict_app = typer.Typer(help="Vong loi dictionary revision (gc; diff/rollback o story 2.5).")
+app.add_typer(dict_app, name="dict")
+
+
+@dict_app.command("gc")
+def dict_gc(
+    project: Path = typer.Option(..., "--project", "-p"),
+) -> None:
+    """Don dir tam (.tmp-*) va bundle orphan (rename ma chua commit DB)."""
+    try:
+        removed = gc_orphan_revisions(open_project(project))
+    except (ProjectError, OSError) as e:
+        _fail(EXIT_STATE, str(e))
+    print(json.dumps({"removed": removed}, ensure_ascii=False))
 
 # Exit codes (muc 34)
 EXIT_OK = 0
