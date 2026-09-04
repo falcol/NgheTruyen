@@ -116,20 +116,20 @@ def test_fingerprint_changes_with_source(st):
     cfg = Config()
     fp1 = build_run_fingerprint(
         source_revision_hash="a", encoding="utf-8", dictionary_fingerprint="d",
-        book_glossary_hash="g", cfg=cfg,
+        cfg=cfg,
     )
     fp2 = build_run_fingerprint(
         source_revision_hash="b", encoding="utf-8", dictionary_fingerprint="d",
-        book_glossary_hash="g", cfg=cfg,
+        cfg=cfg,
     )
     fp3 = build_run_fingerprint(
         source_revision_hash="a", encoding="utf-8", dictionary_fingerprint="d2",
-        book_glossary_hash="g", cfg=cfg,
+        cfg=cfg,
     )
     assert fp1 != fp2 != fp3
     fp1b = build_run_fingerprint(
         source_revision_hash="a", encoding="utf-8", dictionary_fingerprint="d",
-        book_glossary_hash="g", cfg=cfg,
+        cfg=cfg,
     )
     assert fp1 == fp1b  # deterministic
 

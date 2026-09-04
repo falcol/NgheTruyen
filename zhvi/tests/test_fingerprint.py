@@ -10,7 +10,6 @@ def _fp(**kw) -> str:
         source_revision_hash="rev1",
         encoding="utf-8",
         dictionary_fingerprint="dict1",
-        book_glossary_hash="g1",
         cfg=Config(),
     )
     base.update(kw)

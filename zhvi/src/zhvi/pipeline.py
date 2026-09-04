@@ -6,7 +6,6 @@ atomic export -> bao cao. Khong goi model. Ctrl-C lan 1: checkpoint + PAUSED.
 """
 from __future__ import annotations
 
-import shutil
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -15,6 +14,7 @@ from pathlib import Path
 from .config import (
     PARSER_VERSION,
     QA_VERSION,
+    RENDERER_VERSION,
     ROUTE_VIETPHRASE,
     SEGMENTER_VERSION,
     Config,
@@ -22,14 +22,14 @@ from .config import (
 )
 from .document import parse_document
 from .export import ExportResult, export_run
-from .fingerprint import block_source_hash, build_run_fingerprint, glossary_file_hash
+from .fingerprint import block_source_hash, build_run_fingerprint
 from .project import Project, create_project, project_lock, workspace_for
 from .qa import sanitize_source
+from .revision import ensure_active_revision, load_revision_dictionary
 from .quality.invariants import run_invariants
 from .snapshot import SourceRevision, import_snapshot
 from .state import State
 from .vietphrase.lattice import vp_plan
-from .vietphrase.loader import dict_files_fingerprint, load_dictionary
 
 
 class RunFailure(RuntimeError):
@@ -80,16 +80,16 @@ def _resolve_global_glossary(cfg: Config) -> Path | None:
     return p if p.is_file() else None
 
 
-def _freeze_glossary(project: Project) -> tuple[str, Path]:
-    """Snapshot glossary.manual.tsv bat bien cho run (muc 1 nguyen tac 4)."""
-    src = project.manual_glossary
-    h = glossary_file_hash(src)
-    dest = project.dictionaries_dir / f"{h}.tsv"
-    if not dest.exists() and src.is_file():
-        tmp = dest.with_suffix(".tmp")
-        shutil.copyfile(src, tmp)
-        tmp.replace(dest)
-    return h, dest
+def block_cache_key(src_hash: str, revision_id: str, cfg: Config) -> str:
+    """Block cache key (AD-11): source block hash + dictionary revision +
+    parser/segmenter/renderer/QA version + config anh huong preprocessing —
+    chi hit khi trung TOAN BO (renderer tham gia truc tiep, khong chi qua
+    manifest revision)."""
+    return block_source_hash(
+        f"{src_hash}\x1f{revision_id}\x1f{PARSER_VERSION}\x1f{SEGMENTER_VERSION}"
+        f"\x1f{RENDERER_VERSION}\x1f{QA_VERSION}"
+        f"\x1f{int(cfg.collapse_repetitions)}\x1f{int(cfg.qa_strip_junk)}"
+    )
 
 
 def translate_project(project: Project, request: TranslateRequest) -> PipelineResult:
@@ -126,25 +126,21 @@ def _translate_locked(
     text = Path(rev.snapshot_path).read_text(encoding=rev.encoding)
     doc = parse_document(text, chapter_detection=cfg.chapter_detection, chapter_regex=cfg.chapter_regex)
 
-    # 3. dictionary + glossary freeze
-    glossary_hash, _ = _freeze_glossary(project)
+    # 3. dictionary: pin active revision (AD-3) — loader chi doc bundle da pin,
+    # khong doc file mutable sau day. Bootstrap publish neu project chua co.
+    # Glossary manual da nam trong revision (manifest layer manual:book) —
+    # doi file giua chang khong lam fork run; revision moi (story 2.5) moi fork.
     global_glossary = _resolve_global_glossary(cfg)
-    dict_fp = dict_files_fingerprint(dict_dir, project.manual_glossary, global_glossary, cfg.pattern_rules)
-    cache_path = project.cache_dir / f"dict-{dict_fp[:16]}.pkl"
-    dic = load_dictionary(
-        dict_dir,
-        manual_glossary=project.manual_glossary,
-        global_glossary=global_glossary,
-        cache_path=cache_path,
-        patterns=cfg.pattern_rules,
+    revision_id = ensure_active_revision(
+        dict_dir, project, global_glossary=global_glossary, patterns=cfg.pattern_rules
     )
+    dic = load_revision_dictionary(project, revision_id)
 
     # 4. fingerprint + run
     fingerprint = build_run_fingerprint(
         source_revision_hash=rev.id,
         encoding=rev.encoding,
-        dictionary_fingerprint=dict_fp,
-        book_glossary_hash=glossary_hash,
+        dictionary_fingerprint=revision_id,
         cfg=cfg,
     )
     st = State(project.db_path)
@@ -171,7 +167,7 @@ def _translate_locked(
         run_id=uuid.uuid4().hex,
         fingerprint=fingerprint,
         source_revision_id=rev.id,
-        dictionary_revision_id=dict_fp,
+        dictionary_revision_id=revision_id,
         resolved_config={**cfg.to_dict(), "_source": {"path": str(request.source), "revision": rev.id}},
     )
 
@@ -194,12 +190,8 @@ def _translate_locked(
             prev = committed.get(bid)
             if prev and prev["source_hash"] == src_hash:
                 continue  # tai dung block da commit trong run (muc 3.1 resume)
-            # Block cache theo AD-11: source block hash + dictionary revision +
-            # parser/segmenter/QA version + config anh huong preprocessing.
-            cache_key = block_source_hash(
-                f"{src_hash}\x1f{dict_fp}\x1f{PARSER_VERSION}\x1f{SEGMENTER_VERSION}"
-                f"\x1f{QA_VERSION}\x1f{int(cfg.collapse_repetitions)}\x1f{int(cfg.qa_strip_junk)}"
-            )
+            # Block cache theo AD-11 — chi hit khi trung toan bo key.
+            cache_key = block_cache_key(src_hash, revision_id, cfg)
             cached = st.cache_lookup(cache_key)
             if cached is not None:
                 draft_text = cached["final_text"]

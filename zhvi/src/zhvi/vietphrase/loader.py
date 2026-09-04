@@ -144,6 +144,10 @@ def load_dictionary(
     Pickle chi dung cho cache tu sinh trong .zhvi/cache/ cua chinh may (self-generated,
     khong bao gio nap file tu nguon khong tin cay); fingerprint kiem tra tinh truc tiep.
     patterns=False: bo qua luat nhan {s}/{n} (chi dung trie literal).
+
+    [Note] Story 2.3: runtime dich da nap qua bundle revision
+    (revision.load_revision_dictionary) — caller runtime duy nen con truyen
+    cache_path la doctor. Confirm giu hay xoa nhanh pkl cache nay?
     """
     fingerprint = dict_files_fingerprint(dict_dir, manual_glossary, global_glossary, patterns)
     if cache_path is not None and cache_path.is_file():

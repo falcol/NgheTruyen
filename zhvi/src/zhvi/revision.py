@@ -46,7 +46,8 @@ __all__ = [
     "AUTO_TRUST", "AUTO_LAYER_BY_SCOPE", "AutoEntry", "BUNDLE_FILES",
     "BuildError", "Conflict", "PublishResult", "REVISION_FORMAT",
     "RevisionBundle", "StaleActiveError", "build_revision",
-    "gc_orphan_revisions", "publish_revision",
+    "ensure_active_revision", "gc_orphan_revisions", "load_revision_dictionary",
+    "publish_revision",
 ]
 
 REVISION_FORMAT = "zhvi-revision-1"
@@ -379,6 +380,55 @@ def publish_revision(
             if own:
                 st.close()
     return PublishResult(revision_id=bundle.revision_id, status=REV_ACTIVE, replaced=replaced)
+
+
+def ensure_active_revision(
+    dict_dir: Path,
+    project: Project,
+    *,
+    global_glossary: Path | None = None,
+    patterns: bool = True,
+) -> str:
+    """Revision id active cua scope book cho run moi (AD-3).
+
+    Chua co active (project moi) -> publish bootstrap revision tu dict files
+    hien hanh. Run moi chi pin active revision; revision moi do story 2.5
+    (correction flow) publish.
+    """
+    st = State(project.db_path)
+    try:
+        active = st.active_revision_id("book", project.book_id)
+    finally:
+        st.close()
+    if active is not None:
+        return active
+    result = publish_revision(
+        dict_dir, project, global_glossary=global_glossary, patterns=patterns
+    )
+    return result.revision_id
+
+
+def load_revision_dictionary(project: Project, revision_id: str) -> Dictionary:
+    """Nap Dictionary tu bundle da pin (AD-3: khong doc file mutable).
+
+    Verify hash-pass truoc khi unpickle: SHA-256(manifest.json bytes) phai
+    bang revision id; khong khop = bundle corrupt. Pickle la self-generated
+    content-addressed (xay boi build_revision tren may nay).
+    """
+    bundle_dir = project.revisions_dir / revision_id
+    manifest_path = bundle_dir / "manifest.json"
+    if not manifest_path.is_file() or not (bundle_dir / "dictionary.bin").is_file():
+        raise RuntimeError(f"Bundle revision {revision_id} thieu file — chay zhvi dict gc / doctor")
+    digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+    if digest != revision_id:
+        raise RuntimeError(
+            f"Bundle revision {revision_id} manifest hash khong khop ({digest[:16]}) — corrupt"
+        )
+    with (bundle_dir / "dictionary.bin").open("rb") as f:
+        dic = pickle.load(f)
+    if dic.fingerprint != revision_id:
+        raise RuntimeError(f"Bundle revision {revision_id} dictionary.bin khong khop manifest")
+    return dic
 
 
 def gc_orphan_revisions(project: Project) -> int:
