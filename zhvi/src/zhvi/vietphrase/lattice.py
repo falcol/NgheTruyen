@@ -301,16 +301,20 @@ def _source_has_reduplication(text: str, start: int, end: int) -> bool:
     return False
 
 
-def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int]:
+def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int, list[tuple[int, int]]]:
     """Chong lap tu phia target (artifact cua greedy/luat Han-Viet).
 
     Edge ke tiep co target trung nhau hoac target sau bat dau bang target truoc
     (VD 'đã' + 'đã bị') va nguon KHONG lap lai that -> loai edge dau, giu edge
     sau (chua noi dung day du). Lap lai nguon (磨炼磨炼 → ma luyện ma luyện)
     duoc giu nguyen — dung SYSTEM_PROMPT 'giu nhip lap'.
+
+    Tra (edges con lai, so lan collapse, offsets (start, end) tung span bi bo —
+    AD-18: transformation kem source-offset trace).
     """
     out: list[Edge] = []
     collapsed = 0
+    dropped: list[tuple[int, int]] = []
     i = 0
     n = len(edges)
     while i < n:
@@ -329,11 +333,12 @@ def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int]
                 text, e.start, edges[j].end
             ):
                 collapsed += 1
+                dropped.append((e.start, e.end))
                 i += 1  # bo e dau, giu e sau
                 continue
         out.append(e)
         i += 1
-    return out, collapsed
+    return out, collapsed, dropped
 
 
 def render(edges: list[Edge]) -> str:
@@ -379,8 +384,9 @@ def vp_plan(
     # Rule chong lap: loai artifact trung target giua hai edge ke nhau khi
     # nguon khong lap lai that (VD 'có chút'+'có chút lo lắng' -> giu cai sau).
     collapsed_count = 0
+    collapsed_spans: list[tuple[int, int]] = []
     if collapse_reps:
-        greedy_edges, collapsed_count = collapse_repetitions(greedy_edges, text)
+        greedy_edges, collapsed_count, collapsed_spans = collapse_repetitions(greedy_edges, text)
     greedy_score = sum(e.score for e in greedy_edges)
     best = _Path(greedy_edges, greedy_score, False)
     margin = (paths[0].score - paths[1].score) if len(paths) > 1 else float("inf")
@@ -434,4 +440,5 @@ def vp_plan(
         lattice_margin=0.0 if margin == float("inf") else margin,
         lattice_entropy=entropy,
         warnings=tuple(warnings),
+        collapsed_spans=tuple(collapsed_spans),
     )

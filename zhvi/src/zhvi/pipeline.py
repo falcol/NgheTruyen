@@ -13,6 +13,7 @@ from pathlib import Path
 
 from .config import (
     PARSER_VERSION,
+    PREPROCESS_VERSION,
     QA_VERSION,
     RENDERER_VERSION,
     ROUTE_VIETPHRASE,
@@ -84,13 +85,12 @@ def _resolve_global_glossary(cfg: Config) -> Path | None:
 
 
 def block_cache_key(src_hash: str, revision_id: str, cfg: Config) -> str:
-    """Block cache key (AD-11): source block hash + dictionary revision +
-    parser/segmenter/renderer/QA version + config anh huong preprocessing —
-    chi hit khi trung TOAN BO (renderer tham gia truc tiep, khong chi qua
-    manifest revision)."""
+    """Block cache key (AD-11/AD-18): source block hash + dictionary revision +
+    parser/segmenter/renderer/preprocess/QA version + config anh huong
+    preprocessing — chi hit khi trung TOAN BO."""
     return block_source_hash(
         f"{src_hash}\x1f{revision_id}\x1f{PARSER_VERSION}\x1f{SEGMENTER_VERSION}"
-        f"\x1f{RENDERER_VERSION}\x1f{QA_VERSION}"
+        f"\x1f{RENDERER_VERSION}\x1f{PREPROCESS_VERSION}\x1f{QA_VERSION}"
         f"\x1f{int(cfg.collapse_repetitions)}\x1f{int(cfg.qa_strip_junk)}"
     )
 
@@ -210,9 +210,10 @@ def _translate_locked(
         for i, node in enumerate(nodes):
             bid = f"c{node.chapter_id}b{node.ordinal}"
             src_hash = block_source_hash(node.content)
-            vp_input, qa_rules = (
+            vp_input, junk_spans = (
                 sanitize_source(node.content) if cfg.qa_strip_junk else (node.content, [])
             )
+            junk_reasons = sorted({s.reason for s in junk_spans})
             prev = committed.get(bid)
             if prev and prev["source_hash"] == src_hash:
                 continue  # tai dung block da commit trong run (muc 3.1 resume)
@@ -245,7 +246,7 @@ def _translate_locked(
             )
 
             # VP-only (story 1.1): moi block di direct VP, khong router/agent.
-            n_warnings += len(draft.warnings) + len(qa_rules)
+            n_warnings += len(draft.warnings) + len(junk_reasons)
 
             final_text = draft.text
             attempt = {
@@ -269,7 +270,12 @@ def _translate_locked(
                 "lattice_margin": round(draft.lattice_margin, 4),
                 "lattice_entropy": round(draft.lattice_entropy, 4),
                 "coverage": round(draft.coverage, 4),
-                "warnings": [*qa_rules, *draft.warnings],
+                # AD-18/FR13: junk spans offset theo source goc + reason code
+                "junk_spans": [
+                    {"start": s.start, "end": s.end, "reason": s.reason} for s in junk_spans
+                ],
+                "collapsed_spans": [list(s) for s in draft.collapsed_spans],
+                "warnings": [*junk_reasons, *draft.warnings],
                 "invariant_errors": list(inv.errors),
             }
             st.stage_block(
@@ -283,7 +289,7 @@ def _translate_locked(
                 final_text=final_text,
                 qa=qa,
                 route=ROUTE_VIETPHRASE,
-                reasons=[*qa_rules, *draft.warnings],
+                reasons=[*junk_reasons, *draft.warnings],
                 features={},
                 router_version="none",
                 attempt=attempt,

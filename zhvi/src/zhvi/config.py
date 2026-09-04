@@ -16,6 +16,10 @@ PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
 LOADER_VERSION = "zhvi-loader-1"
 RENDERER_VERSION = "zhvi-renderer-1"
+# Version cua preprocessing view (junk strip + repetition collapse rules,
+# AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
+# collapse phai bump nay (run/cache cu tu invalid).
+PREPROCESS_VERSION = "zhvi-preprocess-1"
 # Route duy nhat cua duong dich VP-only (SPEC CAP-9: run moi chi ghi route nay).
 ROUTE_VIETPHRASE = "VIETPHRASE"
 

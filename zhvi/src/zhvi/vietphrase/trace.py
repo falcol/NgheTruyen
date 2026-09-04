@@ -33,6 +33,8 @@ class VpDraft:
     lattice_margin: float
     lattice_entropy: float
     warnings: tuple[str, ...] = field(default_factory=tuple)
+    # AD-18 (story 2.6): offsets (start, end) cac span bi repetition collapse
+    collapsed_spans: tuple[tuple[int, int], ...] = field(default_factory=tuple)
 
     @property
     def coverage(self) -> float:
