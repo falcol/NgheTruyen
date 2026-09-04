@@ -60,7 +60,7 @@ development_status:
   2-2-publish-protocol-atomic-rename-transaction-cas-activation: done
   2-3-run-pin-revision-loader-doc-bundle-resume-dung-bundle: done
   2-4-projection-auto-startup-reconciler-ownership-guard: done
-  2-5-diff-rollback-va-affected-block-rerun: backlog
+  2-5-diff-rollback-va-affected-block-rerun: done
   2-6-versioned-preprocessing-view-fr13: backlog
   epic-2-retrospective: optional
   epic-3: backlog

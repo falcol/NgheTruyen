@@ -12,10 +12,13 @@ from rich.console import Console
 
 from . import __version__
 from .config import Config
+from .correction import affected_block_ids, diff_revisions, rollback_revision
+from .document import parse_document
 from .project import Project, ProjectError, create_project, open_project, workspace_for
-from .revision import gc_orphan_revisions
+from .revision import StaleActiveError, gc_orphan_revisions, load_revision_dictionary
 from .review import ReviewError, ReviewStore
 from .snapshot import SnapshotError, import_snapshot
+from .state import State
 
 if TYPE_CHECKING:  # annotation-only — pipeline keo engines nang o import-time
     from .pipeline import PipelineResult
@@ -41,6 +44,56 @@ def dict_gc(
     except (ProjectError, OSError) as e:
         _fail(EXIT_STATE, str(e))
     print(json.dumps({"removed": removed}, ensure_ascii=False))
+
+
+@dict_app.command("diff")
+def dict_diff(
+    rev_a: str = typer.Argument(..., help="Revision A (id)."),
+    rev_b: str = typer.Argument(..., help="Revision B (id)."),
+    project: Path = typer.Option(..., "--project", "-p"),
+) -> None:
+    """Diff 2 revision: entry them/mat/doi + affected keys va affected blocks
+    (source index cua run cuoi — story 2.5)."""
+    try:
+        proj = open_project(project)
+        payload = diff_revisions(proj, rev_a, rev_b)
+        payload["affected_blocks"] = _affected_blocks_for_diff(proj, rev_b, payload)
+    except (ProjectError, OSError) as e:
+        _fail(EXIT_STATE, str(e))
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
+
+def _affected_blocks_for_diff(proj: Project, rev_b: str, payload: dict) -> list[str]:
+    """Affected blocks tinh tren source cua run cuoi cung project (trace/source
+    index — AC 2.5); chua co run -> danh sach rong."""
+    keys = set(payload.get("affected_keys") or [])
+    if not keys:
+        return []
+    st = State(proj.db_path)
+    try:
+        rev = st.latest_source_revision()
+    finally:
+        st.close()
+    if rev is None:
+        return []
+    doc = parse_document(Path(rev.snapshot_path).read_text(encoding=rev.encoding))
+    trad = load_revision_dictionary(proj, rev_b).trad_simp
+    return affected_block_ids(doc, keys, trad)
+
+
+@dict_app.command("rollback")
+def dict_rollback(
+    rev: str = typer.Argument(..., help="Revision an toan can active lai."),
+    project: Path = typer.Option(..., "--project", "-p"),
+) -> None:
+    """CAS active pointer ve revision an toan — khong sua revision cu (AD-12)."""
+    try:
+        rollback_revision(open_project(project), rev)
+    except StaleActiveError as e:
+        _fail(EXIT_RUN_FAILED, str(e))
+    except (ProjectError, OSError, RuntimeError) as e:
+        _fail(EXIT_STATE, str(e))
+    print(json.dumps({"active": rev}, ensure_ascii=False))
 
 # Exit codes (muc 34)
 EXIT_OK = 0
@@ -143,6 +196,10 @@ def translate(
     style: str = typer.Option("convert-qt", "--style"),
     encoding: str = typer.Option("utf-8", "--encoding"),
     dict_dir: str = typer.Option(None, "--dict-dir"),
+    refresh_revision: bool = typer.Option(
+        False, "--refresh-revision",
+        help="Correction (story 2.5): glossary doi -> revision moi + dich lai affected blocks.",
+    ),
     json_out: bool = typer.Option(False, "--json", help="Bao cao JSON tren stdout."),
 ) -> None:
     """Happy path: snapshot -> parse -> VP -> checkpoint -> atomic export."""
@@ -158,6 +215,7 @@ def translate(
             style=style,
             encoding=encoding,
             dict_dir=dict_dir,
+            refresh_revision=refresh_revision,
         )
         result = translate_project(p, req)
     except typer.Exit:

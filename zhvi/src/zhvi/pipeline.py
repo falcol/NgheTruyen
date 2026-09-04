@@ -24,6 +24,7 @@ from .document import parse_document
 from .export import ExportResult, export_run
 from .fingerprint import block_source_hash, build_run_fingerprint
 from .project import Project, create_project, project_lock, workspace_for
+from .correction import affected_block_ids, diff_revisions
 from .qa import sanitize_source
 from .projection import reconcile_project
 from .revision import ensure_active_revision, load_revision_dictionary
@@ -48,6 +49,7 @@ class TranslateRequest:
     style: str = "convert-qt"
     encoding: str = "utf-8"
     dict_dir: str | None = None
+    refresh_revision: bool = False  # story 2.5: correction — glossary doi -> revision moi
 
 
 @dataclass
@@ -113,6 +115,23 @@ def resolve_dict_overrides(cfg: Config, request: TranslateRequest) -> Config:
     return replace(cfg, **overrides) if overrides else cfg
 
 
+def _adopt_unaffected_blocks(
+    st: State, project: Project, doc, run, revision_id: str, trad_simp: dict[str, str]
+) -> None:
+    """Story 2.5 correction: run moi fork vi revision moi — block KHONG chua
+    key bi doi duoc adopt nguyen vao run moi (giu final_text); block affected
+    se duoc dich lai trong vong lap chinh."""
+    old_run = st.latest_completed_run_for_source(run.source_revision_id, exclude_run_id=run.id)
+    if old_run is None or old_run.dictionary_revision_id == revision_id:
+        return
+    diff = diff_revisions(project, old_run.dictionary_revision_id, revision_id)
+    if not diff["affected_keys"]:
+        return
+    affected = set(affected_block_ids(doc, set(diff["affected_keys"]), trad_simp))
+    old_blocks = st.committed_blocks(old_run.id)
+    st.adopt_blocks(run.id, [bid for bid in old_blocks if bid not in affected])
+
+
 def _translate_locked(
     project: Project, request: TranslateRequest, cfg: Config, dict_dir: Path
 ) -> PipelineResult:
@@ -136,7 +155,8 @@ def _translate_locked(
     reconcile_project(project)
     global_glossary = _resolve_global_glossary(cfg)
     revision_id = ensure_active_revision(
-        dict_dir, project, global_glossary=global_glossary, patterns=cfg.pattern_rules
+        dict_dir, project, global_glossary=global_glossary, patterns=cfg.pattern_rules,
+        refresh=request.refresh_revision,
     )
     dic = load_revision_dictionary(project, revision_id)
 
@@ -176,6 +196,8 @@ def _translate_locked(
     )
 
     # 5. VP plan tung block -> invariant gate -> stage_block (VP-only, story 1.1)
+    if created:
+        _adopt_unaffected_blocks(st, project, doc, run, revision_id, dic.trad_simp)
     committed = st.committed_blocks(run.id)
     nodes = doc.translatable_nodes()
     total = len(nodes)

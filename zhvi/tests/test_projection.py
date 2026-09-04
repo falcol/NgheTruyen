@@ -90,11 +90,21 @@ def test_reconciler_fatal_hash_mismatch(tmp_path):
         reconcile_project(project)
 
 
-def test_translate_startup_runs_reconciler(tmp_path):
+def test_translate_startup_runs_reconciler(tmp_path, monkeypatch):
     """translate_project goi reconciler luc startup — projection cu tu dong
     duoc dung lai truoc khi dich."""
+    monkeypatch.delenv("ZHVI_GLOBAL_GLOSSARY", raising=False)
     dict_dir, project, result = _publish(
         tmp_path, [AutoEntry(source="天煞", target="Thiên Sát")]
+    )
+    # isolation may: global glossary that cua may khong tham gia revision
+    toml = project.root / "zhvi.toml"
+    toml.write_text(
+        toml.read_text(encoding="utf-8").replace(
+            'global_glossary = "~/.config/zhvi/glossary.manual.tsv"',
+            'global_glossary = ""',
+        ),
+        encoding="utf-8",
     )
     src = tmp_path / "truyen.txt"
     src.write_text("第一章\n\n天煞从天而降。\n", encoding="utf-8")

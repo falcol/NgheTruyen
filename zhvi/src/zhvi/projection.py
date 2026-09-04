@@ -21,8 +21,17 @@ from .vietphrase.layers import Layer
 
 __all__ = [
     "AUTO_PROJECTION", "OwnershipError", "assert_machine_writable",
-    "materialize_projection", "reconcile_project",
+    "materialize_projection", "read_bundle_entries", "reconcile_project",
 ]
+
+
+def read_bundle_entries(project: Project, revision_id: str) -> list[list[str]]:
+    """Doc rows entries.tsv cua bundle: [layer, scope, source, target, policy].
+    Reader dung chung (projection + correction diff — revision so huu format)."""
+    text = (project.revisions_dir / revision_id / "entries.tsv").read_text(
+        encoding="utf-8"
+    )
+    return [row.split("\t") for row in text.splitlines() if row]
 
 PROJECTION_HEADER = "# machine-owned projection — dung lai tu active revision (AD-8); sua = sua entry + publish revision moi\n"
 AUTO_PROJECTION = "glossary.auto.tsv"
@@ -33,14 +42,11 @@ BUNDLE_FILES = ("manifest.json", "entries.tsv", "patterns.jsonl", "dictionary.bi
 def _auto_entries_tsv(project: Project, revision_id: str) -> str:
     """Doc entries auto:book tu bundle da pin (entries.tsv) — projection dung
     tu bundle bat bien, khong doc lai tu state store."""
-    rows = (project.revisions_dir / revision_id / "entries.tsv").read_text(
-        encoding="utf-8"
-    ).splitlines()
-    lines = []
-    for row in rows:
-        parts = row.split("\t")
-        if len(parts) >= 4 and parts[0] == str(int(Layer.BOOK_AUTO)) and parts[1] == "book":
-            lines.append(f"{parts[2]}={parts[3]}")
+    lines = [
+        f"{parts[2]}={parts[3]}"
+        for parts in read_bundle_entries(project, revision_id)
+        if len(parts) >= 4 and parts[0] == str(int(Layer.BOOK_AUTO)) and parts[1] == "book"
+    ]
     return PROJECTION_HEADER + "\n".join(lines) + ("\n" if lines else "")
 
 

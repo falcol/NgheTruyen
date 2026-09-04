@@ -382,18 +382,49 @@ def publish_revision(
     return PublishResult(revision_id=bundle.revision_id, status=REV_ACTIVE, replaced=replaced)
 
 
+def _manual_layer_digest(project: Project, layer_name: str, global_glossary: Path | None) -> tuple[str, int] | None:
+    """Digest canonical hien tai cua layer manual (book/global) tu file."""
+    path = project.manual_glossary if layer_name == "manual:book" else global_glossary
+    if path is None or not path.is_file():
+        return None
+    return _layer_hash(_parse_file_entries(path))
+
+
+def _manual_layers_stale(project: Project, active_id: str, global_glossary: Path | None) -> bool:
+    """True neu glossary manual hien tai khac hash trong manifest active —
+    correction flow (story 2.5): sua glossary -> can revision moi."""
+    manifest = json.loads(
+        (project.revisions_dir / active_id / "manifest.json").read_text(encoding="utf-8")
+    )
+    layers = {lyr["name"]: lyr for lyr in manifest["layers"]}
+    for name in ("manual:book", "manual:global"):
+        current = _manual_layer_digest(project, name, global_glossary)
+        recorded = layers.get(name)
+        if current is None and recorded is None:
+            continue
+        if current is None or recorded is None:
+            return True  # file xuat hien/mat so voi luc build
+        digest, _count = current
+        if digest != recorded["sha256"]:
+            return True
+    return False
+
+
 def ensure_active_revision(
     dict_dir: Path,
     project: Project,
     *,
     global_glossary: Path | None = None,
     patterns: bool = True,
+    refresh: bool = False,
 ) -> str:
     """Revision id active cua scope book cho run moi (AD-3).
 
-    Chua co active (project moi) -> publish bootstrap revision tu dict files
-    hien hanh. Run moi chi pin active revision; revision moi do story 2.5
-    (correction flow) publish.
+    Chua co active (project moi) -> publish bootstrap tu dict files hien hanh.
+    Glossary manual doi so voi manifest active chi tao revision moi khi
+    refresh=True (correction flow 2.5 — fork run + dich lai affected); mac
+    dinh giu active hien hanh de resume run paused van pin revision cu
+    (AC 2.3: doi file giua chang khong lam fork run).
     """
     st = State(project.db_path)
     try:
@@ -401,7 +432,13 @@ def ensure_active_revision(
     finally:
         st.close()
     if active is not None:
-        return active
+        if not refresh or not _manual_layers_stale(project, active, global_glossary):
+            return active
+        result = publish_revision(
+            dict_dir, project, global_glossary=global_glossary, patterns=patterns,
+            expected_active=active,
+        )
+        return result.revision_id
     result = publish_revision(
         dict_dir, project, global_glossary=global_glossary, patterns=patterns
     )

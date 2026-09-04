@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -209,6 +210,49 @@ class State:
         self.conn.close()
 
     # ---- dictionary revisions (story 2.2, AD-13/AD-15) ----
+    def _cas_active_locked(
+        self, scope_type: str, scope_id: str, revision_id: str,
+        expected_active: str | None, now: str,
+    ) -> None:
+        """CAS active pointer — CHI goi trong transaction dang mo. UPDATE ...
+        WHERE revision_id=expected (atomic theo row, khong TOCTOU); kich hoat
+        lan dau dung INSERT, writer khac den truoc -> unique key -> stale."""
+        if expected_active is None:
+            try:
+                self.conn.execute(
+                    "INSERT INTO active_revisions VALUES (?,?,?,?)",
+                    (scope_type, scope_id, revision_id, now),
+                )
+            except sqlite3.IntegrityError as exc:
+                raise StaleActiveError(
+                    f"active revision da ton tai cho scope ({scope_type},{scope_id})"
+                    " — evaluate/build lai tren active moi"
+                ) from exc
+        else:
+            cur = self.conn.execute(
+                "UPDATE active_revisions SET revision_id=?, updated_at=?"
+                " WHERE scope_type=? AND scope_id=? AND revision_id=?",
+                (revision_id, now, scope_type, scope_id, expected_active),
+            )
+            if cur.rowcount == 0:
+                raise StaleActiveError(
+                    f"active revision da doi (ky vong {expected_active})"
+                    " — evaluate/build lai tren active moi"
+                )
+
+    def _supersede_and_activate_locked(
+        self, replaced: str | None, revision_id: str, now: str,
+    ) -> None:
+        if replaced is not None:
+            self.conn.execute(
+                "UPDATE dictionary_revisions SET status=? WHERE id=?",
+                (REV_SUPERSEDED, replaced),
+            )
+        self.conn.execute(
+            "UPDATE dictionary_revisions SET status=?, activated_at=? WHERE id=?",
+            (REV_ACTIVE, now, revision_id),
+        )
+
     def activate_revision(
         self,
         revision_id: str,
@@ -220,12 +264,8 @@ class State:
     ) -> str | None:
         """MOT transaction: insert revision 'ready' + CAS active pointer.
 
-        CAS that (AD-13): pointer chi doi khi van dang tro expected_active —
-        UPDATE ... WHERE revision_id=expected (atomic theo row, khong TOCTOU);
-        kich hoat lan dau dung INSERT, writer khac den truoc -> unique key
-        raise -> StaleActiveError. Stale: rollback toan bo (khong row moi),
-        bundle da rename thanh orphan — GC don. Tra revision active cu
-        (replaced) hoac None.
+        Stale: rollback toan bo (khong row moi), bundle da rename thanh
+        orphan — GC don. Tra revision active cu (replaced) hoac None.
         """
         now = utc_now()
         with self.conn:
@@ -233,39 +273,40 @@ class State:
                 "INSERT OR REPLACE INTO dictionary_revisions VALUES (?,?,?,?,?,?)",
                 (revision_id, REV_READY, manifest_json, bundle_path, now, None),
             )
-            if expected_active is None:
-                try:
-                    self.conn.execute(
-                        "INSERT INTO active_revisions VALUES (?,?,?,?)",
-                        (scope_type, scope_id, revision_id, now),
-                    )
-                except sqlite3.IntegrityError as exc:
-                    raise StaleActiveError(
-                        f"active revision da ton tai cho scope ({scope_type},{scope_id})"
-                        " — evaluate/build lai tren active moi"
-                    ) from exc
-            else:
-                cur = self.conn.execute(
-                    "UPDATE active_revisions SET revision_id=?, updated_at=?"
-                    " WHERE scope_type=? AND scope_id=? AND revision_id=?",
-                    (revision_id, now, scope_type, scope_id, expected_active),
-                )
-                if cur.rowcount == 0:
-                    raise StaleActiveError(
-                        f"active revision da doi (ky vong {expected_active})"
-                        " — evaluate/build lai tren active moi"
-                    )
+            self._cas_active_locked(scope_type, scope_id, revision_id, expected_active, now)
             replaced = expected_active if expected_active != revision_id else None
-            if replaced is not None:
-                self.conn.execute(
-                    "UPDATE dictionary_revisions SET status=? WHERE id=?",
-                    (REV_SUPERSEDED, replaced),
-                )
-            self.conn.execute(
-                "UPDATE dictionary_revisions SET status=?, activated_at=? WHERE id=?",
-                (REV_ACTIVE, now, revision_id),
-            )
+            self._supersede_and_activate_locked(replaced, revision_id, now)
         return replaced
+
+    def rollback_active_revision(
+        self,
+        target_revision: str,
+        expected_active: str | None,
+        scope_type: str,
+        scope_id: str,
+        *,
+        action: str = "dict_rollback",
+    ) -> None:
+        """MOT transaction: CAS active pointer ve target + supersede active cu
+        + event append-only (AD-12: rollback khong sua bundle/revision cu).
+
+        [Note] Content-addressed: tap entry tuong duong -> CUNG id — nen
+        'revision moi' cua AD-12 triet tieu la pointer-CAS ve id cu; transition
+        superseded -> active la hau qua chap nhan cua cach do.
+        """
+        now = utc_now()
+        with self.conn:
+            if expected_active is None:
+                expected_active = self.active_revision_id(scope_type, scope_id)
+            self._cas_active_locked(scope_type, scope_id, target_revision, expected_active, now)
+            replaced = expected_active if expected_active != target_revision else None
+            self._supersede_and_activate_locked(replaced, target_revision, now)
+            self.conn.execute(
+                "INSERT INTO feedback_events VALUES (?,?,?,?,?,?,?,?)",
+                (uuid.uuid4().hex, action, None, None, None,
+                 json.dumps({"active": expected_active}),
+                 json.dumps({"active": target_revision}), now),
+            )
 
     def active_revision_id(self, scope_type: str, scope_id: str) -> str | None:
         row = self.conn.execute(
@@ -273,6 +314,38 @@ class State:
             (scope_type, scope_id),
         ).fetchone()
         return row[0] if row else None
+
+    def latest_completed_run_for_source(
+        self, source_revision_id: str, exclude_run_id: str | None = None
+    ) -> RunRow | None:
+        """Run completed/exported gan nhat cua mot source (de seed unaffected
+        blocks khi correction tao run moi — story 2.5)."""
+        q = (
+            "SELECT * FROM runs"
+            " WHERE source_revision_id=? AND status IN ('completed','exported')"
+        )
+        args: list = [source_revision_id]
+        if exclude_run_id is not None:
+            q += " AND id<>?"
+            args.append(exclude_run_id)
+        q += " ORDER BY updated_at DESC LIMIT 1"
+        row = self.conn.execute(q, args).fetchone()
+        return RunRow(*row) if row else None
+
+    def adopt_blocks(self, new_run_id: str, block_ids: list[str]) -> int:
+        """Chuyen block da commit sang run moi (story 2.5: block khong chua key
+        sua duoc giu nguyen — correction chi dich lai affected).
+
+        [Note] blocks.id la PK toan cuc nen day la DI CHUYEN row (run cu mat
+        block, final_text khong doi) — AD-19 "giu lich su" o muc run->block
+        bi xoi mon; schema per-run can story rieng. Confirm xu ly?
+        """
+        with self.conn:
+            for bid in block_ids:
+                self.conn.execute(
+                    "UPDATE blocks SET run_id=? WHERE id=?", (new_run_id, bid)
+                )
+        return len(block_ids)
 
     # ---- source revisions ----
     def upsert_source_revision(
