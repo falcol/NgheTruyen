@@ -216,9 +216,9 @@ def test_migrate_v1_db_additive_and_cache_invalidated(tmp_path):
     try:
         # schema version tang (2 = story 1.3; 3 = story 2.2 bang revision;
         # 4 = story 3.1 observations; 5 = story 3.2 term_candidates;
-        # 6 = story 3.3 candidate_evidence)
+        # 6 = story 3.3 candidate_evidence; 7 = story 3.4 promotion_events)
         ver = st.conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0]
-        assert int(ver) == SCHEMA_VERSION == 6
+        assert int(ver) == SCHEMA_VERSION == 7
 
         # history doc duoc, khong rewrite: run/block/route model-era giu nguyen
         assert st.latest_source_revision().id == "rev1"

@@ -17,6 +17,7 @@ from .document import parse_document
 from .learning.candidate import build_candidates
 from .learning.discovery import run_discovery
 from .learning.evidence import evaluate_candidates
+from .learning.promotion import run_promotion
 from .pipeline import ensure_book_dictionary, resolve_dict_dir
 from .project import (
     Project,
@@ -279,10 +280,21 @@ def learn(
                     dictionary=dic,
                     dictionary_revision_id=drev,
                 )
+                promo = None
+                if cfg.learning.enabled and cfg.learning.auto_scope == "book":
+                    promo = run_promotion(
+                        st,
+                        project=p,
+                        dict_dir=resolve_dict_dir(cfg),
+                        cfg=cfg,
+                        dictionary_revision_id=drev,
+                    )
         finally:
             st.close()
     except typer.Exit:
         raise
+    except StaleActiveError as e:
+        _fail(EXIT_RUN_FAILED, str(e))
     except ProjectError as e:
         _fail(EXIT_STATE, str(e))
     except Exception as e:  # noqa: BLE001 — controller bat fatal
@@ -293,6 +305,7 @@ def learn(
                 "discovery": disc.to_json(),
                 "candidates": cand.to_json(),
                 "evidence": ev.to_json(),
+                "promotion": promo.to_json() if promo else None,
             },
             ensure_ascii=False,
             indent=2,

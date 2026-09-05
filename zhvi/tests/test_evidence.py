@@ -42,10 +42,12 @@ def test_schema_v6_has_candidate_evidence(st):
         for r in st.conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     }
     assert "candidate_evidence" in tables
+    from zhvi.state import SCHEMA_VERSION
+
     version = st.conn.execute(
         "SELECT value FROM meta WHERE key='schema_version'"
     ).fetchone()[0]
-    assert int(version) == 6
+    assert int(version) == SCHEMA_VERSION
 
 
 def test_replace_evidence_replaces_scope_even_empty(st):

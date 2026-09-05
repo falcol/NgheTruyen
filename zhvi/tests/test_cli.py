@@ -208,3 +208,8 @@ def test_learn_command_json(tmp_path):
     assert cand["selected"] >= cand["candidates"]
     # Dict that co phien am singles cho 李/慕/白 nen ten rieng build duoc target.
     assert cand["candidates"] >= 1
+    # Story 3.4: promotion chay trong composite learn (3 lan < nguong 5).
+    promo = data["promotion"]
+    assert promo["promoted"] == 0
+    assert promo["rejected"] >= 1
+    assert promo["revision_before"] == promo["revision_after"]

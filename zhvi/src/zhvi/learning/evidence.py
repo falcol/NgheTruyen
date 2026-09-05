@@ -89,7 +89,9 @@ def _overlap_existing(dic: Dictionary, key: str) -> bool:
     )
 
 
-def _ev_id(book_id: str, drev: str, candidate_id: str, group: str) -> str:
+def ev_id(book_id: str, drev: str, candidate_id: str, group: str) -> str:
+    """Id evidence content-addressed — public de promotion (3.4) dung chung
+    congr thuc cho group regression, tránh nhân đôi formula."""
     return hashlib.sha256(
         (book_id + "\x00" + drev + "\x00" + candidate_id + "\x00" + group).encode(
             "utf-8"
@@ -155,7 +157,7 @@ def evaluate_candidates(
 
     def _row(cand: dict, group: str, signals: dict, score: float) -> EvidenceRow:
         return EvidenceRow(
-            id=_ev_id(book_id, dictionary_revision_id, cand["id"], group),
+            id=ev_id(book_id, dictionary_revision_id, cand["id"], group),
             candidate_id=cand["id"],
             book_id=book_id,
             dictionary_revision_id=dictionary_revision_id,

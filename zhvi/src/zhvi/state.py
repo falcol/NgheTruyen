@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 # Trang thai dictionary revision (data-model): building/validating la phase
 # in-memory cua builder; row DB chi ton tai tu 'ready'. 'rejected' = build
@@ -175,6 +175,23 @@ CREATE TABLE IF NOT EXISTS candidate_evidence (
 );
 CREATE INDEX IF NOT EXISTS idx_evidence_scope
     ON candidate_evidence(book_id, dictionary_revision_id);
+
+CREATE TABLE IF NOT EXISTS promotion_events (
+    id TEXT PRIMARY KEY,             -- uuid4 hex (data-model: UUID cho event)
+    book_id TEXT NOT NULL,
+    candidate_id TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL,
+    event_type TEXT NOT NULL,        -- rejected | promoted | revoked
+    from_status TEXT NOT NULL DEFAULT '',
+    to_status TEXT NOT NULL DEFAULT '',
+    actor TEXT NOT NULL,             -- system | user
+    dictionary_revision_id TEXT NOT NULL DEFAULT '',
+    revision_id TEXT NOT NULL DEFAULT '',
+    provenance_json TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_promotion_events_book
+    ON promotion_events(book_id, source, created_at);
 """
 
 _OBS_COLS = (
@@ -194,6 +211,12 @@ _CAND_COLS = (
 _EV_COLS = (
     "id", "candidate_id", "book_id", "dictionary_revision_id",
     "group_name", "signals_json", "score",
+)
+
+_EVT_COLS = (
+    "id", "book_id", "candidate_id", "source", "event_type",
+    "from_status", "to_status", "actor", "dictionary_revision_id",
+    "revision_id", "provenance_json",
 )
 
 
@@ -271,10 +294,29 @@ class CandidateRow:
     source: str
     proposed_target: str  # '' khi status=unresolved (cot NOT NULL)
     kind: str  # term | name | pattern
-    status: str  # candidate | unresolved
+    status: str  # candidate | unresolved | book_auto | rejected | revoked
     provenance_json: str
     dictionary_revision_id: str
     eligible_auto: int
+
+
+@dataclass(frozen=True)
+class PromotionEventRow:
+    """Event lifecycle append-only (story 3.4, AC 1 / AD-8): moi mutation
+    candidate ghi before/after/actor/timestamp/provenance — KHONG replace."""
+
+    id: str
+    book_id: str
+    candidate_id: str
+    source: str
+    event_type: str  # rejected | promoted | revoked
+    from_status: str
+    to_status: str
+    actor: str  # system | user
+    dictionary_revision_id: str
+    revision_id: str  # bundle moi (promoted/revoked), '' khi reject
+    provenance_json: str
+    created_at: str = ""  # gan boi State khi doc lai
 
 
 @dataclass
@@ -329,6 +371,8 @@ class State:
             # v4 -> v5 (story 3.2): term_candidates mo cot dictionary_revision_id
             # + eligible_auto cho candidate builder — additive, bang chua co code ghi.
             # v5 -> v6 (story 3.3): bang candidate_evidence tao boi _SCHEMA
+            # (CREATE IF NOT EXISTS) — additive, khong anh huong data hien co.
+            # v6 -> v7 (story 3.4): bang promotion_events tao boi _SCHEMA
             # (CREATE IF NOT EXISTS) — additive, khong anh huong data hien co.
             if from_version < 5:
                 cols = {
@@ -574,6 +618,57 @@ class State:
             )
             for row in sorted(rows, key=lambda r: (r.candidate_id, r.group_name)):
                 self.conn.execute(sql, [getattr(row, c) for c in _EV_COLS] + [now])
+
+    def update_candidate_status(self, candidate_id: str, status: str) -> None:
+        """Doi trang thai lifecycle mot candidate (story 3.4) — caller lo
+        event append-only truoc/sau goi ham nay."""
+        with self.conn:
+            self.conn.execute(
+                "UPDATE term_candidates SET status=? WHERE id=?",
+                (status, candidate_id),
+            )
+
+    def replace_evidence_group(
+        self, book_id: str, dictionary_revision_id: str, group: str, rows: list[EvidenceRow]
+    ) -> None:
+        """Ghi de CHI mot group (vd regression sau promotion 3.4) — 5 group
+        kia giu nguyen (khac replace_evidence thay ca scope)."""
+        sql = (
+            f"INSERT INTO candidate_evidence ({','.join(_EV_COLS)}, created_at) "
+            f"VALUES ({','.join('?' * len(_EV_COLS))}, ?)"
+        )
+        now = utc_now()
+        with self.conn:
+            self.conn.execute(
+                "DELETE FROM candidate_evidence WHERE book_id=? "
+                "AND dictionary_revision_id=? AND group_name=?",
+                (book_id, dictionary_revision_id, group),
+            )
+            for row in sorted(rows, key=lambda r: r.candidate_id):
+                self.conn.execute(sql, [getattr(row, c) for c in _EV_COLS] + [now])
+
+    # ---- promotion_events (story 3.4) ----
+    def append_promotion_event(self, row: PromotionEventRow) -> None:
+        """Ghi MOTHEM event lifecycle (AC 1 / AD-8) — khac candidates/evidence
+        o cho KHONG xoa scope: lich su decision la append-only."""
+        with self.conn:
+            self.conn.execute(
+                f"INSERT INTO promotion_events ({','.join(_EVT_COLS)}, created_at) "
+                f"VALUES ({','.join('?' * len(_EVT_COLS))}, ?)",
+                [getattr(row, c) for c in _EVT_COLS] + [utc_now()],
+            )
+
+    def promotion_events_for(
+        self, book_id: str, source: str | None = None
+    ) -> list[PromotionEventRow]:
+        """Doc events theo book (loc them source) — thu tu insert."""
+        q = "SELECT * FROM promotion_events WHERE book_id=?"
+        args: list = [book_id]
+        if source is not None:
+            q += " AND source=?"
+            args.append(source)
+        cur = self.conn.execute(q + " ORDER BY rowid", args)
+        return [PromotionEventRow(**d) for d in cursor_dicts(cur)]
 
     # ---- runs ----
     def resume_or_create(
