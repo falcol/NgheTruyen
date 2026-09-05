@@ -161,3 +161,25 @@ def test_config_load_from_template(tmp_path):
     assert cfg2.learning.enabled is False
     assert cfg2.learning.min_chapters == 7
 
+
+
+@pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
+def test_discover_command_json(tmp_path):
+    """zhvi discover: import -> discover in JSON summary observations (story 3.1)."""
+    src = tmp_path / "truyen.txt"
+    src.write_text(
+        "第一章\n\n李慕白看着前方。\n\n第二章\n\n李慕白运转玄天诀。\n",
+        encoding="utf-8",
+    )
+    proj = tmp_path / "proj"
+    assert run_cli("init", str(proj)).returncode == 0
+    r_imp = run_cli("import-", str(src), "-p", str(proj))
+    assert r_imp.returncode == 0, r_imp.stderr
+    r = run_cli("discover", "-p", str(proj), "--dict-dir", str(DICT_DIR))
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    assert data["observations"] > 0
+    assert data["source_revision"] and data["dictionary_revision"]
+    assert set(data["flags"]) == {
+        "single_char_run", "unknown", "alt_segmentation", "repetition_unstable",
+    }

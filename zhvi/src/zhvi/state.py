@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # Trang thai dictionary revision (data-model): building/validating la phase
 # in-memory cua builder; row DB chi ton tai tu 'ready'. 'rejected' = build
@@ -134,10 +134,44 @@ CREATE TABLE IF NOT EXISTS active_revisions (
     updated_at TEXT NOT NULL,
     PRIMARY KEY (scope_type, scope_id)
 );
+CREATE TABLE IF NOT EXISTS observations (
+    id TEXT PRIMARY KEY,
+    source_revision_id TEXT NOT NULL,
+    dictionary_revision_id TEXT NOT NULL,
+    ngram TEXT NOT NULL,
+    ngram_original TEXT NOT NULL,
+    length INTEGER NOT NULL,
+    total_count INTEGER NOT NULL,
+    chapter_count INTEGER NOT NULL,
+    chapters_json TEXT NOT NULL,
+    left_contexts_json TEXT NOT NULL,
+    right_contexts_json TEXT NOT NULL,
+    left_entropy REAL NOT NULL,
+    right_entropy REAL NOT NULL,
+    min_pmi REAL NOT NULL,
+    is_single_char_run INTEGER NOT NULL DEFAULT 0,
+    is_unknown INTEGER NOT NULL DEFAULT 0,
+    alt_segmentation INTEGER NOT NULL DEFAULT 0,
+    repetition_unstable INTEGER NOT NULL DEFAULT 0,
+    pattern_hits_json TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL,
+    UNIQUE(source_revision_id, ngram)
+);
 
 CREATE INDEX IF NOT EXISTS idx_blocks_run ON blocks(run_id, status);
 CREATE INDEX IF NOT EXISTS idx_attempts_block ON attempts(block_id);
+CREATE INDEX IF NOT EXISTS idx_observations_rev
+    ON observations(source_revision_id, total_count DESC);
 """
+
+_OBS_COLS = (
+    "id", "source_revision_id", "dictionary_revision_id", "ngram",
+    "ngram_original", "length", "total_count", "chapter_count",
+    "chapters_json", "left_contexts_json", "right_contexts_json",
+    "left_entropy", "right_entropy", "min_pmi", "is_single_char_run",
+    "is_unknown", "alt_segmentation", "repetition_unstable",
+    "pattern_hits_json",
+)
 
 
 def utc_now() -> str:
@@ -152,6 +186,35 @@ class SourceRevisionRow:
     byte_size: int
     snapshot_path: str
     created_at: str
+
+
+@dataclass(frozen=True)
+class ObservationRow:
+    """Mot observation ngram (story 3.1) — field khop cot bang observations.
+
+    Discovery build row; State lo transaction ghi. Typo field name loi ngay
+    luc construct (thay vi KeyError giua transaction nhu dict thuong).
+    """
+
+    id: str
+    source_revision_id: str
+    dictionary_revision_id: str
+    ngram: str
+    ngram_original: str
+    length: int
+    total_count: int
+    chapter_count: int
+    chapters_json: str
+    left_contexts_json: str
+    right_contexts_json: str
+    left_entropy: float
+    right_entropy: float
+    min_pmi: float
+    is_single_char_run: int
+    is_unknown: int
+    alt_segmentation: int
+    repetition_unstable: int
+    pattern_hits_json: str
 
 
 @dataclass
@@ -201,6 +264,8 @@ class State:
                 self.conn.execute("UPDATE block_cache SET invalid=1")
             # v2 -> v3 (story 2.2): bang dictionary_revisions + active_revisions
             # tao boi _SCHEMA (CREATE IF NOT EXISTS) — additive, khong invalidate cache.
+            # v3 -> v4 (story 3.1): bang observations + index tao boi _SCHEMA
+            # (CREATE IF NOT EXISTS) — additive, khong anh huong data hien co.
             self.conn.execute(
                 "INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
@@ -364,6 +429,28 @@ class State:
         )
         row = cur.fetchone()
         return SourceRevisionRow(*row) if row else None
+
+    # ---- observations (story 3.1) ----
+    def replace_observations(
+        self, source_revision_id: str, rows: list[ObservationRow]
+    ) -> None:
+        """Ghi de toan bo observation cua mot source revision trong MOT transaction.
+
+        Discovery deterministic (AC 3.1.2): chay lai cung revision thi replace,
+        khong append.
+        """
+        sql = (
+            f"INSERT INTO observations ({','.join(_OBS_COLS)}, created_at) "
+            f"VALUES ({','.join('?' * len(_OBS_COLS))}, ?)"
+        )
+        now = utc_now()
+        with self.conn:
+            self.conn.execute(
+                "DELETE FROM observations WHERE source_revision_id=?",
+                (source_revision_id,),
+            )
+            for row in sorted(rows, key=lambda r: r.ngram):
+                self.conn.execute(sql, [getattr(row, c) for c in _OBS_COLS] + [now])
 
     # ---- runs ----
     def resume_or_create(

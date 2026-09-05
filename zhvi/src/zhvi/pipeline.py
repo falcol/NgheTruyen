@@ -10,6 +10,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .config import (
     PARSER_VERSION,
@@ -33,6 +34,9 @@ from .quality.invariants import run_invariants
 from .snapshot import SourceRevision, import_snapshot
 from .state import State
 from .vietphrase.lattice import vp_plan
+
+if TYPE_CHECKING:  # annotation-only — engine type, khong keo them import-time
+    from .vietphrase.loader import Dictionary
 
 
 class RunFailure(RuntimeError):
@@ -61,7 +65,8 @@ class PipelineResult:
     output: ExportResult | None = None
 
 
-def _resolve_dict_dir(cfg: Config) -> Path:
+def resolve_dict_dir(cfg: Config) -> Path:
+    """Public tu story 3.1: CLI discover cung can resolve dict_dir nhu translate."""
     p = Path(cfg.dict_dir)
     if not p.is_absolute():
         # duong dan tu repo: tim tu cwd hoac tu vi tri goi len
@@ -75,13 +80,33 @@ def _resolve_dict_dir(cfg: Config) -> Path:
     return p
 
 
-def _resolve_global_glossary(cfg: Config) -> Path | None:
+def resolve_global_glossary(cfg: Config) -> Path | None:
     """Glossary chuan toan cuc (~/.config/zhvi/), tuy chon. Rong -> bo qua."""
     raw = cfg.global_glossary.strip()
     if not raw:
         return None
     p = Path(raw).expanduser()
     return p if p.is_file() else None
+
+
+def ensure_book_dictionary(
+    project: Project, dict_dir: Path, cfg: Config, *, refresh: bool = False
+) -> tuple[str, Dictionary]:
+    """Phase-3 chung cua translate va discover (story 3.1 extract):
+
+    startup reconcile -> ensure active revision -> load bundle da pin.
+    """
+    reconcile_project(project)
+    global_glossary = resolve_global_glossary(cfg)
+    revision_id = ensure_active_revision(
+        dict_dir,
+        project,
+        global_glossary=global_glossary,
+        patterns=cfg.pattern_rules,
+        refresh=refresh,
+    )
+    dic = load_revision_dictionary(project, revision_id)
+    return revision_id, dic
 
 
 def block_cache_key(src_hash: str, revision_id: str, cfg: Config) -> str:
@@ -98,7 +123,7 @@ def block_cache_key(src_hash: str, revision_id: str, cfg: Config) -> str:
 def translate_project(project: Project, request: TranslateRequest) -> PipelineResult:
     cfg = resolve_config(project.root, dict_dir=request.dict_dir)
     cfg = resolve_dict_overrides(cfg, request)
-    dict_dir = _resolve_dict_dir(cfg)
+    dict_dir = resolve_dict_dir(cfg)
 
     with project_lock(project):
         return _translate_locked(project, request, cfg, dict_dir)
@@ -152,13 +177,9 @@ def _translate_locked(
     # doi file giua chang khong lam fork run; revision moi (story 2.5) moi fork.
     # Startup reconciler (story 2.4): bundle thieu/hash sai la fatal corruption;
     # projection cu (crash giua publish) duoc dung lai tu active pointer.
-    reconcile_project(project)
-    global_glossary = _resolve_global_glossary(cfg)
-    revision_id = ensure_active_revision(
-        dict_dir, project, global_glossary=global_glossary, patterns=cfg.pattern_rules,
-        refresh=request.refresh_revision,
+    revision_id, dic = ensure_book_dictionary(
+        project, dict_dir, cfg, refresh=request.refresh_revision
     )
-    dic = load_revision_dictionary(project, revision_id)
 
     # 4. fingerprint + run
     fingerprint = build_run_fingerprint(
