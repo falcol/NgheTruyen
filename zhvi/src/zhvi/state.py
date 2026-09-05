@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # Trang thai dictionary revision (data-model): building/validating la phase
 # in-memory cua builder; row DB chi ton tai tu 'ready'. 'rejected' = build
@@ -173,6 +173,11 @@ _OBS_COLS = (
     "pattern_hits_json",
 )
 
+_CAND_COLS = (
+    "id", "book_id", "source", "proposed_target", "kind", "status",
+    "provenance_json", "dictionary_revision_id", "eligible_auto",
+)
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -215,6 +220,21 @@ class ObservationRow:
     alt_segmentation: int
     repetition_unstable: int
     pattern_hits_json: str
+
+
+@dataclass(frozen=True)
+class CandidateRow:
+    """Mot candidate tu observation (story 3.2) — term_candidates mo rong v5."""
+
+    id: str
+    book_id: str
+    source: str
+    proposed_target: str  # '' khi status=unresolved (cot NOT NULL)
+    kind: str  # term | name | pattern
+    status: str  # candidate | unresolved
+    provenance_json: str
+    dictionary_revision_id: str
+    eligible_auto: int
 
 
 @dataclass
@@ -266,6 +286,22 @@ class State:
             # tao boi _SCHEMA (CREATE IF NOT EXISTS) — additive, khong invalidate cache.
             # v3 -> v4 (story 3.1): bang observations + index tao boi _SCHEMA
             # (CREATE IF NOT EXISTS) — additive, khong anh huong data hien co.
+            # v4 -> v5 (story 3.2): term_candidates mo cot dictionary_revision_id
+            # + eligible_auto cho candidate builder — additive, bang chua co code ghi.
+            if from_version < 5:
+                cols = {
+                    r[1] for r in self.conn.execute("PRAGMA table_info(term_candidates)")
+                }
+                if "dictionary_revision_id" not in cols:
+                    self.conn.execute(
+                        "ALTER TABLE term_candidates "
+                        "ADD COLUMN dictionary_revision_id TEXT NOT NULL DEFAULT ''"
+                    )
+                if "eligible_auto" not in cols:
+                    self.conn.execute(
+                        "ALTER TABLE term_candidates "
+                        "ADD COLUMN eligible_auto INTEGER NOT NULL DEFAULT 0"
+                    )
             self.conn.execute(
                 "INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', ?)",
                 (str(SCHEMA_VERSION),),
@@ -451,6 +487,28 @@ class State:
             )
             for row in sorted(rows, key=lambda r: r.ngram):
                 self.conn.execute(sql, [getattr(row, c) for c in _OBS_COLS] + [now])
+
+    # ---- term_candidates (story 3.2) ----
+    def replace_candidates(
+        self, book_id: str, dictionary_revision_id: str, rows: list[CandidateRow]
+    ) -> None:
+        """Ghi de toan bo candidate cua (book, dictionary_revision) trong 1 transaction.
+
+        Scope truyen ro bang tham so — rows rong van xoa scope (dong semantics
+        voi replace_observations; AD-8 — candidate la book learning state).
+        """
+        sql = (
+            f"INSERT INTO term_candidates ({','.join(_CAND_COLS)}) "
+            f"VALUES ({','.join('?' * len(_CAND_COLS))})"
+        )
+        with self.conn:
+            self.conn.execute(
+                "DELETE FROM term_candidates "
+                "WHERE book_id=? AND dictionary_revision_id=?",
+                (book_id, dictionary_revision_id),
+            )
+            for row in sorted(rows, key=lambda r: r.source):
+                self.conn.execute(sql, [getattr(row, c) for c in _CAND_COLS])
 
     # ---- runs ----
     def resume_or_create(

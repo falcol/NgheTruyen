@@ -183,3 +183,26 @@ def test_discover_command_json(tmp_path):
     assert set(data["flags"]) == {
         "single_char_run", "unknown", "alt_segmentation", "repetition_unstable",
     }
+
+
+@pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
+def test_learn_command_json(tmp_path):
+    """zhvi learn: import -> learn in JSON discovery + candidates (story 3.2)."""
+    src = tmp_path / "truyen.txt"
+    src.write_text(
+        "第一章\n\n李慕白看着前方。\n\n第二章\n\n李慕白运转玄天诀。\n"
+        "李慕白望着紫霄山。\n",
+        encoding="utf-8",
+    )
+    proj = tmp_path / "proj"
+    assert run_cli("init", str(proj)).returncode == 0
+    assert run_cli("import-", str(src), "-p", str(proj)).returncode == 0
+    r = run_cli("learn", "-p", str(proj), "--dict-dir", str(DICT_DIR))
+    assert r.returncode == 0, r.stderr
+    data = json.loads(r.stdout)
+    assert data["discovery"]["observations"] > 0
+    cand = data["candidates"]
+    assert cand["observations"] == data["discovery"]["observations"]
+    assert cand["selected"] >= cand["candidates"]
+    # Dict that co phien am singles cho 李/慕/白 nen ten rieng build duoc target.
+    assert cand["candidates"] >= 1

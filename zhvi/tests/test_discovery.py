@@ -55,7 +55,8 @@ def test_schema_v4_has_observations(st):
     version = st.conn.execute(
         "SELECT value FROM meta WHERE key='schema_version'"
     ).fetchone()[0]
-    assert int(version) == 4
+    # v4 = story 3.1 bang observations; v5 = story 3.2 term_candidates mo rong.
+    assert int(version) >= 4
 
 
 def test_replace_observations_replaces_per_revision(st):

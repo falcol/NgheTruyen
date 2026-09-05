@@ -14,6 +14,7 @@ from . import __version__
 from .config import Config, resolve_config
 from .correction import affected_block_ids, diff_revisions, rollback_revision
 from .document import parse_document
+from .learning.candidate import build_candidates
 from .learning.discovery import run_discovery
 from .pipeline import ensure_book_dictionary, resolve_dict_dir
 from .project import (
@@ -222,16 +223,8 @@ def discover(
 ) -> None:
     """Discovery toan truyen: thu n-gram observation vao book SQLite (story 3.1)."""
     try:
-        p = open_project(project)
-        # Guard truoc (flow story 3.1): chua import thi fail som, khong build
-        # dictionary truoc khi bao loi.
-        st = State(p.db_path)
+        p, st, rev, cfg, drev, dic = _learn_context(project, dict_dir)
         try:
-            rev = _require_latest_source(st)
-            cfg = resolve_config(p.root, dict_dir=dict_dir)
-            dict_dir_resolved = resolve_dict_dir(cfg)
-            # AD-4: discovery chi DOC dictionary active (phase-3 chung translate).
-            drev, dic = ensure_book_dictionary(p, dict_dir_resolved, cfg)
             # AD-13: mot writer cho book state — dung chung lock translate.
             with project_lock(p):
                 summary = run_discovery(
@@ -249,6 +242,51 @@ def discover(
     except Exception as e:  # noqa: BLE001 — controller bat fatal
         _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
     print(json.dumps(summary.to_json(), ensure_ascii=False, indent=2))
+
+
+@app.command()
+def learn(
+    project: Path = typer.Option(..., "--project", "-p"),
+    dict_dir: str = typer.Option(None, "--dict-dir"),
+) -> None:
+    """Hoc theo truyen: discovery -> candidate builder (AD-4; story 3.2).
+
+    Discovery idempotent (replace-not-append) nen chay lai an toan.
+    Composite mo rong dan theo epic 3 (evaluate/promotion o story sau).
+    """
+    try:
+        p, st, rev, cfg, drev, dic = _learn_context(project, dict_dir)
+        try:
+            with project_lock(p):
+                disc = run_discovery(
+                    st,
+                    source_revision=rev,
+                    dictionary=dic,
+                    dictionary_revision_id=drev,
+                )
+                cand = build_candidates(
+                    st,
+                    book_id=p.book_id,
+                    dictionary=dic,
+                    dictionary_revision_id=drev,
+                    source_revision_id=rev.id,
+                    min_occurrences=cfg.learning.min_name_occurrences,
+                )
+        finally:
+            st.close()
+    except typer.Exit:
+        raise
+    except ProjectError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(
+        json.dumps(
+            {"discovery": disc.to_json(), "candidates": cand.to_json()},
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 @app.command()
@@ -319,6 +357,21 @@ def _require_latest_source(st: State):
     if rev is None:
         _fail(EXIT_STATE, "Project chua co source — chay `zhvi import` truoc.")
     return rev
+
+
+def _learn_context(project: Path, dict_dir: str | None):
+    """Preamble chung discover/learn (review 3.2): guard som + dictionary active.
+
+    Caller lo dong State (st.close) va project_lock.
+    """
+    p = open_project(project)
+    st = State(p.db_path)
+    rev = _require_latest_source(st)
+    cfg = resolve_config(p.root, dict_dir=dict_dir)
+    dict_dir_resolved = resolve_dict_dir(cfg)
+    # AD-4: LEARN chi DOC dictionary active (phase-3 chung translate).
+    drev, dic = ensure_book_dictionary(p, dict_dir_resolved, cfg)
+    return p, st, rev, cfg, drev, dic
 
 
 @app.command()

@@ -65,7 +65,7 @@ development_status:
   epic-2-retrospective: optional
   epic-3: in-progress
   3-1-discovery-toan-truyen-tao-observation: done
-  3-2-candidate-builder-target-xac-dinh-hoac-unresolved: backlog
+  3-2-candidate-builder-target-xac-dinh-hoac-unresolved: done
   3-3-evidence-evaluator: backlog
   3-4-book-auto-promotion-qua-hard-gates: backlog
   3-5-terms-cli-explain-review-display: backlog
