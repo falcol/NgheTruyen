@@ -12,7 +12,7 @@ import json
 import re
 from dataclasses import dataclass
 
-from zhvi.state import CandidateRow, State
+from zhvi.state import CandidateRow, State, cursor_dicts
 from zhvi.vietphrase.layers import Layer
 from zhvi.vietphrase.loader import Dictionary
 from zhvi.vietphrase.patterns import fill_target
@@ -56,7 +56,7 @@ class CandidateSummary:
         }
 
 
-def _trie_entries(dic: Dictionary, key: str) -> list[tuple[str, tuple, str]]:
+def trie_entries(dic: Dictionary, key: str) -> list[tuple[str, tuple, str]]:
     """Entries tai dung node key — [] neu key khong ton tai trong trie."""
     node = dic.root
     for ch in key:
@@ -66,7 +66,7 @@ def _trie_entries(dic: Dictionary, key: str) -> list[tuple[str, tuple, str]]:
     return list(node.entries)
 
 
-def _entry_layer(entry: tuple[str, tuple, str]) -> int:
+def entry_layer(entry: tuple[str, tuple, str]) -> int:
     """Layer cua entry tuple trie (precedence[0])."""
     return entry[1][0]
 
@@ -84,7 +84,7 @@ def _distinct_targets(entries: list[tuple[str, tuple, str]]) -> list[str]:
 def _manual_conflict(dic: Dictionary, key: str) -> bool:
     """AD-5: key da co entry lop manual (GLOBAL_MANUAL tro len) — bo candidate."""
     return any(
-        _entry_layer(e) >= Layer.GLOBAL_MANUAL for e in _trie_entries(dic, key)
+        entry_layer(e) >= Layer.GLOBAL_MANUAL for e in trie_entries(dic, key)
     )
 
 
@@ -97,11 +97,11 @@ def _resolve_lower_layer(
     target do (phien am/ghep khong duoc de). Pre-check da lo manual; con lai
     auto/base: lay target cua entry precedence cao nhat.
     """
-    entries = _trie_entries(dic, key)
+    entries = trie_entries(dic, key)
     if not entries:
         return None
     top = max(entries, key=lambda e: e[1])
-    return top[0], {"layer": _entry_layer(top)}
+    return top[0], {"layer": entry_layer(top)}
 
 
 def _resolve_compound(dic: Dictionary, key: str) -> tuple[str, dict] | None:
@@ -116,7 +116,7 @@ def _resolve_compound(dic: Dictionary, key: str) -> tuple[str, dict] | None:
     while pos < len(key):
         matched = False
         for end in range(len(key), pos, -1):
-            targets = _distinct_targets(_trie_entries(dic, key[pos:end]))
+            targets = _distinct_targets(trie_entries(dic, key[pos:end]))
             if targets:
                 parts.append(targets[0])
                 if len(targets) > 1:
@@ -138,8 +138,8 @@ def _resolve_phien_am(dic: Dictionary, key: str) -> tuple[str, dict] | None:
     for ch in key:
         singles = [
             e
-            for e in _trie_entries(dic, ch)
-            if _entry_layer(e) == Layer.BASE_SINGLE and e[0]
+            for e in trie_entries(dic, ch)
+            if entry_layer(e) == Layer.BASE_SINGLE and e[0]
         ]
         if not singles:
             return None
@@ -151,7 +151,7 @@ def _resolve_template(dic: Dictionary, key: str) -> tuple[str, dict] | None:
     """Nguon 4: template rule LuatNhan khop toan bo key."""
 
     def _translate(span: str) -> str:
-        targets = _distinct_targets(_trie_entries(dic, span))
+        targets = _distinct_targets(trie_entries(dic, span))
         # Span khong co entry: tra nguyen CJK — se bi _AMBIGUOUS_RE danh
         # eligible_auto=0 (AD-6 an toan: khong bia nghia tu template).
         return targets[0] if targets else span
@@ -209,8 +209,7 @@ def build_candidates(
         "AND dictionary_revision_id=?",
         (source_revision_id, dictionary_revision_id),
     )
-    cols = [d[0] for d in cur.description]
-    observations = [dict(zip(cols, r)) for r in cur.fetchall()]
+    observations = cursor_dicts(cur)
     selected = sorted(
         (
             o

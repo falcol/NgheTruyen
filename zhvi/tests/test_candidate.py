@@ -47,7 +47,8 @@ def test_schema_v5_term_candidates_columns(st):
     version = st.conn.execute(
         "SELECT value FROM meta WHERE key='schema_version'"
     ).fetchone()[0]
-    assert int(version) == 5
+    # v5 = story 3.2 term_candidates mo rong; v6 = story 3.3 candidate_evidence.
+    assert int(version) >= 5
 
 
 def test_replace_candidates_replaces_per_book_and_drev(st):

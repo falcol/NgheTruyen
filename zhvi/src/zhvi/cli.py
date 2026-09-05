@@ -16,6 +16,7 @@ from .correction import affected_block_ids, diff_revisions, rollback_revision
 from .document import parse_document
 from .learning.candidate import build_candidates
 from .learning.discovery import run_discovery
+from .learning.evidence import evaluate_candidates
 from .pipeline import ensure_book_dictionary, resolve_dict_dir
 from .project import (
     Project,
@@ -272,6 +273,12 @@ def learn(
                     source_revision_id=rev.id,
                     min_occurrences=cfg.learning.min_name_occurrences,
                 )
+                ev = evaluate_candidates(
+                    st,
+                    book_id=p.book_id,
+                    dictionary=dic,
+                    dictionary_revision_id=drev,
+                )
         finally:
             st.close()
     except typer.Exit:
@@ -282,7 +289,11 @@ def learn(
         _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
     print(
         json.dumps(
-            {"discovery": disc.to_json(), "candidates": cand.to_json()},
+            {
+                "discovery": disc.to_json(),
+                "candidates": cand.to_json(),
+                "evidence": ev.to_json(),
+            },
             ensure_ascii=False,
             indent=2,
         )

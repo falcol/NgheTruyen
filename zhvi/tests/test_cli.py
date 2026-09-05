@@ -202,6 +202,8 @@ def test_learn_command_json(tmp_path):
     data = json.loads(r.stdout)
     assert data["discovery"]["observations"] > 0
     cand = data["candidates"]
+    ev = data["evidence"]
+    assert ev["evidence_rows"] == ev["candidates"] * 6
     assert cand["observations"] == data["discovery"]["observations"]
     assert cand["selected"] >= cand["candidates"]
     # Dict that co phien am singles cho 李/慕/白 nen ten rieng build duoc target.

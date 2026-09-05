@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 # Trang thai dictionary revision (data-model): building/validating la phase
 # in-memory cua builder; row DB chi ton tai tu 'ready'. 'rejected' = build
@@ -162,6 +162,19 @@ CREATE INDEX IF NOT EXISTS idx_blocks_run ON blocks(run_id, status);
 CREATE INDEX IF NOT EXISTS idx_attempts_block ON attempts(block_id);
 CREATE INDEX IF NOT EXISTS idx_observations_rev
     ON observations(source_revision_id, total_count DESC);
+CREATE TABLE IF NOT EXISTS candidate_evidence (
+    id TEXT PRIMARY KEY,
+    candidate_id TEXT NOT NULL,
+    book_id TEXT NOT NULL,
+    dictionary_revision_id TEXT NOT NULL,
+    group_name TEXT NOT NULL,
+    signals_json TEXT NOT NULL,
+    score REAL NOT NULL DEFAULT 0.0,
+    created_at TEXT NOT NULL,
+    UNIQUE(candidate_id, group_name)
+);
+CREATE INDEX IF NOT EXISTS idx_evidence_scope
+    ON candidate_evidence(book_id, dictionary_revision_id);
 """
 
 _OBS_COLS = (
@@ -177,6 +190,17 @@ _CAND_COLS = (
     "id", "book_id", "source", "proposed_target", "kind", "status",
     "provenance_json", "dictionary_revision_id", "eligible_auto",
 )
+
+_EV_COLS = (
+    "id", "candidate_id", "book_id", "dictionary_revision_id",
+    "group_name", "signals_json", "score",
+)
+
+
+def cursor_dicts(cur: sqlite3.Cursor) -> list[dict]:
+    """Rows cua cursor thanh list dict theo ten cot (helper dung chung)."""
+    cols = [d[0] for d in cur.description]
+    return [dict(zip(cols, r)) for r in cur.fetchall()]
 
 
 def utc_now() -> str:
@@ -220,6 +244,22 @@ class ObservationRow:
     alt_segmentation: int
     repetition_unstable: int
     pattern_hits_json: str
+
+
+@dataclass(frozen=True)
+class EvidenceRow:
+    """Evidence mot nhom tin hieu cua mot candidate (story 3.3).
+
+    Score CHI dung xep hang (AD-7) — hard gate la story 3.4.
+    """
+
+    id: str
+    candidate_id: str
+    book_id: str
+    dictionary_revision_id: str
+    group_name: str  # strength|stability|benefit|risk|scope|regression
+    signals_json: str
+    score: float
 
 
 @dataclass(frozen=True)
@@ -288,6 +328,8 @@ class State:
             # (CREATE IF NOT EXISTS) — additive, khong anh huong data hien co.
             # v4 -> v5 (story 3.2): term_candidates mo cot dictionary_revision_id
             # + eligible_auto cho candidate builder — additive, bang chua co code ghi.
+            # v5 -> v6 (story 3.3): bang candidate_evidence tao boi _SCHEMA
+            # (CREATE IF NOT EXISTS) — additive, khong anh huong data hien co.
             if from_version < 5:
                 cols = {
                     r[1] for r in self.conn.execute("PRAGMA table_info(term_candidates)")
@@ -509,6 +551,29 @@ class State:
             )
             for row in sorted(rows, key=lambda r: r.source):
                 self.conn.execute(sql, [getattr(row, c) for c in _CAND_COLS])
+
+    # ---- candidate_evidence (story 3.3) ----
+    def replace_evidence(
+        self, book_id: str, dictionary_revision_id: str, rows: list[EvidenceRow]
+    ) -> None:
+        """Ghi de toan bo evidence cua (book, dictionary_revision) trong 1 transaction.
+
+        Scope explicit — rows rong van xoa scope (dong semantics
+        replace_candidates/replace_observations; AD-8).
+        """
+        sql = (
+            f"INSERT INTO candidate_evidence ({','.join(_EV_COLS)}, created_at) "
+            f"VALUES ({','.join('?' * len(_EV_COLS))}, ?)"
+        )
+        now = utc_now()
+        with self.conn:
+            self.conn.execute(
+                "DELETE FROM candidate_evidence "
+                "WHERE book_id=? AND dictionary_revision_id=?",
+                (book_id, dictionary_revision_id),
+            )
+            for row in sorted(rows, key=lambda r: (r.candidate_id, r.group_name)):
+                self.conn.execute(sql, [getattr(row, c) for c in _EV_COLS] + [now])
 
     # ---- runs ----
     def resume_or_create(

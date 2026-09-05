@@ -214,10 +214,11 @@ def test_migrate_v1_db_additive_and_cache_invalidated(tmp_path):
 
     st = State(db)  # migrate ngay khi mo
     try:
-        # schema version tang (2 = story 1.3 cache invalid; 3 = story 2.2 bang
-        # revision; 4 = story 3.1 bang observations; 5 = story 3.2 term_candidates)
+        # schema version tang (2 = story 1.3; 3 = story 2.2 bang revision;
+        # 4 = story 3.1 observations; 5 = story 3.2 term_candidates;
+        # 6 = story 3.3 candidate_evidence)
         ver = st.conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0]
-        assert int(ver) == SCHEMA_VERSION == 5
+        assert int(ver) == SCHEMA_VERSION == 6
 
         # history doc duoc, khong rewrite: run/block/route model-era giu nguyen
         assert st.latest_source_revision().id == "rev1"
