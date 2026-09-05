@@ -17,7 +17,15 @@ from .document import parse_document
 from .learning.candidate import build_candidates
 from .learning.discovery import run_discovery
 from .learning.evidence import evaluate_candidates
-from .learning.promotion import run_promotion
+from .learning.explain import explain_text
+from .learning.promotion import PromotionError, revoke_book_auto, run_promotion
+from .learning.terms import (
+    TermsError,
+    accept_term,
+    audit_usage,
+    list_terms,
+    reject_term,
+)
 from .pipeline import ensure_book_dictionary, resolve_dict_dir
 from .project import (
     Project,
@@ -111,6 +119,179 @@ def dict_rollback(
     except (ProjectError, OSError, RuntimeError) as e:
         _fail(EXIT_STATE, str(e))
     print(json.dumps({"active": rev}, ensure_ascii=False))
+
+
+# ---- terms (story 3.5) ----
+
+terms_app = typer.Typer(help="Candidate/auto entry lifecycle cua truyen.")
+app.add_typer(terms_app, name="terms")
+
+
+def _terms_state(project: Path):
+    p = open_project(project)
+    return p, State(p.db_path)
+
+
+@terms_app.command("list")
+def terms_list(
+    project: Path = typer.Option(..., "--project", "-p"),
+    dict_dir: str = typer.Option(None, "--dict-dir"),
+    status: str = typer.Option(None, "--status", help="Loc theo trang thai."),
+) -> None:
+    """Hien candidate + evidence + trang thai (story 3.5)."""
+    try:
+        p, st = _terms_state(project)
+        try:
+            terms = list_terms(st, book_id=p.book_id, status=status)
+            # Usage audit read-only — khong can project lock (AD-13 chi buoc
+            # cho mutation).
+            audit_usage(st, action="terms_list")
+        finally:
+            st.close()
+    except ProjectError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(json.dumps(terms, ensure_ascii=False, indent=2))
+
+
+@terms_app.command("accept")
+def terms_accept(
+    source: str = typer.Argument(..., help="Candidate source key (NFC gian the)."),
+    project: Path = typer.Option(..., "--project", "-p"),
+    dict_dir: str = typer.Option(None, "--dict-dir"),
+) -> None:
+    """Accept candidate: tao manual entry (manual thang auto tu do)."""
+    try:
+        p, st = _terms_state(project)
+        try:
+            cfg = resolve_config(p.root, dict_dir=dict_dir)
+            with project_lock(p):
+                revision, target = accept_term(
+                    st,
+                    project=p,
+                    dict_dir=resolve_dict_dir(cfg),
+                    cfg=cfg,
+                    source=source,
+                )
+        finally:
+            st.close()
+    except typer.Exit:
+        raise
+    except StaleActiveError as e:
+        _fail(EXIT_RUN_FAILED, str(e))
+    except (TermsError, PromotionError) as e:
+        _fail(EXIT_STATE, str(e))
+    except (ProjectError, OSError) as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(
+        json.dumps(
+            {
+                "source": source,
+                "target": target,
+                "status": "accepted",
+                "revision": revision,
+                "manual_glossary": str(p.root / "glossary.manual.tsv"),
+            },
+            ensure_ascii=False,
+        )
+    )
+
+
+@terms_app.command("reject")
+def terms_reject(
+    source: str = typer.Argument(...),
+    project: Path = typer.Option(..., "--project", "-p"),
+) -> None:
+    """Reject candidate: ghi audit event, status rejected."""
+    try:
+        p, st = _terms_state(project)
+        try:
+            with project_lock(p):
+                reject_term(st, book_id=p.book_id, source=source)
+        finally:
+            st.close()
+    except typer.Exit:
+        raise
+    except TermsError as e:
+        _fail(EXIT_STATE, str(e))
+    except ProjectError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(json.dumps({"source": source, "status": "rejected"}, ensure_ascii=False))
+
+
+@terms_app.command("revoke")
+def terms_revoke(
+    source: str = typer.Argument(...),
+    project: Path = typer.Option(..., "--project", "-p"),
+    dict_dir: str = typer.Option(None, "--dict-dir"),
+) -> None:
+    """Bo book-auto entry khoi active revision (revision moi, AD-12)."""
+    try:
+        p, st = _terms_state(project)
+        try:
+            cfg = resolve_config(p.root, dict_dir=dict_dir)
+            with project_lock(p):
+                revision = revoke_book_auto(
+                    st,
+                    project=p,
+                    dict_dir=resolve_dict_dir(cfg),
+                    source=source,
+                    actor="user",
+                )
+                audit_usage(st, action="terms_revoke")
+        finally:
+            st.close()
+    except typer.Exit:
+        raise
+    except StaleActiveError as e:
+        _fail(EXIT_RUN_FAILED, str(e))
+    except PromotionError as e:
+        _fail(EXIT_STATE, str(e))
+    except (ProjectError, OSError) as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(
+        json.dumps(
+            {"source": source, "status": "revoked", "revision": revision},
+            ensure_ascii=False,
+        )
+    )
+
+
+@app.command()
+def explain(
+    text: str = typer.Argument(..., help="Doan text ZH can explain."),
+    project: Path = typer.Option(..., "--project", "-p"),
+    dict_dir: str = typer.Option(None, "--dict-dir"),
+) -> None:
+    """Explain segmentation + provenance tung span (story 3.5)."""
+    try:
+        p, st = _terms_state(project)
+        try:
+            cfg = resolve_config(p.root, dict_dir=dict_dir)
+            payload = explain_text(
+                st,
+                project=p,
+                dict_dir=resolve_dict_dir(cfg),
+                cfg=cfg,
+                text=text,
+            )
+        finally:
+            st.close()
+    except typer.Exit:
+        raise
+    except ProjectError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(json.dumps(payload, ensure_ascii=False, indent=2))
+
 
 # Exit codes (muc 34)
 EXIT_OK = 0

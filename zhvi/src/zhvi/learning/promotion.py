@@ -37,7 +37,8 @@ from zhvi.vietphrase.lattice import vp_plan
 
 __all__ = [
     "GateResult", "IsolationResult", "PromotionError", "PromotionSummary",
-    "evaluate_gates", "run_promotion", "revoke_book_auto",
+    "current_auto_entries", "evaluate_gates", "promotion_event",
+    "run_promotion", "revoke_book_auto",
 ]
 
 
@@ -141,8 +142,9 @@ def evaluate_gates(ev: dict[str, dict], cfg: Config) -> list[GateResult]:
     ]
 
 
-def _current_auto_entries(project: Project, revision_id: str | None) -> list[AutoEntry]:
-    """Auto entries book hien co cua active revision (doc tu bundle pin)."""
+def current_auto_entries(project: Project, revision_id: str | None) -> list[AutoEntry]:
+    """Auto entries book hien co cua active revision (doc tu bundle pin).
+    Public de terms (3.5) reuse khi accept/revoke."""
     if revision_id is None:
         return []
     out: dict[str, AutoEntry] = {}
@@ -152,7 +154,7 @@ def _current_auto_entries(project: Project, revision_id: str | None) -> list[Aut
     return sorted(out.values(), key=lambda a: a.source)
 
 
-def _event(
+def promotion_event(
     *,
     book_id: str,
     candidate_id: str,
@@ -163,6 +165,7 @@ def _event(
     drev: str,
     revision_id: str,
     provenance: dict,
+    actor: str = "system",
 ) -> PromotionEventRow:
     return PromotionEventRow(
         id=uuid.uuid4().hex,
@@ -172,7 +175,7 @@ def _event(
         event_type=event_type,
         from_status=from_status,
         to_status=to_status,
-        actor="system",
+        actor=actor,
         dictionary_revision_id=drev,
         revision_id=revision_id,
         provenance_json=json.dumps(provenance, sort_keys=True, ensure_ascii=False),
@@ -258,7 +261,7 @@ def run_promotion(
     )
     candidates = cursor_dicts(cur)
     active = state.active_revision_id("book", book_id)
-    autos = _current_auto_entries(project, active)
+    autos = current_auto_entries(project, active)
     auto_targets = {a.source: a.target for a in autos}
     ev_map = _evidence_map(state, book_id, drev)
 
@@ -294,7 +297,7 @@ def run_promotion(
             to_promote.append((cand, gates))
         else:
             state.append_promotion_event(
-                _event(
+                promotion_event(
                     book_id=book_id,
                     candidate_id=cand["id"],
                     source=cand["source"],
@@ -342,7 +345,7 @@ def run_promotion(
         ]
         for cand, gates in to_promote:
             state.append_promotion_event(
-                _event(
+                promotion_event(
                     book_id=book_id,
                     candidate_id=cand["id"],
                     source=cand["source"],
@@ -376,7 +379,7 @@ def run_promotion(
     reg_rows = []
     for cand, gates in to_promote:
         state.append_promotion_event(
-            _event(
+            promotion_event(
                 book_id=book_id,
                 candidate_id=cand["id"],
                 source=cand["source"],
@@ -436,7 +439,8 @@ def run_promotion(
 
 
 def revoke_book_auto(
-    state: State, *, project: Project, dict_dir: Path, source: str
+    state: State, *, project: Project, dict_dir: Path, source: str,
+    actor: str = "system",
 ) -> str:
     """Bo mot book-auto entry khoi active revision (AC 4 / AD-12): build
     revision MOI khong co key, chi affected blocks doi; event revoked."""
@@ -444,7 +448,7 @@ def revoke_book_auto(
     active = state.active_revision_id("book", book_id)
     if active is None:
         raise PromotionError("Project chua co active revision")
-    autos = _current_auto_entries(project, active)
+    autos = current_auto_entries(project, active)
     kept = [a for a in autos if a.source != source]
     if len(kept) == len(autos):
         raise PromotionError(
@@ -467,7 +471,7 @@ def revoke_book_auto(
         if cand["status"] != "book_auto":
             continue
         state.append_promotion_event(
-            _event(
+            promotion_event(
                 book_id=book_id,
                 candidate_id=cand["id"],
                 source=source,
@@ -476,6 +480,7 @@ def revoke_book_auto(
                 to_status="revoked",
                 drev=cand["dictionary_revision_id"],
                 revision_id=result.revision_id,
+                actor=actor,
                 provenance={"target": old_autos[source]},
             )
         )
@@ -486,7 +491,7 @@ def revoke_book_auto(
         # hoac promote boi version cu) — van ghi event de lich su revision
         # duoc truy ve (AD-8: moi mutation phai co event).
         state.append_promotion_event(
-            _event(
+            promotion_event(
                 book_id=book_id,
                 candidate_id="",
                 source=source,
@@ -495,6 +500,7 @@ def revoke_book_auto(
                 to_status="revoked",
                 drev="",
                 revision_id=result.revision_id,
+                actor=actor,
                 provenance={"target": old_autos[source]},
             )
         )
