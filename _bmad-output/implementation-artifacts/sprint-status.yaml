@@ -70,8 +70,8 @@ development_status:
   3-4-book-auto-promotion-qua-hard-gates: done
   3-5-terms-cli-explain-review-display: done
   epic-3-retrospective: optional
-  epic-4: backlog
-  4-1-registry-tai-dictionary-root-book-id-realpath-writer-lock: backlog
+  epic-4: in-progress
+  4-1-registry-tai-dictionary-root-book-id-realpath-writer-lock: done
   4-2-cross-book-evidence-ingest-dedupe: backlog
   4-3-global-promotion-fail-closed-drift-report: backlog
   epic-4-retrospective: optional
