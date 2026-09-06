@@ -23,8 +23,9 @@ REGISTRY_DIRNAME = ".zhvi-registry"
 # v1 (story 4.1): chi meta.
 # v2 (story 4.2): them global_evidence + book_sources (AD-17 dedupe +
 #   active source revision pointer) — additive, khong drop/sua v1 (AD-19).
-# Bang global candidate/entry/active revision thuoc 4.3.
-REGISTRY_SCHEMA_VERSION = 2
+# v3 (story 4.3): source/target tren evidence + global_candidates +
+#   global_promotion_events + global_active — additive AD-19.
+REGISTRY_SCHEMA_VERSION = 3
 
 _REGISTRY_SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta(
@@ -41,12 +42,36 @@ CREATE TABLE IF NOT EXISTS global_evidence(
   signals_json TEXT NOT NULL,
   score REAL NOT NULL DEFAULT 0.0,
   ingested_at TEXT NOT NULL,
+  source TEXT NOT NULL DEFAULT '',
+  target TEXT NOT NULL DEFAULT '',
   UNIQUE(book_id, source_revision_id, candidate_id, occurrence_span)
 );
 CREATE TABLE IF NOT EXISTS book_sources(
   book_id TEXT PRIMARY KEY,
   active_source_revision_id TEXT NOT NULL,
   active_source_created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS global_candidates(
+  source TEXT PRIMARY KEY,
+  target TEXT NOT NULL,
+  status TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS global_promotion_events(
+  id TEXT PRIMARY KEY,
+  source TEXT NOT NULL,
+  event_type TEXT NOT NULL,
+  from_status TEXT NOT NULL DEFAULT '',
+  to_status TEXT NOT NULL DEFAULT '',
+  actor TEXT NOT NULL,
+  revision_id TEXT NOT NULL DEFAULT '',
+  provenance_json TEXT NOT NULL DEFAULT '{}',
+  created_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS global_active(
+  scope TEXT PRIMARY KEY,
+  revision_id TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
 """
@@ -71,6 +96,8 @@ class EvidenceRecord:
     signals_json: str
     score: float
     source_created_at: str
+    source: str = ""
+    target: str = ""
 
 
 class RegistryError(RuntimeError):
@@ -111,8 +138,21 @@ class RegistryState:
         """Migration additive (AD-19): chi add/transform, khong drop."""
         with self.conn:
             # v0 -> v1 (4.1) / v1 -> v2 (4.2): bang tao boi _REGISTRY_SCHEMA
-            # (CREATE IF NOT EXISTS) — additive; bang global candidate/entry
-            # cua 4.3 se bump version o day.
+            # (CREATE IF NOT EXISTS). v2 -> v3 (4.3): ADD COLUMN source/target
+            # neu thieu (DB tao o v2 khong co hai cot nay).
+            cols = {
+                r[1] for r in self.conn.execute("PRAGMA table_info(global_evidence)")
+            }
+            if cols and "source" not in cols:
+                self.conn.execute(
+                    "ALTER TABLE global_evidence "
+                    "ADD COLUMN source TEXT NOT NULL DEFAULT ''"
+                )
+            if cols and "target" not in cols:
+                self.conn.execute(
+                    "ALTER TABLE global_evidence "
+                    "ADD COLUMN target TEXT NOT NULL DEFAULT ''"
+                )
             self.conn.execute(
                 "INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', ?)",
                 (str(REGISTRY_SCHEMA_VERSION),),
@@ -128,6 +168,20 @@ class RegistryState:
             "JOIN book_sources bs ON bs.book_id = ge.book_id "
             "AND bs.active_source_revision_id = ge.source_revision_id "
             "GROUP BY ge.candidate_id ORDER BY ge.candidate_id"
+        ))
+
+    def cross_book_by_source(self) -> list[dict]:
+        """Evidence active-revision gom theo source (4.3). Query thuan.
+
+        candidate_id la UUID book-local — khong dung de dem 3 truyen.
+        """
+        return cursor_dicts(self.conn.execute(
+            "SELECT ge.source, ge.target, ge.book_id, ge.group_name, "
+            "ge.signals_json FROM global_evidence ge "
+            "JOIN book_sources bs ON bs.book_id = ge.book_id "
+            "AND bs.active_source_revision_id = ge.source_revision_id "
+            "WHERE ge.source != '' "
+            "ORDER BY ge.source, ge.book_id"
         ))
 
     def close(self) -> None:
@@ -157,12 +211,13 @@ def ingest_evidence(
                         "INSERT OR IGNORE INTO global_evidence("
                         "book_id, source_revision_id, candidate_id, "
                         "occurrence_span, dictionary_revision_id, group_name, "
-                        "signals_json, score, ingested_at"
-                        ") VALUES(?,?,?,?,?,?,?,?,?)",
+                        "signals_json, score, ingested_at, source, target"
+                        ") VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                         (
                             r.book_id, r.source_revision_id, r.candidate_id,
                             r.occurrence_span, r.dictionary_revision_id,
                             r.group_name, r.signals_json, r.score, now,
+                            r.source, r.target,
                         ),
                     )
                     # rowcount: 1 neu insert, 0 neu bi dedupe boi UNIQUE.

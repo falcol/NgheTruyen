@@ -73,7 +73,7 @@ development_status:
   epic-4: in-progress
   4-1-registry-tai-dictionary-root-book-id-realpath-writer-lock: done
   4-2-cross-book-evidence-ingest-dedupe: done
-  4-3-global-promotion-fail-closed-drift-report: backlog
+  4-3-global-promotion-fail-closed-drift-report: review
   epic-4-retrospective: optional
   epic-5: in-progress
   5-1-qa-structural-gates-run-report-metric: backlog

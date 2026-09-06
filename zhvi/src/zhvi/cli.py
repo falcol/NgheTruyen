@@ -19,6 +19,8 @@ from .learning.candidate import build_candidates
 from .learning.discovery import run_discovery
 from .learning.evidence import evaluate_candidates
 from .learning.explain import explain_text
+from .learning.global_promotion import run_global_promotion
+from .learning.ingest import submit_book_evidence
 from .learning.promotion import PromotionError, revoke_book_auto, run_promotion
 from .learning.terms import (
     TermsError,
@@ -37,6 +39,7 @@ from .project import (
     workspace_for,
 )
 from .projection import reconcile_project
+from .registry import RegistryError
 from .revision import (
     StaleActiveError,
     gc_orphan_revisions,
@@ -498,6 +501,8 @@ def discover(
 def learn(
     project: Path = typer.Option(..., "--project", "-p"),
     dict_dir: str = typer.Option(None, "--dict-dir"),
+    is_global: bool = typer.Option(False, "--global", help="Danh gia global promotion (story 4.3)."),
+    manifest: Path = typer.Option(None, "--manifest"),
 ) -> None:
     """Hoc theo truyen: discovery -> candidate builder (AD-4; story 3.2).
 
@@ -537,13 +542,24 @@ def learn(
                         cfg=cfg,
                         dictionary_revision_id=drev,
                     )
+                global_promo = None
+                if is_global:
+                    dpath = resolve_dict_dir(cfg)
+                    submit_book_evidence(st, dpath)
+                    global_promo = run_global_promotion(
+                        dict_dir=dpath,
+                        project=p,
+                        state=st,
+                        manifest_path=manifest,
+                        cfg=cfg,
+                    )
         finally:
             st.close()
     except typer.Exit:
         raise
     except StaleActiveError as e:
         _fail(EXIT_RUN_FAILED, str(e))
-    except ProjectError as e:
+    except (ProjectError, RegistryError, PromotionError, GoldenError) as e:
         _fail(EXIT_STATE, str(e))
     except Exception as e:  # noqa: BLE001 — controller bat fatal
         _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
@@ -554,6 +570,11 @@ def learn(
                 "candidates": cand.to_json(),
                 "evidence": ev.to_json(),
                 "promotion": promo.to_json() if promo else None,
+                **(
+                    {"global_promotion": global_promo.to_json()}
+                    if is_global
+                    else {}
+                ),
             },
             ensure_ascii=False,
             indent=2,

@@ -28,6 +28,14 @@ def build_evidence_records(state: State) -> list[EvidenceRecord]:
     src = state.latest_source_revision()
     if src is None:
         return []
+    cands = {
+        r["id"]: r
+        for r in cursor_dicts(
+            state.conn.execute(
+                "SELECT id, source, proposed_target FROM term_candidates"
+            )
+        )
+    }
     rows = cursor_dicts(state.conn.execute("SELECT * FROM candidate_evidence"))
     return [
         EvidenceRecord(
@@ -40,6 +48,8 @@ def build_evidence_records(state: State) -> list[EvidenceRecord]:
             signals_json=row["signals_json"],
             score=row["score"],
             source_created_at=src.created_at,
+            source=cands.get(row["candidate_id"], {}).get("source", ""),
+            target=cands.get(row["candidate_id"], {}).get("proposed_target", ""),
         )
         for row in rows
     ]

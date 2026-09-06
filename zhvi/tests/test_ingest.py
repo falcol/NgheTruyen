@@ -293,7 +293,7 @@ def test_migration_v1_to_v2_preserves_meta(tmp_path):
         version = st.conn.execute(
             "SELECT value FROM meta WHERE key='schema_version'"
         ).fetchone()[0]
-        assert int(version) == REGISTRY_SCHEMA_VERSION == 2
+        assert int(version) == REGISTRY_SCHEMA_VERSION == 3
         tables = {
             r[0]
             for r in st.conn.execute(
@@ -323,7 +323,10 @@ def test_ingest_creates_no_global_candidate_or_revision_tables(tmp_path):
                 "SELECT name FROM sqlite_master WHERE type='table'"
             )
         }
-        assert tables == {"meta", "global_evidence", "book_sources"}
+        # v3 tao bang global_* nhung ingest khong INSERT candidate (4.3).
+        assert {"meta", "global_evidence", "book_sources"} <= tables
+        n = st.conn.execute("SELECT COUNT(*) FROM global_candidates").fetchone()[0]
+        assert n == 0
     finally:
         st.close()
 
