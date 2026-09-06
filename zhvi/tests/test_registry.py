@@ -11,6 +11,7 @@ import pytest
 from zhvi.learning.discovery import run_discovery
 from zhvi.project import Project, create_project
 from zhvi.registry import (
+    REGISTRY_SCHEMA_VERSION,
     RegistryError,
     RegistryState,
     registry_lock,
@@ -56,7 +57,7 @@ def test_registry_state_open_same_file_via_symlink(tmp_path):
         version = st_b.conn.execute(
             "SELECT value FROM meta WHERE key='schema_version'"
         ).fetchone()
-        assert version is not None and int(version[0]) == 1
+        assert version is not None and int(version[0]) == REGISTRY_SCHEMA_VERSION
     finally:
         st_b.close()
 
@@ -70,7 +71,7 @@ def test_registry_state_idempotent_reopen(tmp_path):
         version = st2.conn.execute(
             "SELECT value FROM meta WHERE key='schema_version'"
         ).fetchone()
-        assert int(version[0]) == 1
+        assert int(version[0]) == REGISTRY_SCHEMA_VERSION
     finally:
         st2.close()
 
@@ -92,7 +93,8 @@ def test_registry_state_rejects_newer_schema(tmp_path):
     reg = resolve_registry_dir(_dict_dir(tmp_path))
     st = RegistryState(reg)
     st.conn.execute(
-        "UPDATE meta SET value='2' WHERE key='schema_version'"
+        "UPDATE meta SET value=? WHERE key='schema_version'",
+        (str(REGISTRY_SCHEMA_VERSION + 1),),
     )
     st.conn.commit()
     st.close()

@@ -41,7 +41,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 2026-09-03
-last_updated: 2026-09-05
+last_updated: 2026-09-06
 project: NgheTruyen
 project_key: NOKEY
 tracking_system: file-system
@@ -72,7 +72,7 @@ development_status:
   epic-3-retrospective: optional
   epic-4: in-progress
   4-1-registry-tai-dictionary-root-book-id-realpath-writer-lock: done
-  4-2-cross-book-evidence-ingest-dedupe: backlog
+  4-2-cross-book-evidence-ingest-dedupe: done
   4-3-global-promotion-fail-closed-drift-report: backlog
   epic-4-retrospective: optional
   epic-5: backlog
