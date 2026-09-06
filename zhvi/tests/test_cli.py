@@ -36,7 +36,7 @@ def test_happy_path_one_command(tmp_path):
     src = tmp_path / "truyen.txt"
     src.write_text("第一章\n\n凌天看着前方。\n", encoding="utf-8")
     out = tmp_path / "truyen.vi.txt"
-    r = run_cli("translate", str(src), "-o", str(out), "--dict-dir", str(DICT_DIR), "--json")
+    r = run_cli("translate", str(src), "-o", str(out), "--dict-dir", str(DICT_DIR), "--no-learn", "--json")
     assert r.returncode == 0, r.stderr
     report = json.loads(r.stdout)
     assert report["blocks"] == 2
@@ -44,7 +44,7 @@ def test_happy_path_one_command(tmp_path):
     # workspace tu dong ben canh input
     assert (tmp_path / "truyen.zhvi" / ".zhvi" / "state.sqlite3").is_file()
     # no-op lan 2
-    r2 = run_cli("translate", str(src), "-o", str(out), "--dict-dir", str(DICT_DIR), "--json")
+    r2 = run_cli("translate", str(src), "-o", str(out), "--dict-dir", str(DICT_DIR), "--no-learn", "--json")
     assert r2.returncode == 0
     assert json.loads(r2.stdout).get("noop") is True
 
@@ -53,7 +53,7 @@ def test_happy_path_one_command(tmp_path):
 def test_status_and_inspect(tmp_path):
     src = tmp_path / "truyen.txt"
     src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
-    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR))
+    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR), "--no-learn")
     assert r.returncode == 0
     proj = tmp_path / "truyen.zhvi"
     st = run_cli("status", "--project", str(proj))
@@ -81,7 +81,7 @@ def test_doctor_exit_4_missing_dict(tmp_path):
 def test_export_command(tmp_path):
     src = tmp_path / "truyen.txt"
     src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
-    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR))
+    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR), "--no-learn")
     assert r.returncode == 0
     proj = tmp_path / "truyen.zhvi"
     out2 = tmp_path / "re-export.txt"
@@ -101,7 +101,7 @@ def test_vp_only_route_stats(tmp_path):
     r0 = run_cli("init", str(proj))
     assert r0.returncode == 0, r0.stderr
     r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"),
-                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--json")
+                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--no-learn", "--json")
     assert r.returncode == 0, r.stderr
     report = json.loads(r.stdout)
     assert "routes" in report
@@ -119,7 +119,7 @@ def test_review_command(tmp_path):
     r0 = run_cli("init", str(proj))
     assert r0.returncode == 0, r0.stderr
     r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"),
-                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--json")
+                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--no-learn", "--json")
     assert r.returncode == 0, r.stderr
     rv = run_cli("review", "--project", str(proj), "--list")
     assert rv.returncode == 0, rv.stderr

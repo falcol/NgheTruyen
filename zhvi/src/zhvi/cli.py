@@ -497,6 +497,105 @@ def discover(
     print(json.dumps(summary.to_json(), ensure_ascii=False, indent=2))
 
 
+def _run_book_learn(
+    p,
+    st,
+    rev,
+    cfg,
+    drev,
+    dic,
+    *,
+    is_global: bool = False,
+    manifest: Path | None = None,
+):
+    """Discovery -> candidates -> evidence -> book-auto. Caller giu lock + dong State.
+
+    Happy path translate khong truyen is_global (AD-14 khoa tren 1 lenh).
+    """
+    disc = run_discovery(
+        st,
+        source_revision=rev,
+        dictionary=dic,
+        dictionary_revision_id=drev,
+    )
+    cand = build_candidates(
+        st,
+        book_id=p.book_id,
+        dictionary=dic,
+        dictionary_revision_id=drev,
+        source_revision_id=rev.id,
+        min_occurrences=cfg.learning.min_name_occurrences,
+    )
+    ev = evaluate_candidates(
+        st,
+        book_id=p.book_id,
+        dictionary=dic,
+        dictionary_revision_id=drev,
+    )
+    promo = None
+    if cfg.learning.enabled and cfg.learning.auto_scope == "book":
+        promo = run_promotion(
+            st,
+            project=p,
+            dict_dir=resolve_dict_dir(cfg),
+            cfg=cfg,
+            dictionary_revision_id=drev,
+        )
+    global_promo = None
+    if is_global:
+        dpath = resolve_dict_dir(cfg)
+        submit_book_evidence(st, dpath)
+        global_promo = run_global_promotion(
+            dict_dir=dpath,
+            project=p,
+            state=st,
+            manifest_path=manifest,
+            cfg=cfg,
+        )
+    return disc, cand, ev, promo, global_promo
+
+
+def _learn_for_translate(
+    p, *, file: Path | None, encoding: str, dict_dir: str | None
+) -> None:
+    """LEARN truoc TRANSLATE (AD-4). Snapshot neu co file; skip neu learning.enabled=false."""
+    if file is not None:
+        rev = import_snapshot(p, file, encoding=encoding)
+        st_imp = State(p.db_path)
+        try:
+            with project_lock(p):
+                st_imp.upsert_source_revision(
+                    rev.id,
+                    rev.content_hash,
+                    rev.encoding,
+                    rev.byte_size,
+                    str(rev.snapshot_path),
+                )
+        finally:
+            st_imp.close()
+    cfg = resolve_config(p.root, dict_dir=dict_dir)
+    if not cfg.learning.enabled:
+        return
+    learned, st, rev, cfg, drev, dic = _learn_context(p.root, dict_dir)
+    try:
+        with project_lock(learned):
+            _run_book_learn(learned, st, rev, cfg, drev, dic)
+    finally:
+        st.close()
+
+
+def _source_for_translate(p, file: Path | None) -> Path:
+    """CLI contract: `translate -p PROJECT` dung snapshot da import khi thieu FILE."""
+    if file is not None:
+        return file
+    st = State(p.db_path)
+    try:
+        rev = _require_latest_source(st)
+        return Path(rev.snapshot_path)
+    finally:
+        st.close()
+
+
 @app.command()
 def learn(
     project: Path = typer.Option(..., "--project", "-p"),
@@ -513,46 +612,10 @@ def learn(
         p, st, rev, cfg, drev, dic = _learn_context(project, dict_dir)
         try:
             with project_lock(p):
-                disc = run_discovery(
-                    st,
-                    source_revision=rev,
-                    dictionary=dic,
-                    dictionary_revision_id=drev,
+                disc, cand, ev, promo, global_promo = _run_book_learn(
+                    p, st, rev, cfg, drev, dic,
+                    is_global=is_global, manifest=manifest,
                 )
-                cand = build_candidates(
-                    st,
-                    book_id=p.book_id,
-                    dictionary=dic,
-                    dictionary_revision_id=drev,
-                    source_revision_id=rev.id,
-                    min_occurrences=cfg.learning.min_name_occurrences,
-                )
-                ev = evaluate_candidates(
-                    st,
-                    book_id=p.book_id,
-                    dictionary=dic,
-                    dictionary_revision_id=drev,
-                )
-                promo = None
-                if cfg.learning.enabled and cfg.learning.auto_scope == "book":
-                    promo = run_promotion(
-                        st,
-                        project=p,
-                        dict_dir=resolve_dict_dir(cfg),
-                        cfg=cfg,
-                        dictionary_revision_id=drev,
-                    )
-                global_promo = None
-                if is_global:
-                    dpath = resolve_dict_dir(cfg)
-                    submit_book_evidence(st, dpath)
-                    global_promo = run_global_promotion(
-                        dict_dir=dpath,
-                        project=p,
-                        state=st,
-                        manifest_path=manifest,
-                        cfg=cfg,
-                    )
         finally:
             st.close()
     except typer.Exit:
@@ -594,17 +657,24 @@ def translate(
         False, "--refresh-revision",
         help="Correction (story 2.5): glossary doi -> revision moi + dich lai affected blocks.",
     ),
+    no_learn: bool = typer.Option(
+        False,
+        "--no-learn",
+        help="Bo LEARN; dich bang revision active hien tai.",
+    ),
     json_out: bool = typer.Option(False, "--json", help="Bao cao JSON tren stdout."),
 ) -> None:
-    """Happy path: snapshot -> parse -> VP -> checkpoint -> atomic export."""
+    """Happy path: snapshot -> discover -> book-auto -> freeze -> VP -> QA -> export."""
     from .pipeline import TranslateRequest, translate_project
 
     try:
         if file is None and project is None:
             _fail(EXIT_USAGE, "Can file TXT hoac --project")
         p = _load_project(project, file)
+        if not no_learn:
+            _learn_for_translate(p, file=file, encoding=encoding, dict_dir=dict_dir)
         req = TranslateRequest(
-            source=file,
+            source=_source_for_translate(p, file),
             output=output,
             style=style,
             encoding=encoding,
@@ -618,6 +688,10 @@ def translate(
         _fail(EXIT_STATE, str(e))
     except SnapshotError as e:
         _fail(EXIT_INPUT, str(e))
+    except StaleActiveError as e:
+        _fail(EXIT_RUN_FAILED, str(e))
+    except (RegistryError, PromotionError, GoldenError) as e:
+        _fail(EXIT_STATE, str(e))
     except Exception as e:  # noqa: BLE001 — controller bat fatal, dich exit code
         from .export import ExportFailure, IntegrityFailure
         from .pipeline import RunFailure

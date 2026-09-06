@@ -16,41 +16,24 @@ Không còn model dịch/AI post-edit: một đường sinh văn bản duy nhấ
 
 ## Luồng hoạt động
 
+Hai pha độc lập (AD-4): **LEARN** được quyền đề xuất/tạo dictionary revision; **TRANSLATE** chỉ đọc snapshot + revision đã freeze.
+
 ```mermaid
 flowchart TD
-    src[TXT nguồn .txt] --> import
-
-    subgraph Project ["Book project (book/)"]
-        init[zhvi init book/] --> layout[Tạo layout .zhvi/ + zhvi.toml + glossary.manual.tsv]
-    end
-    layout --> import
-
-    import[zhvi import] --> snap[Snapshot lossless → .zhvi/sources/ + revision id]
-    snap --> parse[Parse document → paragraphs/block]
-    parse --> slice[Slice theo block_max_chars]
-
-    slice --> preflight{Dictionary sẵn sàng?}
-    preflight -->|fail| doc[zhvi doctor → exit 4]
-
-    preflight -->|ok| dict[Load trie VietPhrase + pattern + global glossary<br/>hash fingerprint dict-*.pkl]
-    dict --> block
-
-    block[Với mỗi block] --> qa[QA strip junk? qa_strip_junk]
-    qa --> vp[vp_plan: greedy_path render + best_paths risk]
-    vp --> arep[collapse_repetitions]
-    arep --> commit[stage_block → SQLite checkpoint<br/>resumable, crash-safe]
-    commit --> next{Block còn lại?}
-    next -->|có| block
-    next -->|không| export
-
-    export[zhvi export] --> atom[Atomic ghi TXT + sha256]
-    atom --> out[out.txt]
-
-    status[zhvi status] -.tiến độ/IO.-> commit
-    inspect[zhvi inspect] -.cấu trúc.-> parse
+    src[TXT nguồn .txt] --> snap
+    snap[Snapshot lossless] --> learn
+    learn[Discover → candidate → book-auto] --> freeze
+    freeze[Freeze dictionary revision] --> vp
+    vp[VietPhrase translate từng block] --> qa
+    qa{QA structural}
+    qa -->|fail| fix[needs_dictionary_fix — không export]
+    qa -->|pass| export[Atomic export + manifest]
+    export --> out[out.txt + SHA-256]
 ```
 
-Tóm tắt 1 lệnh happy-path: `zhvi translate` tự động làm `import → parse → VP → checkpoint → export`.
+Happy path 1 lệnh: `zhvi translate FILE -o OUT` chạy `snapshot → discover → book-auto learn → freeze → translate → QA → export → report`.
+
+`--no-learn` bỏ pha LEARN, dịch bằng revision active hiện tại.
 
 ---
 
@@ -119,7 +102,7 @@ zhvi inspect --source ./crawl/chap1.txt --sample 50
 ```
 
 ### `zhvi translate [<file>] [options]`
-Happy path: snapshot → parse → VP → checkpoint → atomic export. Có thể dùng với file trực tiếp **hoặc** `--project`.
+Happy path: snapshot → discover → book-auto learn → freeze revision → VP → QA → atomic export. File trực tiếp **hoặc** `--project`.
 
 | Option | Mặc định | Ý nghĩa |
 |---|---|---|
@@ -128,14 +111,22 @@ Happy path: snapshot → parse → VP → checkpoint → atomic export. Có th�
 | `--style` | `convert-qt` | Style dịch |
 | `--encoding` | `utf-8` | Mã hoá nguồn |
 | `--dict-dir` | `crawler/vietphrase/dicts` | Thư mục từ điển |
+| `--no-learn` | off | Bỏ LEARN; dịch bằng revision active hiện tại |
+| `--refresh-revision` | off | Correction: glossary đổi → revision mới + dịch lại affected blocks |
 | `--json` | off | In báo cáo JSON ra stdout (máy đọc được) |
 
 ```bash
-# với project
-zhvi translate -p ./books/my-book -o ./books/my-book/dist/vi.txt
-# với file trực tiếp, báo cáo JSON
-zhvi translate chap2.txt -o chap2.vi.txt --json
+# 1 lệnh happy path (có LEARN)
+zhvi translate truyen.txt -o truyen.vi.txt
+# chỉ dịch, không học
+zhvi translate truyen.txt -o truyen.vi.txt --no-learn
+# project da import: dung snapshot, khong LEARN
+zhvi translate -p ./books/my-book -o ./books/my-book/dist/vi.txt --no-learn
+# FILE + project + JSON
+zhvi translate truyen.txt -p ./books/my-book -o ./books/my-book/dist/vi.txt --json
 ```
+
+Manifest mỗi run (`.zhvi/runs/<run_id>/manifest.json`) chứa `run_id`, `dictionary_revision`, `output.sha256`.
 
 ### `zhvi status --project|-p <project>`
 Tiến độ run, route, cache, lỗi, review dưới dạng JSON.
@@ -166,6 +157,19 @@ Kiểm tra từ điển, SQLite/disk, smoke-test convert. Thoát code 4 nếu c�
 zhvi doctor --dict-dir ../crawler/vietphrase/dicts
 ```
 
+### `zhvi learn --project|-p <project> [--global] [--manifest PATH]`
+LEARN tường minh: discovery → candidate → evidence → book-auto promotion. `--global` đánh giá global promotion (fail-closed — xem AD-14 bên dưới).
+
+### `zhvi terms list|accept|reject|revoke --project|-p <project>`
+Vòng đời candidate/auto entry của truyện. `accept` ghi manual glossary rồi publish revision mới; `revoke` thu hồi book-auto.
+
+### `zhvi dict diff <REV_A> <REV_B> --project|-p <project>`
+### `zhvi dict rollback <REV> --project|-p <project>`
+Diff entry + affected blocks; rollback CAS về revision an toàn (revision mới, không sửa bundle cũ).
+
+### `zhvi explain <TEXT> --project|-p <project>`
+Segmentation + provenance từng span (entry, layer, revision) và affected blocks nếu đổi entry.
+
 ### `zhvi review --project|-p <project> [--list | --output <jsonl>]`
 Liệt kê / xuất các block cần người xem (invariant fail — block giữ draft VP + NEEDS_REVIEW).
 
@@ -173,6 +177,8 @@ Liệt kê / xuất các block cần người xem (invariant fail — block gi�
 zhvi review -p ./books/my-book --list          # đếm + tóm tắt JSON
 zhvi review -p ./books/my-book -o review.jsonl # xuất JSONL từng block
 ```
+
+Không còn cờ `--hachimi`, `--qwen`, hay profile `fast|balanced|quality`.
 
 ---
 
@@ -188,8 +194,9 @@ zhvi import ./crawl/my-book.txt -p ./books/my-book
 # 3. Xem cấu trúc (tuỳ chọn)
 zhvi inspect -p ./books/my-book
 
-# 4. Dịch
+# 4. Dich (snapshot da import; --no-learn neu chi muon dich)
 zhvi translate -p ./books/my-book -o ./books/my-book/dist/vi.txt
+zhvi translate -p ./books/my-book -o ./books/my-book/dist/vi.txt --no-learn
 
 # 5. Kiểm tra tiến độ
 zhvi status -p ./books/my-book
@@ -260,19 +267,34 @@ Custom.txt           # thư viện term chuẩn, dùng chung mọi truyện
 Một đường dịch duy nhất — không model runtime, không network call:
 
 ```
-source TXT → snapshot lossless → parse → load dictionary (fingerprint)
-  → với mỗi block: vp_plan (greedy_path render + risk metric)
-  → invariant gate (fail → giữ draft + NEEDS_REVIEW)
-  → SQLite checkpoint → atomic export (SHA-256)
+LEARN:  snapshot → discover n-gram → candidate/evidence → book-auto (hard gates)
+        → publish immutable dictionary revision
+TRANSLATE: pin revision → vp_plan từng block → QA structural (không sửa text)
+        → atomic export + manifest (run_id, revision_id, SHA-256)
 ```
 
 - **Route duy nhất**: `VIETPHRASE` — mọi block đi qua VietPhrase; block fail
   invariant được giữ nguyên draft và đưa vào `zhvi review` (không fallback ngầm).
 - **Deterministic (AD-9)**: longest-match → layer precedence → literal-over-pattern
   → tie-break `entry_id` — không phụ thuộc thứ tự nap từ điển.
-- **QA gates** (`quality/`): invariant (rỗng / còn CJK / nháy lệch), chapter audit.
+- **QA gates** (`quality/`): fail → `needs_dictionary_fix`, không export, không hidden repair.
 - Migration từ thiết kế 2.0 mang tính cộng thêm: lịch sử run/block/route model-era
   giữ read-only; mọi block cache model-era bị đánh dấu invalid, không tái dùng.
+
+### Vòng correction (entry → revision → rerun)
+
+CLI không sửa text đích. Muốn đổi cụm:
+
+1. Sửa/thêm entry: `glossary.manual.tsv` hoặc `zhvi terms accept SOURCE`
+2. Hệ thống build revision mới (`zhvi translate --refresh-revision`, hoặc accept/revoke tự publish)
+3. Affected blocks (trace/source index) được dịch lại; block không đụng được adopt
+4. QA → export atomic lại
+
+Không lưu "bản text đã sửa" làm nguồn chân lý thứ hai (AD-2).
+
+### Global auto-promotion đang khóa (AD-14)
+
+`zhvi learn --global` **fail-closed**: thiếu golden manifest `approved`, cross-book evidence, target agreement hoặc affected-block isolation thì candidate không vượt `global_candidate`. File `raw_china/expect*` / `excpect*` không tự thành golden — chỉ là candidate reference cho `zhvi golden import`.
 
 ---
 
@@ -324,13 +346,10 @@ cd zhvi && ../.venv/bin/python -m pytest tests/ -q
 ## Trạng thái (thiết kế 3.0)
 
 - [x] **Epic 1 — VietPhrase-only cutover**: gỡ engine model/router/post-edit,
-      config schema 3.0, migration additive (cache model-era invalid), đường dịch
-      deterministic AD-9, test baseline (deterministic SHA-256 + resume parity).
-- [ ] **Epic 2**: immutable dictionary revisions (bundle, publish, rollback).
-      Story 2.1 xong: revision bundle builder + canonical manifest
-      (`zhvi/src/zhvi/revision.py`) — build từ base/auto/manual layers, validate
-      auto conflict, `dictionary_revision_id = SHA-256(manifest)`, bundle
-      content-addressed `manifest.json`/`entries.tsv`/`patterns.jsonl`/`dictionary.bin`.
-- [ ] **Epic 3**: book learner (discovery, candidate, evidence, promotion gates).
-- [ ] **Epic 4**: global learner & registry (cross-book evidence, fail-closed).
-- [ ] **Epic 5**: QA structural gates, golden tooling, metamorphic tests.
+      config schema 3.0, migration additive, đường dịch deterministic AD-9.
+- [x] **Epic 2**: immutable dictionary revisions (bundle, publish, pin, projection,
+      diff/rollback, versioned preprocess).
+- [x] **Epic 3**: book learner (discovery, candidate, evidence, book-auto, terms CLI).
+- [x] **Epic 4**: global registry + ingest; global auto-promotion **fail-closed (AD-14)**
+      cho tới khi có golden manifest approved.
+- [x] **Epic 5**: QA structural gates, golden tooling, metamorphic tests, CLI E2E.
