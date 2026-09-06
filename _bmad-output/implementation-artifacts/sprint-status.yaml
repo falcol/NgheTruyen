@@ -75,9 +75,23 @@ development_status:
   4-2-cross-book-evidence-ingest-dedupe: done
   4-3-global-promotion-fail-closed-drift-report: review
   epic-4-retrospective: optional
-  epic-5: in-progress
-  5-1-qa-structural-gates-run-report-metric: review
-  5-2-golden-manifest-tooling-diff-report-candidate-reference: review
-  5-3-metamorphic-dictionary-unit-test-suite: review
-  5-4-cli-integration-end-to-end-documentation: review
-  epic-5-retrospective: optional
+  epic-5: done
+  5-1-qa-structural-gates-run-report-metric: done
+  5-2-golden-manifest-tooling-diff-report-candidate-reference: done
+  5-3-metamorphic-dictionary-unit-test-suite: done
+  5-4-cli-integration-end-to-end-documentation: done
+  epic-5-retrospective: done
+
+action_items:
+  - epic: 5
+    action: "Mark test_cli_e2e LEARN happy-path slow (or mini-dict) so full suite stays CI-friendly"
+    owner: "Amelia"
+    status: open
+  - epic: 5
+    action: "Decide commit vs gitignore untracked story markdown under _bmad-output/implementation-artifacts"
+    owner: "Falcol"
+    status: open
+  - epic: 5
+    action: "Close story 4.3 then mark epic-4 done; mark epic-3 done (all stories already done)"
+    owner: "Falcol"
+    status: open
