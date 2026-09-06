@@ -63,17 +63,17 @@ development_status:
   2-5-diff-rollback-va-affected-block-rerun: done
   2-6-versioned-preprocessing-view-fr13: done
   epic-2-retrospective: optional
-  epic-3: in-progress
+  epic-3: done
   3-1-discovery-toan-truyen-tao-observation: done
   3-2-candidate-builder-target-xac-dinh-hoac-unresolved: done
   3-3-evidence-evaluator: done
   3-4-book-auto-promotion-qua-hard-gates: done
   3-5-terms-cli-explain-review-display: done
   epic-3-retrospective: optional
-  epic-4: in-progress
+  epic-4: done
   4-1-registry-tai-dictionary-root-book-id-realpath-writer-lock: done
   4-2-cross-book-evidence-ingest-dedupe: done
-  4-3-global-promotion-fail-closed-drift-report: review
+  4-3-global-promotion-fail-closed-drift-report: done
   epic-4-retrospective: optional
   epic-5: done
   5-1-qa-structural-gates-run-report-metric: done
@@ -90,8 +90,8 @@ action_items:
   - epic: 5
     action: "Decide commit vs gitignore untracked story markdown under _bmad-output/implementation-artifacts"
     owner: "Falcol"
-    status: open
+    status: done
   - epic: 5
     action: "Close story 4.3 then mark epic-4 done; mark epic-3 done (all stories already done)"
     owner: "Falcol"
-    status: open
+    status: done
