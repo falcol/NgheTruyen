@@ -14,6 +14,7 @@ from . import __version__
 from .config import Config, resolve_config
 from .correction import affected_block_ids, diff_revisions, rollback_revision
 from .document import parse_document
+from .golden import GoldenError, approve_case, import_candidates, run_golden_report
 from .learning.candidate import build_candidates
 from .learning.discovery import run_discovery
 from .learning.evidence import evaluate_candidates
@@ -125,6 +126,9 @@ def dict_rollback(
 
 terms_app = typer.Typer(help="Candidate/auto entry lifecycle cua truyen.")
 app.add_typer(terms_app, name="terms")
+
+golden_app = typer.Typer(help="Golden corpus: import candidate, duyet, diff report.")
+app.add_typer(golden_app, name="golden")
 
 
 def _terms_state(project: Path):
@@ -262,6 +266,69 @@ def terms_revoke(
             ensure_ascii=False,
         )
     )
+
+
+# ---- golden (story 5.2) ----
+
+
+@golden_app.command("import")
+def golden_import(
+    project: Path = typer.Option(..., "--project", "-p"),
+    reference_dir: Path = typer.Option(..., "--dir"),
+    manifest: Path = typer.Option(None, "--manifest"),
+) -> None:
+    """Nhap expect*.txt + excpect*.txt thanh candidate (approval null)."""
+    try:
+        open_project(project)
+        summary = import_candidates(reference_dir, manifest)
+    except typer.Exit:
+        raise
+    except GoldenError as e:
+        _fail(EXIT_STATE, str(e))
+    except ProjectError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(json.dumps(summary, ensure_ascii=False))
+
+
+@golden_app.command("approve")
+def golden_approve(
+    case_id: str = typer.Argument(..., help="Case id trong manifest."),
+    actor: str = typer.Option(..., "--actor"),
+    manifest: Path = typer.Option(None, "--manifest"),
+) -> None:
+    """Gan dau duyet; thieu field bat buoc -> loi, khong tu golden (AD-14)."""
+    try:
+        case = approve_case(manifest, case_id, actor)
+    except typer.Exit:
+        raise
+    except GoldenError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(json.dumps(case, ensure_ascii=False))
+
+
+@golden_app.command("report")
+def golden_report(
+    project: Path = typer.Option(..., "--project", "-p"),
+    manifest: Path = typer.Option(None, "--manifest"),
+    dict_dir: str = typer.Option(None, "--dict-dir"),
+) -> None:
+    """Chay pipeline so expected, ghi .zhvi/reports/golden-diff.json."""
+    try:
+        p = open_project(project)
+        payload = run_golden_report(p, manifest, dict_dir=dict_dir)
+    except typer.Exit:
+        raise
+    except GoldenError as e:
+        _fail(EXIT_STATE, str(e))
+    except ProjectError as e:
+        _fail(EXIT_STATE, str(e))
+    except Exception as e:  # noqa: BLE001 — controller bat fatal
+        _fail(EXIT_RUN_FAILED, f"{type(e).__name__}: {e}")
+    print(json.dumps(payload, ensure_ascii=False))
 
 
 @app.command()
