@@ -24,7 +24,11 @@ class ExportFailure(RuntimeError):
 
 
 class IntegrityFailure(RuntimeError):
-    pass
+    """code: duplicate_ids | missing_blocks | newline_mismatch | integrity."""
+
+    def __init__(self, message: str, *, code: str = "integrity") -> None:
+        super().__init__(message)
+        self.code = code
 
 
 @dataclass(frozen=True)
@@ -58,12 +62,20 @@ def verify_output(doc: Document, output: str, blocks_by_id: dict[str, dict]) -> 
     src_nodes = doc.translatable_nodes()
     expected_ids = [node_block_id(n) for n in src_nodes]
     if len(expected_ids) != len(set(expected_ids)):
-        raise IntegrityFailure("Block ID trung lap — loi danh danh")
+        raise IntegrityFailure(
+            "Block ID trung lap — loi danh danh", code="duplicate_ids"
+        )
     missing = [bid for bid in expected_ids if bid not in blocks_by_id or blocks_by_id[bid]["final_text"] is None]
     if missing:
-        raise IntegrityFailure(f"Thieu {len(missing)} block committed, dau: {missing[:3]}")
+        raise IntegrityFailure(
+            f"Thieu {len(missing)} block committed, dau: {missing[:3]}",
+            code="missing_blocks",
+        )
     if output.count("\n") != doc.normalized_text.count("\n"):
-        raise IntegrityFailure("So newline khong khop — co the mat/reorder dong")
+        raise IntegrityFailure(
+            "So newline khong khop — co the mat/reorder dong",
+            code="newline_mismatch",
+        )
 
 
 def atomic_write(destination: Path, content: bytes) -> str:

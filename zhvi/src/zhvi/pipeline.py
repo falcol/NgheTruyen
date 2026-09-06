@@ -23,13 +23,14 @@ from .config import (
     resolve_config,
 )
 from .document import parse_document
-from .export import ExportResult, export_run
+from .export import ExportResult, build_output, export_run
 from .fingerprint import block_source_hash, build_run_fingerprint
 from .project import Project, create_project, project_lock, workspace_for
 from .correction import affected_block_ids, diff_revisions
 from .qa import sanitize_source
 from .projection import reconcile_project
 from .revision import ensure_active_revision, load_revision_dictionary
+from .quality.export_qa import build_run_report, run_export_qa
 from .quality.invariants import run_invariants
 from .snapshot import SourceRevision, import_snapshot
 from .state import State
@@ -334,7 +335,36 @@ def _translate_locked(
                     "routes": routes},
         )
 
-    # 6. export
+    # 6. structural QA roi export (story 5.1): fail -> khong ghi file, khong sua text.
+    blocks = st.committed_blocks(run.id)
+    assembled = build_output(doc, blocks)
+    qa_res = run_export_qa(doc, assembled, blocks)
+    elapsed = time.monotonic() - t0
+    routes = st.route_counts(run.id)
+    extra = {
+        "noop": False,
+        "blocks": total,
+        "vp_ratio": round(routes.get(ROUTE_VIETPHRASE, 0) / total, 4) if total else 1.0,
+        "warnings": n_warnings,
+        "routes": routes,
+    }
+    if not qa_res.ok:
+        st.set_run_status(run.id, "needs_dictionary_fix")
+        report = build_run_report(
+            state=st,
+            project=project,
+            run_id=run.id,
+            dictionary_revision_id=revision_id,
+            source_len=len(text),
+            elapsed_s=elapsed,
+            sha256=None,
+            output=None,
+            qa=qa_res,
+            extra=extra,
+        )
+        st.close()
+        return PipelineResult(run_id=run.id, exit_code=9, report=report, output=None)
+
     st.set_run_status(run.id, "completed")
     out_path = request.output or (project.dist_dir / "book.vi.txt")
     result = export_run(
@@ -345,24 +375,20 @@ def _translate_locked(
         source_text=text,
         doc=doc,
     )
-    # Metric routes tu DB: block cache-hit / nap lai tu run interrupted cung
-    # co row route_decisions — dem local trong loop se bo sot chung.
-    routes = st.route_counts(run.id)
+    report = build_run_report(
+        state=st,
+        project=project,
+        run_id=run.id,
+        dictionary_revision_id=revision_id,
+        source_len=len(text),
+        elapsed_s=elapsed,
+        sha256=result.sha256,
+        output=str(result.path),
+        qa=qa_res,
+        extra=extra,
+        output_chars=len(assembled),
+    )
     st.close()
-    elapsed = time.monotonic() - t0
-    vp_ratio = routes.get(ROUTE_VIETPHRASE, 0) / total if total else 1.0
-    report = {
-        "run_id": run.id,
-        "noop": False,
-        "blocks": total,
-        "vp_ratio": round(vp_ratio, 4),
-        "warnings": n_warnings,
-        "elapsed_s": round(elapsed, 2),
-        "chars_per_s": round(len(text) / elapsed) if elapsed > 0 else None,
-        "output": str(result.path),
-        "sha256": result.sha256,
-        "routes": routes,
-    }
     return PipelineResult(run_id=run.id, exit_code=0, report=report, output=result)
 
 

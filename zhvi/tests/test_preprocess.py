@@ -76,7 +76,7 @@ def test_qa_trace_records_junk_spans(tmp_path):
     dicts = tmp_path / "d"
     dicts.mkdir()
     (dicts / "QualityOverrides.txt").write_text(
-        "笑了=được lắm\n很大=rất lớn\n", encoding="utf-8"
+        "第一章=Chương 1\n他=hắn\n笑了=được lắm\n很大=rất lớn\n", encoding="utf-8"
     )
     project = create_project(tmp_path / "proj")
     src = tmp_path / "s.txt"
@@ -119,7 +119,7 @@ def test_collapse_trace_has_source_offsets(tmp_path):
     dicts = tmp_path / "d"
     dicts.mkdir()
     (dicts / "QualityOverrides.txt").write_text(
-        "稍微=có chút\n有点=có chút\n", encoding="utf-8"
+        "第一章=Chương 1\n稍微=có chút\n有点=có chút\n", encoding="utf-8"
     )
     project = create_project(tmp_path / "proj")
     src = tmp_path / "s.txt"
@@ -144,7 +144,9 @@ def test_junk_only_block_export_keeps_lines(tmp_path):
     so dong (prefix/suffix newline) — byte-equivalent phan khong dich duoc."""
     dicts = tmp_path / "d"
     dicts.mkdir()
-    (dicts / "QualityOverrides.txt").write_text("笑了=được lắm\n", encoding="utf-8")
+    (dicts / "QualityOverrides.txt").write_text(
+        "第一章=Chương 1\n他=hắn\n笑了=được lắm\n", encoding="utf-8"
+    )
     project = create_project(tmp_path / "proj")
     src = tmp_path / "s.txt"
     src.write_text("第一章\n\nⓣⓣⓚ.ⓣⓦ 无弹窗\n他笑了。\n", encoding="utf-8")
@@ -161,7 +163,9 @@ def test_source_snapshot_untouched(tmp_path):
     """Source snapshot bytes khong doi sau khi dich (view only — FR13)."""
     dicts = tmp_path / "d"
     dicts.mkdir()
-    (dicts / "QualityOverrides.txt").write_text("笑了=được lắm\n", encoding="utf-8")
+    (dicts / "QualityOverrides.txt").write_text(
+        "第一章=Chương 1\n他=hắn\n笑了=được lắm\n", encoding="utf-8"
+    )
     project = create_project(tmp_path / "proj")
     src = tmp_path / "s.txt"
     src.write_text("第一章\n\n「」他百萬\\小!說笑了。\n", encoding="utf-8")

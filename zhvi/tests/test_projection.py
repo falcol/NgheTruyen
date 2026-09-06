@@ -26,7 +26,10 @@ from zhvi.revision import AutoEntry, publish_revision
 def _mini_dict_dir(tmp_path: Path) -> Path:
     d = tmp_path / "mini-dicts"
     d.mkdir()
-    (d / "QualityOverrides.txt").write_text("凌天=Lăng Thiên\n", encoding="utf-8")
+    (d / "QualityOverrides.txt").write_text(
+        "凌天=Lăng Thiên\n第一章=Chương 1\n从天而降=rơi từ trời xuống\n",
+        encoding="utf-8",
+    )
     return d
 
 
