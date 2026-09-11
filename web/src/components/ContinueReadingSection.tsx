@@ -68,12 +68,19 @@ export default function ContinueReadingSection({
 
   return (
     <section className="mb-12">
-      <h2 className="text-base font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-5 flex items-center gap-3">
-        <span className="w-5 h-[2px] bg-[var(--color-accent)] rounded-full inline-block" />
-        Tiếp tục đọc
-      </h2>
+      <div className="ornament-divider mb-6">
+        <span className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] candle-glow" />
+          <span
+            style={{ fontFamily: "var(--font-ui-serif)" }}
+            className="text-[11px] font-semibold text-[var(--color-text-muted)] tracking-[0.25em]"
+          >
+            Tiếp Tục Đọc
+          </span>
+        </span>
+      </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide">
+      <div className="flex gap-4 overflow-x-auto pb-4 -mx-1 px-1 snap-x snap-mandatory scrollbar-hide scroll-px-1">
         {items.map((item) => {
           const gradient = getGradientFromString(item.slug);
           const resumeHref = `${item.readHref}/${item.chapterIdx}`;
@@ -93,7 +100,10 @@ export default function ContinueReadingSection({
                 {/* Title */}
                 <div className="relative z-20 h-full flex flex-col p-3">
                   <div className="flex-1 flex items-center justify-center">
-                    <p className="font-serif font-bold text-center text-white/95 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-sm leading-snug line-clamp-4">
+                    <p
+                      style={{ fontFamily: "var(--font-ui-serif)" }}
+                      className="font-bold text-center text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] text-sm leading-snug line-clamp-4 px-1"
+                    >
                       {item.title}
                     </p>
                   </div>
@@ -108,9 +118,9 @@ export default function ContinueReadingSection({
                 </div>
 
                 {/* Play button overlay on hover */}
-                <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20">
-                    <Play weight="fill" size={16} className="text-white translate-x-[1px]" />
+                <div className="absolute inset-0 z-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center border border-white/20 shadow-[0_0_16px_rgba(0,0,0,0.5)] transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                    <Play weight="fill" size={20} className="text-white translate-x-[2px]" />
                   </div>
                 </div>
               </div>
@@ -137,7 +147,7 @@ export default function ContinueReadingSection({
                 {/* Thin progress track */}
                 <div className="mt-1.5 h-[3px] rounded-full bg-[var(--color-border)] overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-[var(--color-accent)] transition-all"
+                    className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-300 group-hover:shadow-[0_0_8px_var(--color-accent)]"
                     style={{ width: `${item.pct}%` }}
                   />
                 </div>

@@ -26,18 +26,21 @@ export default function CardProgressOverlay({
 
   return (
     <>
-      {/* Progress bar at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-black/40 z-30 pointer-events-none">
+      {/* Progress bar at bottom — floating rounded strip */}
+      <div className="absolute bottom-0 left-0 right-0 h-[4px] bg-black/50 z-30 pointer-events-none">
         <div
-          className="h-full bg-[var(--color-accent)] transition-all duration-500"
+          className="h-full bg-[var(--color-accent)] transition-all duration-500 shadow-[0_0_6px_var(--color-accent)]"
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      {/* Chapter badge top-right */}
+      {/* Chapter badge — floating pill, top-right */}
       <div className="absolute top-2 right-2 z-30 pointer-events-none">
-        <span className="bg-black/60 backdrop-blur-md text-[var(--color-accent)] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[var(--color-accent)]/30">
+        <span className="inline-flex items-center gap-0.5 bg-black/55 backdrop-blur-xl text-[var(--color-accent)] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[var(--color-accent)]/40 shadow-[0_0_8px_rgba(0,0,0,0.4)]">
           CH {chapterIdx + 1}
+          {totalChapters > 0 && (
+            <span className="text-white/40 font-normal">/{totalChapters}</span>
+          )}
         </span>
       </div>
     </>

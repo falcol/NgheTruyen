@@ -14,12 +14,26 @@ export default function TopNav() {
         <nav className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-8 h-8 rounded-xl bg-[var(--color-accent)] group-hover:bg-[var(--color-accent-strong)] flex items-center justify-center transition-colors duration-200">
-              <span className="text-[var(--color-bg)] text-xs font-black tracking-tighter">N</span>
+            {/* Bookmark-shaped icon */}
+            <div
+              className="w-7 h-9 rounded-t-sm relative flex items-center justify-center overflow-hidden shrink-0
+                bg-gradient-to-b from-[var(--color-accent)] to-[var(--color-accent-strong)]
+                shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] group-hover:shadow-[0_0_14px_color-mix(in_srgb,var(--color-accent)_45%,transparent)] transition-shadow duration-300"
+              style={{
+                clipPath: "polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)"
+              }}
+            >
+              <span className="text-[var(--color-bg)] text-xs font-black z-10 tracking-tighter -mt-1">N</span>
             </div>
-            <div className="hidden sm:block">
-              <span className="font-bold text-sm tracking-wide text-[var(--color-text)] group-hover:text-[var(--color-accent)] transition-colors duration-200">
-                Nghe<span className="text-[var(--color-accent)]">Truyen</span>
+            <div className="hidden sm:flex flex-col leading-none gap-0.5">
+              <span
+                style={{ fontFamily: "var(--font-ui-serif)" }}
+                className="font-bold text-[15px] text-[var(--color-text)] group-hover:text-[var(--color-accent)] transition-colors duration-300 leading-none"
+              >
+                Nghe<span className="text-[var(--color-accent)]">Truyện</span>
+              </span>
+              <span className="text-[8px] tracking-[0.2em] uppercase text-[var(--color-text-dim)] leading-none">
+                Đọc Sách
               </span>
             </div>
           </Link>
@@ -28,20 +42,20 @@ export default function TopNav() {
           <div className="flex items-center gap-1">
             <Link
               href="/"
-              className={`relative px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/5 transition-all duration-200 ${
+              className={`relative px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 min-h-[44px] flex items-center justify-center ${
                 isLibraryActive
-                  ? "nav-link-active"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)] shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent)_20%,transparent)]"
+                  : "text-[var(--color-text-muted)] hover:bg-white/5 hover:text-[var(--color-text)]"
               }`}
             >
               Thư Viện
             </Link>
             <Link
               href="/epub"
-              className={`relative px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/5 transition-all duration-200 ${
+              className={`relative px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 min-h-[44px] flex items-center justify-center ${
                 isEpubActive
-                  ? "nav-link-active"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  ? "bg-[var(--color-accent)]/15 text-[var(--color-accent)] shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent)_20%,transparent)]"
+                  : "text-[var(--color-text-muted)] hover:bg-white/5 hover:text-[var(--color-text)]"
               }`}
             >
               EPUB

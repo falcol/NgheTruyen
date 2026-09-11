@@ -1,33 +1,35 @@
 @import "tailwindcss";
 
-/* ── App-shell design tokens (calm editorial, dark-only) ──
-   Single desaturated-rose accent, warm near-black neutrals.
-   These are DEFAULTS for non-reader routes. On reader routes,
-   `applyReaderThemeToDocument` (src/lib/reader-settings.ts) overwrites
+/* ── App-shell design tokens (literary dark library) ──
+   Warm midnight navy base with sakura-rose accent.
+   Reader routes: `applyReaderThemeToDocument` overwrites
    --color-bg/-surface/-text/-text-muted/-accent/-accent-dim/-border
-   via inline style on <html>, which always wins over these @theme
-   values, so the 7 reader themes keep working unchanged. */
+   via inline style on <html>. Reader themes keep working unchanged. */
 @theme {
-  --color-bg: #0c0c0e;
-  --color-surface: #16161a;
-  --color-surface-2: #1e1e23;
-  --color-border: #2a2a31;
-  --color-text: #ededf0;
-  --color-text-muted: #9a9aa5;
-  --color-text-dim: #6b6b76;
+  --color-bg: #080810;
+  --color-surface: #10101c;
+  --color-surface-2: #18182a;
+  --color-border: #252535;
+  --color-border-soft: #1e1e2e;
+  --color-text: #e8e6f0;
+  --color-text-muted: #8b8b9e;
+  --color-text-dim: #55556a;
 
-  /* Single accent: desaturated rose. ~6.95:1 contrast on --color-surface (AA). */
-  --color-accent: #d98aa0;
-  /* Hover/active state. ~5.13:1 contrast on --color-surface (AA). */
-  --color-accent-strong: #c76d88;
-  /* Legacy alias kept for existing gradient usages in not-yet-updated
-     shell/player markup; same value as --color-accent-strong (no 2nd hue). */
-  --color-accent-dim: #c76d88;
+  /* Sakura-rose accent — AA contrast on surface */
+  --color-accent: #e07a9f;
+  --color-accent-strong: #c9607f;
+  --color-accent-dim: #c9607f;
+
+  /* Warm reading lamp ambient */
+  --color-lamp: rgba(224, 122, 159, 0.06);
+  --color-lamp-strong: rgba(224, 122, 159, 0.12);
 }
 
 :root {
   --reader-font-family: var(--font-literata), Georgia, serif;
   --reader-font-size: 1.125rem;
+  /* Serif for UI headings — book feel */
+  --font-ui-serif: var(--font-lora), var(--font-literata), Georgia, serif;
 }
 
 html {
@@ -39,37 +41,20 @@ html {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Warm ambient radial — reading lamp glow in the dark */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--color-lamp-strong), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(120, 80, 180, 0.04), transparent);
 }
 
-.reader-shell {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-}
-
-.reader-content {
-  font-family: var(--reader-font-family);
-  color: var(--color-text);
-}
-
-.reader-muted {
-  color: var(--color-text-muted);
-}
-
-a.reader-muted:hover {
-  color: var(--color-accent);
-}
-
-.reader-accent {
-  color: var(--color-accent);
-}
-
-.reader-surface {
-  background-color: var(--color-surface);
-}
-
-.reader-border {
-  border-color: var(--color-border);
-}
+/* ── Reader styles ─────────────────────────────────── */
+.reader-shell { background-color: var(--color-bg); color: var(--color-text); }
+.reader-content { font-family: var(--reader-font-family); color: var(--color-text); }
+.reader-muted { color: var(--color-text-muted); }
+a.reader-muted:hover { color: var(--color-accent); }
+.reader-accent { color: var(--color-accent); }
+.reader-surface { background-color: var(--color-surface); }
+.reader-border { border-color: var(--color-border); }
 
 .reader-paragraph {
   line-height: 1.75;
@@ -81,10 +66,9 @@ a.reader-muted:hover {
   transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-/* Click-to-speak affordance (Read Aloud-style); keep quiet so reading stays calm */
 @media (hover: hover) {
   .reader-paragraph:hover:not(.speaking) {
-    background-color: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
   }
 }
 
@@ -100,16 +84,93 @@ a.reader-muted:hover {
   contain-intrinsic-size: auto 52px;
 }
 
-/* Glassmorphism: reserved for fixed TopNav + fixed Player bar only. Kept subtle. */
-.glass-panel {
-  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-bg) 60%, transparent);
+/* Drop cap */
+.reader-paragraph.drop-cap::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.85;
+  margin-right: 0.12em;
+  margin-top: 0.05em;
+  margin-bottom: -0.05em;
+  font-weight: 800;
+  color: var(--color-accent);
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--color-accent) 22%, transparent);
 }
 
-/* Ink divider: section separator (flat accent, no gradient) */
+/* ── Glassmorphism (TopNav + Player bar only) ─────── */
+.glass-panel {
+  background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, white 4%, transparent) inset,
+    0 8px 32px color-mix(in srgb, var(--color-bg) 80%, transparent);
+}
+
+/* ── Book card 3-D spine effect ───────────────────── */
+.book-card {
+  transform-style: preserve-3d;
+}
+
+.book-card-inner {
+  transition:
+    transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 0.4s ease;
+  transform-origin: left center;
+  position: relative;
+  border-radius: 4px 12px 12px 4px;
+  overflow: hidden;
+}
+
+/* Spine shadow on left edge — book cover depth */
+.book-card-inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 100%;
+  background: linear-gradient(to right,
+    rgba(0, 0, 0, 0.75) 0%,
+    rgba(0, 0, 0, 0.25) 70%,
+    transparent 100%
+  );
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Page-edge stack on right — old book page edges */
+.book-card-inner::after {
+  content: "";
+  position: absolute;
+  top: 3%;
+  right: -5px;
+  width: 6px;
+  height: 94%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(240, 230, 200, 0.1) 0px,
+    rgba(240, 230, 200, 0.05) 2px,
+    rgba(200, 195, 180, 0.04) 2px,
+    rgba(200, 195, 180, 0.02) 4px
+  );
+  border-radius: 0 2px 2px 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .book-card:hover .book-card-inner {
+    transform: perspective(500px) rotateY(-5deg) translateX(6px);
+    box-shadow:
+      10px 20px 48px rgba(0, 0, 0, 0.65),
+      0 0 24px color-mix(in srgb, var(--color-accent) 12%, transparent);
+  }
+}
+
+/* ── Ink divider ───────────────────────────────────── */
 .ink-divider {
   position: relative;
   display: flex;
@@ -126,13 +187,37 @@ a.reader-muted:hover {
   flex-shrink: 0;
 }
 
-/* Badge: flat tinted (no gradient) */
+/* ── Ornamental section divider ───────────────────── */
+.ornament-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-text-dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.ornament-divider::before,
+.ornament-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-border) 30%,
+    var(--color-border) 70%,
+    transparent
+  );
+}
+
+/* ── Badge ─────────────────────────────────────────── */
 .anime-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
   color: var(--color-accent);
   font-size: 0.7rem;
   font-weight: 700;
@@ -141,12 +226,7 @@ a.reader-muted:hover {
   border-radius: 9999px;
 }
 
-/* Heading accent text: solid color (no gradient) */
-.sakura-text {
-  color: var(--color-text);
-}
-
-/* Nav link active indicator */
+/* ── Nav active ─────────────────────────────────────── */
 .nav-link-active {
   color: var(--color-accent) !important;
   position: relative;
@@ -163,87 +243,81 @@ a.reader-muted:hover {
   background: var(--color-accent);
 }
 
-/* Scrollbar styling for modern look */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* ── Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
-}
-
-/* Drop Cap for first paragraph of a chapter */
-.reader-paragraph.drop-cap::first-letter {
-  float: left;
-  font-size: 3.5em;
-  line-height: 0.85;
-  margin-right: 0.12em;
-  margin-top: 0.05em;
-  margin-bottom: -0.05em;
-  font-weight: 800;
-  color: var(--color-accent);
-  text-shadow: 0 1px 6px color-mix(in srgb, var(--color-accent) 18%, transparent);
-}
-
-/* Hide on scroll transitions */
+/* ── Smart header ─────────────────────────────────── */
 .smart-header {
   transition: transform 0.4s cubic-bezier(0.3, 1, 0.3, 1), opacity 0.4s ease;
   will-change: transform, opacity;
 }
 
-/* Fluid animations */
+/* ── Animations ─────────────────────────────────────── */
 @keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .animate-slide-up {
-  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Staggered delays */
+.stagger-1 { animation-delay:  80ms; opacity: 0; }
+.stagger-2 { animation-delay: 160ms; opacity: 0; }
+.stagger-3 { animation-delay: 240ms; opacity: 0; }
+.stagger-4 { animation-delay: 320ms; opacity: 0; }
+.stagger-5 { animation-delay: 400ms; opacity: 0; }
 
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-.animate-fade-in {
-  animation: fadeIn 0.25s ease-out forwards;
-}
+.animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
 
-/* Spring-like press feedback for interactive elements */
+/* Candle flicker — subtle accent dot glow */
+@keyframes candleFlicker {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 8px 2px color-mix(in srgb, var(--color-accent) 60%, transparent); }
+  50%       { opacity: 0.7; box-shadow: 0 0 4px 1px color-mix(in srgb, var(--color-accent) 30%, transparent); }
+}
+.candle-glow { animation: candleFlicker 3s ease-in-out infinite; }
+
+/* ── Spring button ─────────────────────────────────── */
 .btn-spring {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition:
+    transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.4s ease,
+    border-color 0.3s ease;
 }
-.btn-spring:active {
-  transform: scale(0.95);
+.btn-spring:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+.btn-spring:active { transform: translateY(1px) scale(0.97); }
+
+/* ── Global focus ──────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
-/* Hide scrollbar while keeping scroll functionality */
+/* ── Scrollbar hide ────────────────────────────────── */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* Loading skeleton pulse */
+/* ── Loading shimmer ───────────────────────────────── */
 @keyframes shimmerPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 0.75; }
 }
-.animate-shimmer {
-  animation: shimmerPulse 1.8s ease-in-out infinite;
-}
+.animate-shimmer { animation: shimmerPulse 2s ease-in-out infinite; }
 
+/* ── Reduced motion ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
@@ -252,3 +326,6 @@ a.reader-muted:hover {
     scroll-behavior: auto !important;
   }
 }
+
+
+
