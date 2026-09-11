@@ -1,0 +1,50 @@
+name: Build and Deploy EPUB Cache
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'epub/**.epub'
+      - '.github/workflows/epub-cache.yml'
+  workflow_dispatch: # Cho phép chạy thủ công
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Cho phép đẩy code lên nhánh epub-data
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm install
+
+      - name: Generate EPUB Cache
+        working-directory: ./web
+        run: npm run epub:cache
+        
+      - name: Verify Cache Directory
+        run: ls -la web/public/epub-cache || echo "No cache generated"
+
+      - name: Prepare publish dir
+        run: |
+          mkdir -p publish/epub-cache
+          cp -r web/public/epub-cache/* publish/epub-cache/
+
+      - name: Deploy to epub-data branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./publish
+          publish_branch: epub-data
+          force_orphan: true
+          commit_message: "chore: update epub cache [skip ci]"

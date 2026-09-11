@@ -6,7 +6,13 @@ export function bookCacheKey(filename: string): string {
 
 export function chapterCacheUrlPath(filename: string, chapterIdx: number): string {
   const idx = String(chapterIdx).padStart(5, "0");
-  return `/epub-cache/${bookCacheKey(filename)}/ch/${idx}.json.gz`;
+  const path = `/epub-cache/${bookCacheKey(filename)}/ch/${idx}.json.gz`;
+  
+  if (process.env.NEXT_PUBLIC_EPUB_CACHE_URL) {
+    const baseUrl = process.env.NEXT_PUBLIC_EPUB_CACHE_URL.replace(/\/$/, "");
+    return `${baseUrl}${path}`;
+  }
+  return path;
 }
 
 export function epubFilenameFromReaderSlug(slug: string): string | null {
