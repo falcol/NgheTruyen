@@ -33,6 +33,28 @@ def test_compile_skips_plain_and_zero():
     assert compile_rule("在{0}之上", "trên {0}", (2, 1.0, 0), "CONTEXTUAL") is None
 
 
+def test_compile_p_greedy_unanchored():
+    rule = compile_rule("桌上的{p}", "{p} trên bàn", (4, 100.0, 0), "PREFERRED")
+    assert rule is not None
+    assert rule.slots == ("p",)
+    m = rule.regex.match("桌上的幼儿书籍就看")
+    assert m and m.group(1) == "幼儿书籍"
+    m2 = rule.regex.match("桌上的地图就看")
+    assert m2 and m2.group(1) == "地图"
+    m3 = rule.regex.match("桌上的书籍看完")
+    assert m3 and m3.group(1) == "书籍"
+
+
+def test_compile_v_slot():
+    rule = compile_rule("一把{v}", "một cái {v}", (4, 25.0, 0), "PREFERRED")
+    assert rule is not None
+    m = rule.regex.match("一把拽住凌天")
+    assert m and m.group(1) == "拽住"
+    m2 = rule.regex.match("一把扔掉")
+    assert m2 and m2.group(1) == "扔掉"
+    assert rule.regex.match("一把剑") is None
+
+
 def test_compile_regex_group_alternation():
     rule = compile_rule("(上午|下午)?{s}点", "{1} giờ", (2, 15.0, 0), "CONTEXTUAL")
     assert rule is not None
@@ -82,3 +104,5 @@ def test_no_brace_leak_in_output(dic):
     for t in ["方圆近三十里的范围内", "他在三点四十五分左右到达"]:
         assert "{s}" not in vp_plan(dic, t).text
         assert "{n}" not in vp_plan(dic, t).text
+        assert "{p}" not in vp_plan(dic, t).text
+        assert "{v}" not in vp_plan(dic, t).text

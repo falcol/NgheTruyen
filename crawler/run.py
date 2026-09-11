@@ -9,6 +9,7 @@ Sites:
     metruyenchu  - metruyenchu.com.vn
     metruyencv   - metruyencv.xyz
     sitruyencv   - sitruyencv.com (JSON API)
+    iqiyi        - wenxue.iqiyi.com (fills missing chapters into --dest)
 
 Options:
     --start INDEX   Starting chapter index (default: 0)
@@ -44,6 +45,7 @@ from .metruyencv import MetruyencvCrawler
 from .truyenfullmoi import TruyenfullmoiCrawler
 from .sitruyencv import SitruyencvCrawler
 from .xtruyen import XtruyenCrawler
+from .iqiyi import IqiyiCrawler
 
 CRAWLERS = {
     "truyenqq": TruyenQQCrawler,
@@ -52,6 +54,7 @@ CRAWLERS = {
     "truyenfullmoi": TruyenfullmoiCrawler,
     "sitruyencv": SitruyencvCrawler,
     "xtruyen": XtruyenCrawler,
+    "iqiyi": IqiyiCrawler,
 }
 
 # Preset for --aggressive: maximize throughput, accept higher 429 risk.

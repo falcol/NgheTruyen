@@ -15,8 +15,19 @@ import re
 from dataclasses import dataclass
 
 from .layers import Layer
-from .loader import Dictionary, TrieNode, normalize_nfc, to_simplified
-from .patterns import CJK_KEY, DIGIT_KEY, ENTITY_TRUSTS, PRONOUNS, PatternRule, fill_target, is_num_start
+from .loader import TRUST_BY_FILE, Dictionary, TrieNode, normalize_nfc, to_simplified
+from .patterns import (
+    CJK_KEY,
+    DIGIT_KEY,
+    ENTITY_SUFFIXES,
+    ENTITY_TRUSTS,
+    PRONOUNS,
+    VERBS,
+    PatternRule,
+    fill_target,
+    is_num_start,
+)
+from .sense import apply_sense
 from .trace import SourceSpan, VpDraft, VpSpan
 
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
@@ -32,7 +43,8 @@ PUNCT_RE = re.compile("[" + re.escape("".join(CN_PUNCT)) + "]")
 SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.!?;:”’…)%\]»])")
 SPACE_AFTER_OPEN_RE = re.compile(r"([“‘(\[«])\s+")
 MULTI_SPACE_RE = re.compile(r"[^\S\n]{2,}")
-DROP_PARTICLES = set("的旳了地过過嘛呢吧啊呀啦呐吶呗唄哩哟喲咯喽嘍")
+# QT boc hat 1 chu sau longest-match. 了/着/过 giu — sense map đã/đang/rồi.
+DROP_PARTICLES = set("的旳地嘛呢吧啊呀啦呐吶呗唄哩哟喲咯喽嘍")
 CAP_RE = re.compile(
     r"(^|[.!?]\s*[”’\"']?\s*|\n\s*|[“‘\"']\s*)"
     r"([a-zàáạảãăắằặẳẵâấầậẩẫđèéẹẻẽêếềệểễìíịỉĩòóọỏõôốồộổỗơớờợởỡùúụủũưứừựửữỳýỵỷỹ])"
@@ -46,6 +58,9 @@ W_FRAG = 1.5            # phat 2 single-char lien ke (phan manh)
 W_UNKNOWN = 5.0         # ky tu khong co entry nao
 W_DROP = 0.5            # thuong khi boc particle (giu hanh vi QuickTrans)
 W_PATTERN = 3.0         # phat luat nhan {s}/{n}: pattern la fallback cua literal
+# Names.txt / Names_2.txt — QT prioritizedName. Khong dung ENTITY_TRUSTS
+# (QO/Custom 25/100 la phrase override, khong phai ten).
+_NAME_FILE_TRUST = TRUST_BY_FILE["Names.txt"]
 
 
 @dataclass(frozen=True)
@@ -85,6 +100,91 @@ def _find_edges(root: TrieNode, text: str, pos: int) -> list[Edge]:
     return edges
 
 
+def _is_name_prec(prec: tuple) -> bool:
+    """Ten duoc bao ve: Names.txt (trust 20) hoac glossary (SERIES/BOOK_MANUAL)."""
+    layer, trust, _idx = prec
+    if layer >= int(Layer.SERIES_MANUAL):
+        return True
+    return layer == int(Layer.BASE_MULTI) and trust == _NAME_FILE_TRUST
+
+
+def _span_is_protected(dic: Dictionary, text: str, start: int, end: int) -> bool:
+    """Edge hien tai la ten/glossary/Custom/QO — dung de junk Names cat ngang."""
+    node = dic.root
+    for ch in text[start:end]:
+        node = node.children.get(ch)
+        if node is None:
+            return False
+    return any(
+        _is_name_prec(p) or p[0] >= int(Layer.GLOBAL_MANUAL)
+        for _t, p, _pol in node.entries
+    )
+
+
+def _inner_name(dic: Dictionary, text: str, pos: int) -> tuple[int, bool] | None:
+    """Ten dai >= 2 bat dau tai pos. Tra (end, is_manual_glossary).
+
+    is_manual: SERIES/BOOK_MANUAL — user khai bao, tin hon Names.txt (nhieu
+    2-chu common word). Names.txt chi khi dai >= 3 va tran khoi phrase.
+    """
+    node = dic.root
+    j = pos
+    n = len(text)
+    last: tuple[int, bool] | None = None
+    while j < n:
+        node = node.children.get(text[j])
+        if node is None:
+            break
+        j += 1
+        if j - pos < 2:
+            continue
+        name_precs = [p for _t, p, _pol in node.entries if _is_name_prec(p)]
+        if not name_precs:
+            continue
+        last = (j, any(p[0] >= int(Layer.SERIES_MANUAL) for p in name_precs))
+    return last
+
+
+def _swallows_name(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Bo generic neu ten bat dau lech ben trong va (tran khoi span | glossary).
+
+    Phrase chinh no la ten -> giu (QT containsName early-return). Pattern
+    {n}/{p} dung ten lam capture, khong nuot. Dai < 2 khong bao gio nuot.
+    Names.txt nam gon trong collocation (天地 trong 得天地厚爱) khong chan —
+    file ten rat nhieu 2-chu common word.
+    """
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    if _span_is_protected(dic, text, edge.start, edge.end):
+        return False
+    for i in range(edge.start + 1, edge.end):
+        hit = _inner_name(dic, text, i)
+        if hit is None:
+            continue
+        name_end, is_manual = hit
+        if is_manual:
+            return True
+        # Names.txt: chi khi ten dai >= 3 VA tran khoi span. 2-chu (汉语, 天神)
+        # overlapping 1 ky tu la common-word rac, khong phai ten that.
+        if name_end > edge.end and name_end - i >= 3:
+            return True
+    return False
+
+
+def _candidates_at(dic: Dictionary, text: str, pos: int, *, patterns: bool) -> list[Edge]:
+    """Edges tai pos sau khi loai generic nuot ten (QT prioritizedName)."""
+    pat_edges = _pattern_edges(dic, text, pos) if patterns else []
+    if CJK_RE.match(text[pos]) or pat_edges:
+        candidates = _find_edges(dic.root, text, pos) + pat_edges
+        candidates = [e for e in candidates if not _swallows_name(dic, text, e)]
+        if not candidates:
+            candidates = [
+                Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
+            ]
+        return candidates
+    return [_literal_edge(text, pos)]
+
+
 def _literal_edge(text: str, start: int) -> Edge:
     """Run ky tu khong phai CJK — giu nguyen, khong di qua dictionary."""
     n = len(text)
@@ -104,10 +204,12 @@ def _translate_capture(dic: Dictionary, seg: str) -> str:
 
 
 def _entity_ok(dic: Dictionary, seg: str) -> bool:
-    """{n} chi hop le khi chinh no la mot entry entity (Names/overrides/manual)
-    hoac dai tu co trong tu dien — khong phai dong tu/dai tu chi thi."""
+    """{n} hop le: entry entity (Names/manual) hoac hau to tong/dat (宗门…).
+    Khong nuot dai tu/dong tu ('無視自己')."""
     if not seg or seg[0] in PRONOUNS:
         return False
+    if seg[-1] in ENTITY_SUFFIXES and all(CJK_RE.match(ch) for ch in seg):
+        return True
     node = dic.root
     for ch in seg:
         node = node.children.get(ch)
@@ -135,11 +237,17 @@ def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
         m = rule.regex.match(text, pos)
         if not m:
             continue
-        if any(
-            kind == "n" and not _entity_ok(dic, m.group(i + 1) or "")
-            for i, kind in enumerate(rule.slots)
-        ):
-            continue  # {n} phai la entity that (ten/keyword), khong phai cum dong tu
+        skip = False
+        for i, kind in enumerate(rule.slots):
+            cap = m.group(i + 1) or ""
+            if kind == "n" and not _entity_ok(dic, cap):
+                skip = True  # {n} entity/ten, khong nuot dong tu
+                break
+            if kind == "v" and cap not in VERBS:
+                skip = True
+                break
+        if skip:
+            continue
         filled = fill_target(rule, m, lambda s: _translate_capture(dic, s))
         if not filled:
             continue
@@ -150,6 +258,7 @@ def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
                  f"{rule.precedence[0]}:{rule.key}:{rule.target}", score, is_pattern=True)
         )
     return edges
+
 
 
 @dataclass
@@ -190,16 +299,7 @@ def best_paths(dic: Dictionary, text: str, k: int = 4, *, patterns: bool = True)
         ids.sort(key=lambda i: states[i].score, reverse=True)
         ids = ids[:k]
         frontier[pos] = ids
-        # sinh edges tu pos
-        pat_edges = _pattern_edges(dic, text, pos) if patterns else []
-        if CJK_RE.match(text[pos]) or pat_edges:
-            candidates = _find_edges(dic.root, text, pos) + pat_edges
-            if not candidates:
-                candidates = [
-                    Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
-                ]
-        else:
-            candidates = [_literal_edge(text, pos)]
+        candidates = _candidates_at(dic, text, pos, patterns=patterns)
         for edge in candidates:
             bucket = frontier[edge.end]
             for sid in ids:
@@ -232,22 +332,17 @@ def greedy_path(dic: Dictionary, text: str, *, patterns: bool = True) -> list[Ed
     M1 dung path nay de render (parity voi chat luong da kiem chung); lattice
     top-K o tren dung de tinh margin/entropy/alternatives cho risk (M2 router).
     patterns=False dung khi dich capture cua rule — tranh de quy vo han.
+    Sau AD-9: apply_sense (chu ben phai + loai cau) chi doi *target* cung span.
+    Generic dai hon khong duoc nuot Names/glossary bat dau lech ben trong
+    (QT prioritizedName).
     """
     edges: list[Edge] = []
     n = len(text)
     pos = 0
+    in_quote = False
     while pos < n:
-        pat: list[Edge] = []
-        if patterns and (CJK_RE.match(text[pos]) or is_num_start(text[pos])):
-            pat = _pattern_edges(dic, text, pos)
-        if CJK_RE.match(text[pos]) or pat:
-            cands = _find_edges(dic.root, text, pos) + pat
-            if not cands:
-                edges.append(
-                    Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
-                )
-                pos += 1
-                continue
+        cands = _candidates_at(dic, text, pos, patterns=patterns)
+        if CJK_RE.match(text[pos]) or any(e.is_pattern for e in cands):
             longest = max(e.end for e in cands)
             # AD-9 (story 1.4): trong cac match dai nhat — layer precedence
             # (layer, trust) truoc, roi literal thang pattern, roi tie-break
@@ -266,10 +361,17 @@ def greedy_path(dic: Dictionary, text: str, *, patterns: bool = True) -> list[Ed
             )
             if longest == pos + 1 and text[pos] in DROP_PARTICLES:
                 best = Edge(pos, longest, "", best.precedence, best.policy, best.entry_version_id, best.score + W_DROP)
+            else:
+                best = apply_sense(best, text, in_quote=in_quote)
             edges.append(best)
             pos = longest
         else:
             e = _literal_edge(text, pos)
+            for ch in text[pos:e.end]:
+                if ch in "「『":
+                    in_quote = True
+                elif ch in "」』":
+                    in_quote = False
             edges.append(e)
             pos = e.end
     return edges

@@ -25,7 +25,13 @@ from .config import (
 from .document import parse_document
 from .export import ExportResult, build_output, export_run
 from .fingerprint import block_source_hash, build_run_fingerprint
-from .project import Project, create_project, project_lock, workspace_for
+from .project import (
+    Project,
+    create_project,
+    default_output_path,
+    project_lock,
+    workspace_for,
+)
 from .correction import affected_block_ids, diff_revisions
 from .qa import sanitize_source
 from .projection import reconcile_project
@@ -194,7 +200,7 @@ def _translate_locked(
     done = st.find_completed_run(fingerprint)
     if done is not None:
         # no-op: cung fingerprint da hoan thanh (muc 3.1)
-        out = request.output or (project.dist_dir / "book.vi.txt")
+        out = request.output or default_output_path(project, request.source)
         if out.exists():
             return PipelineResult(
                 run_id=done.id,
@@ -366,7 +372,7 @@ def _translate_locked(
         return PipelineResult(run_id=run.id, exit_code=9, report=report, output=None)
 
     st.set_run_status(run.id, "completed")
-    out_path = request.output or (project.dist_dir / "book.vi.txt")
+    out_path = request.output or default_output_path(project, request.source)
     result = export_run(
         project,
         output=out_path,

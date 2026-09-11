@@ -133,7 +133,9 @@ def test_append_chapter_reuses_old_blocks(project):
     # block cu tai dung tu cache => so lan dich that chi tang dung so block MOI
     assert attempts_2 - attempts_1 == 2
     content = out.read_text(encoding="utf-8")
-    assert "Lăng Thiên" in content and "Lão giả tóc trắng" in content
+    assert "Lăng Thiên" in content
+    # Custom.txt: 白髮老者=bạch phát lão giả (thang VP "Lão giả tóc trắng")
+    assert "lão giả" in content.lower()
 
 
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")

@@ -1,8 +1,8 @@
 """Tests cho projection + reconciler + ownership guard (story 2.4, SPEC AD-8/AD-15 buoc 10).
 
 glossary.auto.tsv chi la projection dung lai tu active pointer; reconciler
-kiem tra tinh khop luc startup; bundle thieu/hash sai la fatal corruption;
-moi duong ghi may vao file human-owned bi chan.
+kiem tra tinh khop luc startup; bundle dir mat khong fatal (publish lai);
+dir con thieu file / hash sai la fatal corruption.
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from zhvi.projection import (
     assert_machine_writable,
     reconcile_project,
 )
-from zhvi.revision import AutoEntry, publish_revision
+from zhvi.revision import AutoEntry, ensure_active_revision, publish_revision
 
 
 def _mini_dict_dir(tmp_path: Path) -> Path:
@@ -75,10 +75,20 @@ def test_reconciler_noop_without_active(tmp_path):
     assert not (project.root / "glossary.auto.tsv").exists()
 
 
-def test_reconciler_fatal_missing_bundle(tmp_path):
-    """Bundle thieu (active row ton tai nhung dir mat) = fatal corruption."""
-    _dict_dir, project, result = _publish(tmp_path)
+def test_reconciler_missing_bundle_dir_republishes(tmp_path):
+    """Dir bundle mat (revisions/ gitignore) — khong corrupt; ensure_active publish lai cung id."""
+    dict_dir, project, result = _publish(tmp_path)
     shutil.rmtree(project.revisions_dir / result.revision_id)
+    assert reconcile_project(project) is None
+    restored = ensure_active_revision(dict_dir, project)
+    assert restored == result.revision_id
+    assert (project.revisions_dir / restored / "dictionary.bin").is_file()
+
+
+def test_reconciler_fatal_incomplete_bundle(tmp_path):
+    """Dir con, thieu file = corruption that."""
+    _dict_dir, project, result = _publish(tmp_path)
+    (project.revisions_dir / result.revision_id / "dictionary.bin").unlink()
     with pytest.raises(RuntimeError, match="corrupt|thieu|bundle"):
         reconcile_project(project)
 

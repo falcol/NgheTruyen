@@ -7,7 +7,15 @@ from pathlib import Path
 
 import pytest
 
-from zhvi.project import ProjectError, create_project, open_project, project_lock, workspace_for
+from zhvi.project import (
+    Project,
+    ProjectError,
+    create_project,
+    default_output_path,
+    open_project,
+    project_lock,
+    workspace_for,
+)
 from zhvi.snapshot import DecodeError, SourceRevision, import_snapshot
 
 
@@ -85,9 +93,28 @@ def test_open_project_requires_state_dir(tmp_path):
         open_project(tmp_path / "rong")
 
 
-def test_workspace_for():
+def test_workspace_for(tmp_path, monkeypatch):
+    monkeypatch.setenv("ZHVI_PROJECT", str(tmp_path / "ws"))
     ws = workspace_for(Path("/x/truyen.txt"))
-    assert ws.name == "truyen.zhvi"
+    assert ws == (tmp_path / "ws").resolve()
+    assert workspace_for(Path("/y/other.txt")) == ws
+
+
+@pytest.mark.keep_default_workspace
+def test_default_workspace_is_package_dir(monkeypatch):
+    monkeypatch.delenv("ZHVI_PROJECT", raising=False)
+    from zhvi.project import default_workspace
+
+    ws = default_workspace()
+    assert ws.name == "workspace"
+    assert (ws.parent / "pyproject.toml").is_file()
+    assert ws.parent.name == "zhvi"
+
+
+def test_default_output_path_uses_source_stem(tmp_path):
+    p = Project(tmp_path)
+    assert default_output_path(p, Path("chap1_raw.txt")).name == "chap1_raw.vi.txt"
+    assert default_output_path(p, None).name == "book.vi.txt"
 
 
 def test_project_lock_blocks_second_holder(project):

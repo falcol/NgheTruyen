@@ -1,0 +1,7 @@
+glossary.auto.tsv
+.zhvi/revisions/
+.zhvi/cache/
+.zhvi/locks/
+.zhvi/logs/
+.zhvi/*.sqlite3-wal
+.zhvi/*.sqlite3-shm

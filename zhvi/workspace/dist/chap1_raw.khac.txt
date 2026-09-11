@@ -1,0 +1,57 @@
+# Chap 1: 8 chỗ khác
+
+===== 1. dòng 7 =====
+CŨ
+“Thần Tổ, tiểu sư đệ đã bị ta lừa gạt tiến vào Luân Hồi đạo, hiện tại đã đi đầu thai.” Tại bạch phát lão giả bên cạnh, đang có một đại hán vạm vỡ nửa quỳ tại phía trên Tiên Thổ, cung kính trả lời.
+
+MỚI
+“Thần Tổ, tiểu sư đệ đã bị ta lừa gạt tiến vào Luân Hồi đạo, hiện tại đã đi đầu thai.” Ở bên cạnh bạch phát lão giả, đang có một đại hán vạm vỡ nửa quỳ trên Tiên Thổ, cung kính trả lời.
+
+===== 2. dòng 22 =====
+CŨ
+“Sư phó, Luân Hồi đạo sẽ phế bỏ thần thể, rút đi thần lực, Chư Thiên Vạn Giới hiểm cảnh trùng điệp, tiểu sư đệ không có tu vi, lần này hạ giới, có thể bị nguy hiểm hay không?” Đại hán vạm vỡ có chút có chút bận tâm hỏi.
+
+MỚI
+“Sư phó, Luân Hồi đạo sẽ phế bỏ thần thể, rút đi thần lực, Chư Thiên Vạn Giới hiểm cảnh trùng điệp, tiểu sư đệ không có tu vi, lần này hạ giới, có thể bị nguy hiểm hay không?” Người vạm vỡ có chút có chút bận tâm hỏi.
+
+===== 3. dòng 26 =====
+CŨ
+“Hỗn độn đạo thể?” Bưu hình đại hán hơi nghi hoặc một chút hỏi một câu.
+
+MỚI
+“Hỗn độn đạo thể?” Bưu hình người đàn ông vạm vỡ hơi nghi hoặc một chút hỏi một câu.
+
+===== 4. dòng 46 =====
+CŨ
+“Uy, nơi này là địa phương nào?” Lăng Thiên ngữ khí bất thiện đẩy bên cạnh một cái Tiểu Bàn tử, lời nói từ trong miệng nói ra, hắn phát hiện mình thanh âm làm sao biến được có chút nãi thanh nãi khí đã?
+
+MỚI
+“Uy, nơi này là chỗ gì?” Lăng Thiên ngữ khí bất thiện đẩy bên cạnh một cái Tiểu Bàn tử, lời nói từ trong miệng nói ra, hắn phát hiện mình thanh âm làm sao biến được có chút nãi thanh nãi khí đã?
+
+===== 5. dòng 62 =====
+CŨ
+Về phần trước mắt cái này không có bất kỳ cái gì linh lực ba động nữ tử, hắn không để vào mắt, Lăng Thiên tự mình nhìn khắp bốn phía, tò mò nhìn cái này “Bí cảnh” bên trong hết thảy.
+
+MỚI
+Về phần trước mắt cái này không có bất kỳ cái gì linh lực ba động con gái, hắn không để vào mắt, Lăng Thiên tự mình nhìn khắp bốn phía, tò mò nhìn cái này “Bí cảnh” bên trong hết thảy.
+
+===== 6. dòng 70 =====
+CŨ
+Bao nhiêu Thần Tông Thánh nữ đối mình cảm mến, bao nhiêu Huyền Nữ muốn trở thành tiểu thiếp của mình, ngày bình thường, so nữ tử trước mắt này còn có tinh mỹ tuyệt luân thần nữ đều đối hắn vô cùng cung kính, liền cái nữ tử như tỳ nữ trần gian này, thế mà cũng dám mệnh lệnh hắn?
+
+MỚI
+Bao nhiêu Thần Tông Thánh nữ đối mình cảm mến, bao nhiêu Huyền Nữ muốn trở thành tiểu thiếp của mình, ngày bình thường, so nữ tử trước mắt này còn có tinh mỹ tuyệt luân thần nữ đều đối hắn vô cùng cung kính, liền cái nữ tử như tỳ nữ trần gian này, thế mà cũng dám ra lệnh cho hắn?
+
+===== 7. dòng 72 =====
+CŨ
+Nhất định chính là trò cười!
+
+MỚI
+Đơn giản chính là trò cười!
+
+===== 8. dòng 88 =====
+CŨ
+Đây hết thảy đều phảng phất tại nói cho hắn biết, hắn hiện tại chỉ là một cái tiểu thí hài.
+
+MỚI
+Đây hết thảy đều phảng phất tại nói cho hắn biết, hắn hiện tại chỉ là một tiểu thí hài.

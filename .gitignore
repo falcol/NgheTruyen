@@ -17,8 +17,18 @@ _bmad/
 CLAUDE.md
 skills-lock.json
 
-# zhvi auto-generated workspaces + caches
+# zhvi auto-generated per-file workspaces (chap1_raw.zhvi/ ...)
 *.zhvi/
+# workspace dung chung: sqlite + sources track; bundle tu dien ~280MB khong
+!zhvi/workspace/.zhvi/
+!zhvi/workspace/.zhvi/**
+zhvi/workspace/.zhvi/revisions/
+zhvi/workspace/.zhvi/cache/
+zhvi/workspace/.zhvi/locks/
+zhvi/workspace/.zhvi/logs/
+zhvi/workspace/.zhvi/*.sqlite3-wal
+zhvi/workspace/.zhvi/*.sqlite3-shm
+zhvi/workspace/glossary.auto.tsv
 zhvi/.pytest_cache/
 .claude/.story-automator-active
 

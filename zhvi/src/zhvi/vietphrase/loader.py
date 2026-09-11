@@ -14,16 +14,20 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .layers import Layer, default_policy, make_entry
-from .patterns import PatternRule, SLOT_RE, build_pattern_index, compile_rule
+from .patterns import SLOT_RE, PatternRule, build_pattern_index, compile_rule
 
 TRUST_BY_FILE = {
     "ChinesePhienAmWords.txt": 5.0,
+    "ChinesePhienAmWords_2.txt": 5.0,
     "VietPhrase_1.txt": 10.0,
     "VietPhrase_2.txt": 10.0,
     "VietPhrase_3.txt": 10.0,
+    "VietPhrase_4.txt": 10.0,
     "LuatNhan.txt": 15.0,
     "Names.txt": 20.0,
+    "Names_2.txt": 20.0,
     "QualityOverrides.txt": 25.0,
+    "ContextPatterns.txt": 25.0,
     "Custom.txt": 100.0,
 }
 LOAD_ORDER = tuple(TRUST_BY_FILE)
@@ -179,9 +183,9 @@ def load_dictionary(
             zh, vi = parsed
             load_index += 1
             layer = Layer.BASE_SINGLE if len(zh) == 1 else Layer.BASE_MULTI
-            if name == "Names.txt" and len(zh) == 1:
+            if name.startswith("Names") and len(zh) == 1:
                 continue  # Names chi co da tu ( nhu engine cu)
-            if name in ("QualityOverrides.txt", "Custom.txt"):
+            if name in ("QualityOverrides.txt", "ContextPatterns.txt", "Custom.txt"):
                 layer = Layer.GLOBAL_MANUAL
             prec = (int(layer), trust, load_index)
             if SLOT_RE.search(zh):

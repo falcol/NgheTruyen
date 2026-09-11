@@ -394,7 +394,11 @@ class State:
             )
 
     def close(self) -> None:
-        self.conn.close()
+        try:
+            self.conn.commit()
+            self.conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        finally:
+            self.conn.close()
 
     # ---- dictionary revisions (story 2.2, AD-13/AD-15) ----
     def _cas_active_locked(

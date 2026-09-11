@@ -270,3 +270,99 @@ def test_ad9_load_order_independence_real_files(tmp_path):
     dic_a = load_dictionary(dir_a)
     dic_b = load_dictionary(dir_b)
     assert vp_plan(dic_a, "凌天").text == vp_plan(dic_b, "凌天").text == "Alpha"
+
+
+def test_generic_phrase_does_not_swallow_inner_name(tmp_path):
+    """QT prioritizedName: VP '叫张三' khong duoc nuot Names '张三丰' lech 1 chu."""
+    d = tmp_path / "name-guard"
+    d.mkdir()
+    (d / "VietPhrase_1.txt").write_text(
+        "叫张三=gọi trương tam\n叫=gọi\n", encoding="utf-8"
+    )
+    (d / "Names.txt").write_text("张三丰=Trương Tam Phong\n", encoding="utf-8")
+    (d / "ChinesePhienAmWords.txt").write_text(
+        "丰=phong\n张=trương\n三=tam\n", encoding="utf-8"
+    )
+    draft = vp_plan(load_dictionary(d), "叫张三丰")
+    assert draft.text == "Gọi Trương Tam Phong"
+
+
+def test_name_span_kept_when_shorter_name_inside(tmp_path):
+    """Cụm chinh no la ten -> giu, khong nhường ten ngan hon ben trong."""
+    d = tmp_path / "name-self"
+    d.mkdir()
+    (d / "Names.txt").write_text(
+        "张三丰=Trương Tam Phong\n三丰=Tam Phong\n", encoding="utf-8"
+    )
+    (d / "ChinesePhienAmWords.txt").write_text(
+        "张=trương\n三=tam\n丰=phong\n", encoding="utf-8"
+    )
+    draft = vp_plan(load_dictionary(d), "张三丰")
+    assert draft.text == "Trương Tam Phong"
+
+
+def test_glossary_name_not_swallowed_by_generic(tmp_path):
+    """glossary.manual (BOOK_MANUAL) duoc bao ve giong Names.txt."""
+    d = tmp_path / "gloss-guard"
+    d.mkdir()
+    (d / "VietPhrase_1.txt").write_text("看凌=nhìn lăng\n看=nhìn\n", encoding="utf-8")
+    (d / "ChinesePhienAmWords.txt").write_text(
+        "凌=lăng\n天=thiên\n", encoding="utf-8"
+    )
+    gloss = tmp_path / "glossary.manual.tsv"
+    gloss.write_text("凌天=Lăng Thiên\n", encoding="utf-8")
+    draft = vp_plan(load_dictionary(d, manual_glossary=gloss), "看凌天")
+    assert draft.text == "Nhìn Lăng Thiên"
+
+
+def test_contained_names_file_does_not_break_collocation(tmp_path):
+    """Names.txt 2-chu nam gon trong VP dai hon -> giu collocation."""
+    d = tmp_path / "contained-names"
+    d.mkdir()
+    (d / "VietPhrase_1.txt").write_text(
+        "得天地厚爱=được thiên địa hậu ái\n", encoding="utf-8"
+    )
+    (d / "Names.txt").write_text("天地=Thiên Địa\n", encoding="utf-8")
+    (d / "ChinesePhienAmWords.txt").write_text(
+        "得=đắc\n天=thiên\n地=địa\n厚=hậu\n爱=ái\n", encoding="utf-8"
+    )
+    draft = vp_plan(load_dictionary(d), "得天地厚爱")
+    assert draft.text == "Được thiên địa hậu ái"
+
+
+def test_contained_glossary_still_protected(tmp_path):
+    """glossary nam gon trong VP dai hon van duoc tach ra (user khai bao)."""
+    d = tmp_path / "contained-gloss"
+    d.mkdir()
+    (d / "VietPhrase_1.txt").write_text(
+        "看凌天=nhìn lăng thiên\n看=nhìn\n", encoding="utf-8"
+    )
+    (d / "ChinesePhienAmWords.txt").write_text(
+        "凌=lăng\n天=thiên\n", encoding="utf-8"
+    )
+    gloss = tmp_path / "glossary.manual.tsv"
+    gloss.write_text("凌天=Lăng Thiên\n", encoding="utf-8")
+    draft = vp_plan(load_dictionary(d, manual_glossary=gloss), "看凌天")
+    assert draft.text == "Nhìn Lăng Thiên"
+
+
+def test_two_char_names_file_straddle_ignored(tmp_path):
+    """Names 2-chu overlapping 1 ky tu (汉语 vs 大汉) khong cat collocation."""
+    d = tmp_path / "straddle"
+    d.mkdir()
+    (d / "VietPhrase_1.txt").write_text("大汉=đại hán\n", encoding="utf-8")
+    (d / "Names.txt").write_text("汉语=Hán ngữ\n", encoding="utf-8")
+    (d / "ChinesePhienAmWords.txt").write_text("又=hựu\n", encoding="utf-8")
+    draft = vp_plan(load_dictionary(d), "大汉又")
+    assert draft.text == "Đại hán hựu"
+
+
+def test_custom_name_not_split_by_straddle_names(tmp_path):
+    """Custom 凌天 khong bi Names 天神 cat thanh Lăng + Thiên Thần."""
+    d = tmp_path / "custom-span"
+    d.mkdir()
+    (d / "Custom.txt").write_text("凌天=Lăng Thiên\n", encoding="utf-8")
+    (d / "Names.txt").write_text("天神=Thiên Thần\n", encoding="utf-8")
+    (d / "VietPhrase_1.txt").write_text("神尊=thần tôn\n", encoding="utf-8")
+    draft = vp_plan(load_dictionary(d), "凌天神尊")
+    assert draft.text == "Lăng Thiên thần tôn"

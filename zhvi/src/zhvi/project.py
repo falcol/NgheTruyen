@@ -12,6 +12,8 @@ from pathlib import Path
 from .config import PROJECT_TOML_TEMPLATE, Config, resolve_config
 
 STATE_DIRNAME = ".zhvi"
+WORKSPACE_DIRNAME = "workspace"
+ZHVI_PROJECT_ENV = "ZHVI_PROJECT"
 
 
 class ProjectError(RuntimeError):
@@ -81,9 +83,26 @@ class Project:
         return resolve_config(self.root, dict_dir=dict_dir)
 
 
-def workspace_for(source_file: Path) -> Path:
-    """Auto workspace cạnh input: truyen.txt -> truyen.zhvi/ (muc 3.1)."""
-    return source_file.with_name(source_file.stem + STATE_DIRNAME)
+def default_workspace() -> Path:
+    """Workspace dung chung: zhvi/workspace/. Override bang env ZHVI_PROJECT."""
+    env = os.environ.get(ZHVI_PROJECT_ENV, "").strip()
+    if env:
+        return Path(env).expanduser().resolve()
+    pkg_root = Path(__file__).resolve().parents[2]  # zhvi/src/zhvi/project.py -> zhvi/
+    if (pkg_root / "pyproject.toml").is_file():
+        return pkg_root / WORKSPACE_DIRNAME
+    return Path.cwd() / WORKSPACE_DIRNAME
+
+
+def workspace_for(source_file: Path | None = None) -> Path:
+    """Moi file khong -p dung chung zhvi/workspace/ — khong tao <file>.zhvi/."""
+    return default_workspace()
+
+
+def default_output_path(project: Project, source: Path | None) -> Path:
+    """dist/<stem>.vi.txt de nhieu truyen khong ghi de nhau."""
+    stem = source.stem if source is not None else "book"
+    return project.dist_dir / f"{stem}.vi.txt"
 
 
 def create_project(root: Path) -> Project:

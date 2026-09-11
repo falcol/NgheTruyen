@@ -9,6 +9,7 @@ import pytest
 from typer.testing import CliRunner
 
 from zhvi.cli import app
+from zhvi.project import default_workspace
 from zhvi.state import State
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -26,8 +27,8 @@ def _copy_fixture(tmp_path: Path) -> Path:
     return dest
 
 
-def _workspace(src: Path) -> Path:
-    return src.with_name(src.stem + ".zhvi")
+def _workspace(_src: Path) -> Path:
+    return default_workspace()
 
 
 def _obs_count(ws: Path) -> int:

@@ -282,6 +282,7 @@ def _mask_root() -> _Node:
         ensure_dicts()
         root = _Node()
         _load_mask_file(root, DICT_DIR / "Names.txt", 20)
+        _load_mask_file(root, DICT_DIR / "Names_2.txt", 20)
         _load_mask_file(root, DICT_DIR / CUSTOM_FILE, CUSTOM_PRI)
         _MASK_ROOT = root
         print("[hachimi] mask dict Names+Custom", file=sys.stderr)

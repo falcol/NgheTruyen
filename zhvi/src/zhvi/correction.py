@@ -19,6 +19,9 @@ from .vietphrase.loader import to_simplified
 
 def _entries_by_key(project: Project, revision_id: str) -> dict[tuple[str, str, str], str]:
     """(layer, scope, source) -> target tu bundle entries.tsv."""
+    # [Note] Last-write wins: Names.txt + VietPhrase cung layer 3/global/source
+    # thi chi giu 1 target. Bo Names_2 trung VP khong vao affected_keys, adopt
+    # giu block cu (winner trust 20 -> 10). Confirm truoc khi sua identity?
     out: dict[tuple[str, str, str], str] = {}
     for parts in read_bundle_entries(project, revision_id):
         if len(parts) >= 4:

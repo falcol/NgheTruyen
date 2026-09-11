@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from zhvi.project import default_workspace
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DICT_DIR = REPO_ROOT / "crawler" / "vietphrase" / "dicts"
 CHAP1 = REPO_ROOT / "raw_china" / "chap1_raw.txt"
@@ -32,7 +34,7 @@ def test_input_error_exit_3(tmp_path):
 
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
 def test_happy_path_one_command(tmp_path):
-    """zhvi translate <txt> -o <out> — tu tao workspace ben canh input (muc 3.1)."""
+    """zhvi translate <txt> -o <out> — workspace dung chung (ZHVI_PROJECT)."""
     src = tmp_path / "truyen.txt"
     src.write_text("第一章\n\n凌天看着前方。\n", encoding="utf-8")
     out = tmp_path / "truyen.vi.txt"
@@ -41,8 +43,7 @@ def test_happy_path_one_command(tmp_path):
     report = json.loads(r.stdout)
     assert report["blocks"] == 2
     assert out.read_text(encoding="utf-8").startswith("Chương 1") or "Lăng Thiên" in out.read_text(encoding="utf-8")
-    # workspace tu dong ben canh input
-    assert (tmp_path / "truyen.zhvi" / ".zhvi" / "state.sqlite3").is_file()
+    assert (default_workspace() / ".zhvi" / "state.sqlite3").is_file()
     # no-op lan 2
     r2 = run_cli("translate", str(src), "-o", str(out), "--dict-dir", str(DICT_DIR), "--no-learn", "--json")
     assert r2.returncode == 0
@@ -55,7 +56,7 @@ def test_status_and_inspect(tmp_path):
     src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
     r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR), "--no-learn")
     assert r.returncode == 0
-    proj = tmp_path / "truyen.zhvi"
+    proj = default_workspace()
     st = run_cli("status", "--project", str(proj))
     assert st.returncode == 0
     info = json.loads(st.stdout)
@@ -83,7 +84,7 @@ def test_export_command(tmp_path):
     src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
     r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR), "--no-learn")
     assert r.returncode == 0
-    proj = tmp_path / "truyen.zhvi"
+    proj = default_workspace()
     out2 = tmp_path / "re-export.txt"
     r2 = run_cli("export", "--project", str(proj), "-o", str(out2))
     assert r2.returncode == 0, r2.stderr

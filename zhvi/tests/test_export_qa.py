@@ -85,6 +85,15 @@ def test_repeated_artifact_fails_qa():
     assert "repeated_artifact" in r.errors
 
 
+def test_header_equals_and_ellipsis_not_repeated_artifact():
+    doc = parse_document("Hi.\n")
+    blocks = _blocks_for(doc, {})
+    assembled = build_output(doc, blocks)
+    decorated = "===== chương 204 =====\n" + assembled + "Cọt kẹt..T..Tttt, chỗ....\n"
+    r = run_export_qa(doc, decorated, blocks)
+    assert "repeated_artifact" not in r.errors
+
+
 def test_clean_output_passes_and_does_not_mutate():
     doc = parse_document("Hi.\n")
     blocks = _blocks_for(doc, {})

@@ -2,7 +2,7 @@
 
 SHA-256 cua (source_revision + encoding + parser_version + segmenter_version +
 resolved_config + dictionary_revision_id + preprocess_version + qa_version +
-pipeline_version). Story 1.2: khong con thanh phan prompt/model/router.
+pipeline_version + renderer_version). Story 1.2: khong con thanh phan prompt/model/router.
 Story 2.3: glossary manual nam trong revision manifest — fingerprint chi chua
 revision id thay vi hash file rieng (doi file giua chang khong fork run;
 revision moi moi fork). Story 2.6: PREPROCESS_VERSION (junk strip + collapse
@@ -17,6 +17,7 @@ from .config import (
     PIPELINE_VERSION,
     PREPROCESS_VERSION,
     QA_VERSION,
+    RENDERER_VERSION,
     SEGMENTER_VERSION,
     Config,
     config_hash,
@@ -40,6 +41,7 @@ def build_run_fingerprint(
         PREPROCESS_VERSION,
         QA_VERSION,
         PIPELINE_VERSION,
+        RENDERER_VERSION,
     ]
     return hashlib.sha256("\x1f".join(parts).encode("utf-8")).hexdigest()
 

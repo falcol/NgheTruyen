@@ -1,0 +1,17 @@
+# Convert inversion + frames. {p}=CJK 1-4, khong hat/vi tu; {v}=dong tu (VERBS, dai truoc).
+# {p}的时候 / 从{p}里 / {n}的{p}: over-match. Chi giu khung neo literal trai.
+桌上的{p}={p} trên bàn
+桌面上的{p}={p} trên mặt bàn
+脸上的{p}={p} trên mặt
+他脸上的{p}={p} trên mặt hắn
+神宗里的{p}={p} trong thần tông
+精致的{p}={p} tinh xảo
+偌大的{p}={p} lớn như vậy
+六岁的{p}={p} sáu tuổi
+如月牙般的{p}={p} như nguyệt nha
+闭关上万年的{p}={p} bế quan trên vạn năm
+女教师的{p}={p} của nữ lão sư
+凌天的{p}={p} của Lăng Thiên
+小孩的{p}={p} của tiểu hài
+一把{v}=một cái {v}
+把{p}{v}=đem {p} {v}

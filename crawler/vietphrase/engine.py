@@ -7,18 +7,24 @@ from pathlib import Path
 
 import requests
 
+from .sync_dicts import phienam_needs_refresh
+
 DICT_DIR = Path(__file__).resolve().parent / "dicts"
 DICT_BASE = "https://vietphrase.app/dicts"
 
 # Manifest priority: higher wins on the same key. Custom overlay is above all.
 DICT_FILES: list[tuple[str, int]] = [
     ("ChinesePhienAmWords.txt", 5),
+    ("ChinesePhienAmWords_2.txt", 5),
     ("VietPhrase_1.txt", 10),
     ("VietPhrase_2.txt", 10),
     ("VietPhrase_3.txt", 10),
+    ("VietPhrase_4.txt", 10),
     ("LuatNhan.txt", 15),
     ("Names.txt", 20),
+    ("Names_2.txt", 20),
     ("QualityOverrides.txt", 25),
+    ("ContextPatterns.txt", 25),
     ("trad-simp.txt", 0),  # mapping file, not a phrase dict
 ]
 CUSTOM_FILE = "Custom.txt"
@@ -177,8 +183,8 @@ class Engine:
             if eq < 1:
                 continue
             zh = line[:eq].strip()
-            if "{0}" in zh:
-                continue
+            if "{" in zh:
+                continue  # luat nhan {s}/{n}/{p}/{v} — engine cu khong nap pattern
             vi = _first_meaning(line[eq + 1 :])
             if pri == 20 and len(zh) == 1:
                 continue
@@ -245,12 +251,14 @@ def ensure_dicts() -> None:
         for name, _ in DICT_FILES
         if name != CUSTOM_FILE and not (DICT_DIR / name).is_file()
     ]
+    if phienam_needs_refresh(DICT_DIR) and "ChinesePhienAmWords.txt" not in missing:
+        missing.append("ChinesePhienAmWords.txt")
     if not missing:
         return
     for name in missing:
         url = f"{DICT_BASE}/{name}"
         print(f"[vietphrase] download {name}", flush=True)
-        resp = requests.get(url, timeout=120)
+        resp = requests.get(url, timeout=300)
         resp.raise_for_status()
         (DICT_DIR / name).write_bytes(resp.content)
 

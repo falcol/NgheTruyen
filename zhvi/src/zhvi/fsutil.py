@@ -14,6 +14,7 @@ from pathlib import Path
 HUMAN_OWNED_EXACT = frozenset({
     "Custom.txt",
     "QualityOverrides.txt",
+    "ContextPatterns.txt",
     "glossary.manual.tsv",
 })
 HUMAN_OWNED_GLOBS = ("VietPhrase_*.txt",)

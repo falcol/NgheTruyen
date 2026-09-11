@@ -15,7 +15,7 @@ from pathlib import Path
 from .config import PARSER_VERSION, PIPELINE_VERSION, QA_VERSION, SEGMENTER_VERSION
 from .fsutil import atomic_write as fsutil_atomic_write
 from .document import Document
-from .project import Project
+from .project import Project, default_output_path
 from .state import RunRow, State
 
 
@@ -146,7 +146,7 @@ def export_run(
     verify_output(doc, content, blocks)
     data = content.encode("utf-8")
 
-    dest = output or (project.dist_dir / "book.vi.txt")
+    dest = output or default_output_path(project, None)
     try:
         dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists() and not replace_existing:

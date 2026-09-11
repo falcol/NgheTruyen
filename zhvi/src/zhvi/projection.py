@@ -2,8 +2,9 @@
 
 glossary.auto.tsv chi la PROJECTION dung lai tu active pointer — khong phai
 nguon chan ly (SQLite so huu state). Materialize SAU DB commit; crash truoc
-khi dung xong duoc reconciler luc startup dung lai. Bundle thieu/hash sai
-la fatal corruption voi thong bao ro.
+khi dung xong duoc reconciler luc startup dung lai. Bundle dir mat
+(revisions/ gitignore) khong fatal; dir con thieu file / hash sai la
+fatal corruption voi thong bao ro.
 
 DEFERRAL (epic 4): AutoVietPhrase.txt (projection auto TOAN CUC tai dict_dir)
 chi duoc materialize boi global registry — khong thuoc scope book project
@@ -61,7 +62,8 @@ def reconcile_project(project: Project) -> str | None:
     """Kiem active pointer + bundle hash + projection luc startup.
 
     - Chua co active: noop.
-    - Bundle thieu file / manifest hash khong khop id: FATAL corruption
+    - Bundle dir khong co (revisions/ gitignore): noop — ensure_active publish lai.
+    - Dir con nhung thieu file / manifest hash khong khop: FATAL corruption
       (RuntimeError, thong bao ro) — khong tu dong chua.
     - Projection cu/thieu (crash giua commit va materialize): dung lai tu
       active pointer.
@@ -76,6 +78,8 @@ def reconcile_project(project: Project) -> str | None:
         return None
 
     bundle = project.revisions_dir / active
+    if not bundle.is_dir():
+        return None
     for name in BUNDLE_FILES:
         if not (bundle / name).is_file():
             raise RuntimeError(

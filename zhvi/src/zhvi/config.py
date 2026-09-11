@@ -9,13 +9,13 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 PARSER_VERSION = "zhvi-parser-1"
-SEGMENTER_VERSION = "zhvi-segmenter-1"
+SEGMENTER_VERSION = "zhvi-segmenter-2"  # name-guard: Names>=3 tran + glossary inner
 QA_VERSION = "zhvi-qa-1"
 PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # Version cua logic nap tu dien / render target — tham gia canonical manifest
 # cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
-LOADER_VERSION = "zhvi-loader-1"
-RENDERER_VERSION = "zhvi-renderer-1"
+LOADER_VERSION = "zhvi-loader-6"  # {p} P_STOP + 上里后 (Adj+N neo)
+RENDERER_VERSION = "zhvi-renderer-7"  # sense 吞: nuốt (động từ) / thôn (hợp thể, 吞吃)
 # Version cua preprocessing view (junk strip + repetition collapse rules,
 # AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
 # collapse phai bump nay (run/cache cu tu invalid).
@@ -26,12 +26,16 @@ ROUTE_VIETPHRASE = "VIETPHRASE"
 # Base dictionary files, in load order (same layout as crawler/vietphrase/dicts).
 BASE_DICT_FILES = (
     "ChinesePhienAmWords.txt",
+    "ChinesePhienAmWords_2.txt",
     "VietPhrase_1.txt",
     "VietPhrase_2.txt",
     "VietPhrase_3.txt",
+    "VietPhrase_4.txt",
     "LuatNhan.txt",
     "Names.txt",
+    "Names_2.txt",
     "QualityOverrides.txt",
+    "ContextPatterns.txt",
 )
 TRAD_SIMP_FILE = "trad-simp.txt"
 CUSTOM_FILE = "Custom.txt"

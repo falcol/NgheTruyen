@@ -19,7 +19,16 @@ from zhvi.state import State
 from zhvi.vietphrase.layers import Layer
 
 PLACEHOLDER_MARKERS = ("__ZHVI", "\ufffc")
+# Stutter artifact ("ababab", "có chútcó chút"). Bo qua ===== / .... (khong chu cai).
 REPEATED_RE = re.compile(r"(\S{2,})\1")
+
+
+def _is_letter_stutter(text: str) -> bool:
+    # >=2 chu cai: bat "ababab"; bo "..T..T" / "=====".
+    return any(
+        sum(1 for ch in m.group(1) if ch.isalpha()) >= 2
+        for m in REPEATED_RE.finditer(text)
+    )
 
 
 class QaFailure(RuntimeError):
@@ -50,7 +59,7 @@ def run_export_qa(
         errors.append("placeholder")
     if CJK_RE.search(output_text):
         errors.append("leftover_cjk")
-    if REPEATED_RE.search(output_text):
+    if _is_letter_stutter(output_text):
         errors.append("repeated_artifact")
     if entity_targets:
         blocks = [

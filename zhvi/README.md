@@ -53,17 +53,21 @@ Sau khi cài đặt, binary `zhvi` nằm trong `.venv/bin/`. Chạy từ **repo 
 
 ## Nhanh chóng (Happy path)
 
-### 1 lệnh, tự tạo workspace cạnh file
+### 1 lệnh, workspace dùng chung `zhvi/workspace/`
+
+Mọi truyện dùng **một** project: glossary + `dist/` + DB. Không tạo `<file>.zhvi/` cạnh file nguồn. `dist/`, `glossary.manual.tsv` và `.zhvi/state.sqlite3` commit được; bundle từ điển (`revisions/`, ~280MB) gitignore — clone tự publish lại từ `crawler/vietphrase/dicts/`.
 
 ```bash
-# truyen.txt → truyen.zhvi/ (workspace auto) → truyen.vi.txt
-zhvi translate truyen.txt -o truyen.vi.txt
+# chap1_raw.txt → zhvi/workspace/dist/chap1_raw.vi.txt
+zhvi translate chap1_raw.txt
+zhvi translate chap2_raw.txt
 ```
 
-Nếu muốn chỉ rõ thư mục từ điển:
+Ghi ra chỗ khác thì thêm `-o`. Muốn tách project riêng vẫn dùng `-p`:
 
 ```bash
 zhvi translate truyen.txt -o truyen.vi.txt --dict-dir ../crawler/vietphrase/dicts
+zhvi translate truyen.txt -p ./books/my-book -o ./books/my-book/dist/vi.txt
 ```
 
 > Chạy lại cùng file + cùng config = **no-op** (in lại output hiện có). Ctrl-C giữa
@@ -85,7 +89,7 @@ zhvi init ./books/my-book
 
 | Option | Mặc định | Ý nghĩa |
 |---|---|---|
-| `--project`, `-p` | — | Project đích (nếu thiếu, tự workspace `<file>.zhvi/`) |
+| `--project`, `-p` | `zhvi/workspace/` | Project đích (nếu thiếu, workspace dùng chung) |
 | `--encoding` | `utf-8` | Mã hoá file nguồn |
 | `--update` | off | Nhận file này làm source mới của project |
 
@@ -106,8 +110,8 @@ Happy path: snapshot → discover → book-auto learn → freeze revision → VP
 
 | Option | Mặc định | Ý nghĩa |
 |---|---|---|
-| `-o`, `--output` | — | File đích (TXT đã dịch) |
-| `--project`, `-p` | — | Project (có sẵn source) |
+| `-o`, `--output` | `zhvi/workspace/dist/<stem>.vi.txt` | File đích (TXT đã dịch) |
+| `--project`, `-p` | `zhvi/workspace/` | Project (nếu thiếu, workspace dùng chung) |
 | `--style` | `convert-qt` | Style dịch |
 | `--encoding` | `utf-8` | Mã hoá nguồn |
 | `--dict-dir` | `crawler/vietphrase/dicts` | Thư mục từ điển |
@@ -116,10 +120,10 @@ Happy path: snapshot → discover → book-auto learn → freeze revision → VP
 | `--json` | off | In báo cáo JSON ra stdout (máy đọc được) |
 
 ```bash
-# 1 lệnh happy path (có LEARN)
-zhvi translate truyen.txt -o truyen.vi.txt
+# 1 lệnh happy path (có LEARN) — ghi zhvi/workspace/dist/<stem>.vi.txt
+zhvi translate truyen.txt
 # chỉ dịch, không học
-zhvi translate truyen.txt -o truyen.vi.txt --no-learn
+zhvi translate truyen.txt --no-learn
 # project da import: dung snapshot, khong LEARN
 zhvi translate -p ./books/my-book -o ./books/my-book/dist/vi.txt --no-learn
 # FILE + project + JSON
@@ -209,20 +213,24 @@ zhvi export -p ./books/my-book -o ./books/my-book/dist/vi.txt
 
 ## Cấu trúc project
 
+Mặc định (dùng chung mọi truyện, nằm trong repo):
+
 ```
-books/my-book/
-├── zhvi.toml                  # config project (style, pipeline, glossary...)
-├── glossary.manual.tsv        # term khoá riêng cho truyện (book manual)
-├── dist/                      # output đã dịch
-└── .zhvi/                     # state (gitignore)
-    ├── state.sqlite3          # DB: revision, run, block, route, review
-    ├── sources/               # snapshot lossless nguồn (mỗi revision)
-    ├── dictionaries/          # fingerprint từ điển
-    ├── runs/                  # kết quả run
-    ├── logs/
-    ├── cache/                 # dict-<fingerprint>.pkl
-    └── locks/                 # khoá chống ghi trùng (flock)
+zhvi/workspace/
+├── zhvi.toml                  # config (book_id ổn định)
+├── glossary.manual.tsv        # term khoá dùng chung — commit được
+├── dist/                      # output đã dịch (<stem>.vi.txt) — commit được
+└── .zhvi/
+    ├── state.sqlite3          # DB chung — commit được
+    ├── sources/               # snapshot lossless nguồn — commit được
+    ├── runs/                  # manifest run — commit được
+    ├── revisions/             # bundle từ điển ~280MB — gitignore, rebuild tại chỗ
+    ├── cache/                 # gitignore
+    ├── logs/                  # gitignore
+    └── locks/                 # gitignore
 ```
+
+Override đường dẫn workspace: env `ZHVI_PROJECT`. `--project` / `zhvi init` vẫn tạo project riêng nếu cần.
 
 ---
 
@@ -249,7 +257,7 @@ Custom.txt           # thư viện term chuẩn, dùng chung mọi truyện
 |---|---|---|
 | Cơ sở dict | `crawler/vietphrase/dicts/*.txt` | Toàn hệ thống |
 | Global | `~/.config/zhvi/glossary.manual.tsv` | Mọi project trên máy |
-| Book | `<project>/glossary.manual.tsv` | Riêng từng truyện |
+| Book | `zhvi/workspace/glossary.manual.tsv` (hoặc `<project>/`) | Workspace dùng chung / project `-p` |
 
 Định dạng glossary: `zh=Từ gốc<TAB>vi=Từ dịch`, mỗi dòng một mục.
 

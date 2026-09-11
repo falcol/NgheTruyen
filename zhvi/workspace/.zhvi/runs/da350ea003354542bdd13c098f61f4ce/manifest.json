@@ -1,0 +1,60 @@
+{
+  "tool_version": "zhvi-m3-0.1.0",
+  "schema_versions": {
+    "parser": "zhvi-parser-1",
+    "segmenter": "zhvi-segmenter-1",
+    "qa": "zhvi-qa-1"
+  },
+  "source": {
+    "path": "raw_china/chap1_raw.txt",
+    "revision": "0f5e05cb14b36e1a43578b6e5e8914dfa9d6172837fc213460e7810583ea8480"
+  },
+  "run_id": "da350ea003354542bdd13c098f61f4ce",
+  "fingerprint": "100d0e1e73f4667b4dcec32612d4c43998f28b1b9b2e2934091f33c8197667a6",
+  "dictionary_revision": "a866f58fc31311e308e2cca03b73737ade8b26cbeedf2cbdfddd6d34f742bb15",
+  "resolved_config": {
+    "_source": {
+      "path": "raw_china/chap1_raw.txt",
+      "revision": "0f5e05cb14b36e1a43578b6e5e8914dfa9d6172837fc213460e7810583ea8480"
+    },
+    "block_max_chars": 2000,
+    "chapter_detection": "auto",
+    "chapter_regex": "",
+    "collapse_repetitions": true,
+    "dict_dir": "crawler/vietphrase/dicts",
+    "encoding": "utf-8",
+    "global_glossary": "~/.config/zhvi/glossary.manual.tsv",
+    "lattice_beam": 4,
+    "learning": {
+      "auto_scope": "book",
+      "enabled": true,
+      "global_min_books": 3,
+      "global_min_occurrences": 20,
+      "global_require_golden_suite": true,
+      "max_phrase_chars": 8,
+      "min_chapters": 2,
+      "min_name_occurrences": 3,
+      "min_term_occurrences": 5,
+      "require_affected_block_isolation": true,
+      "require_unambiguous_target": true
+    },
+    "output_policy": "strict-final",
+    "pattern_rules": true,
+    "qa_strip_junk": true,
+    "runtime": {
+      "checkpoint_blocks": 50
+    },
+    "style": "convert-qt"
+  },
+  "output": {
+    "path": "zhvi/workspace/dist/chap1_raw.vi.txt",
+    "sha256": "17243a28bb555a899caccbf21fa003ddba6cee1c5cca889ce829e5bf75409a75"
+  },
+  "totals": {
+    "blocks": 51,
+    "vp_ratio": null,
+    "warnings": null,
+    "elapsed_s": null
+  },
+  "created_at": "2026-09-09T07:02:57+00:00"
+}

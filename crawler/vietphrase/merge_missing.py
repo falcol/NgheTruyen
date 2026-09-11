@@ -3,11 +3,11 @@
 Pairs (master -> dict target(s)):
   LuatNhan.txt      -> dicts/LuatNhan.txt        (append missing)
   luatnhan.txt      -> dicts/LuatNhan.txt        (append missing)
-  Names.txt         -> dicts/Names.txt           (append missing)
-  names.txt         -> dicts/Names.txt           (append missing)
-  Names2.txt        -> dicts/Names.txt           (append missing)
-  VietPhrase.txt    -> dicts/VietPhrase_1.txt + VietPhrase_2.txt + VietPhrase_3.txt
-  vietphrase.txt    -> same VietPhrase dicts union (append to VietPhrase_3.txt)
+  Names.txt         -> dicts/Names.txt + Names_2.txt (append missing to Names_2.txt)
+  names.txt         -> same
+  Names2.txt        -> same
+  VietPhrase.txt    -> dicts/VietPhrase_1.txt + VietPhrase_2.txt + VietPhrase_3.txt + VietPhrase_4.txt
+  vietphrase.txt    -> same VietPhrase dicts union (append to VietPhrase_4.txt)
 
 Master files may be UTF-16 LE (BOM) or UTF-8 with BOM; dict files are UTF-8.
 A key is the text before the first '=' in a line.
@@ -21,26 +21,37 @@ DICT_DIR = Path(__file__).resolve().parent / "dicts"
 
 DICT_LUATNHAN = DICT_DIR / "LuatNhan.txt"
 DICT_NAMES = DICT_DIR / "Names.txt"
+DICT_NAMES_2 = DICT_DIR / "Names_2.txt"
+DICT_PHIENAM_2 = DICT_DIR / "ChinesePhienAmWords_2.txt"
 DICT_VIETPHRASE_1 = DICT_DIR / "VietPhrase_1.txt"
 DICT_VIETPHRASE_2 = DICT_DIR / "VietPhrase_2.txt"
 DICT_VIETPHRASE_3 = DICT_DIR / "VietPhrase_3.txt"
+DICT_VIETPHRASE_4 = DICT_DIR / "VietPhrase_4.txt"
 
 # (master name, [existing dict files to compare against], target dict file)
+# [Note] Compare list is per-family only (VP vs VP, Names vs Names).
+# Cross-family keys (Names ∩ VietPhrase) are not skipped — re-run recreates
+# dups that check_dup_keys.py --apply just stripped. Confirm before widening?
 PAIRS: list[tuple[str, list[str], str]] = [
     ("LuatNhan.txt", ["LuatNhan.txt"], "LuatNhan.txt"),
     ("luatnhan.txt", ["LuatNhan.txt"], "LuatNhan.txt"),
-    ("Names.txt", ["Names.txt"], "Names.txt"),
-    ("names.txt", ["Names.txt"], "Names.txt"),
-    ("Names2.txt", ["Names.txt"], "Names.txt"),
+    ("Names.txt", ["Names.txt", "Names_2.txt"], "Names_2.txt"),
+    ("names.txt", ["Names.txt", "Names_2.txt"], "Names_2.txt"),
+    ("Names2.txt", ["Names.txt", "Names_2.txt"], "Names_2.txt"),
+    (
+        "ChinesePhienAmWords.txt",
+        ["ChinesePhienAmWords.txt", "ChinesePhienAmWords_2.txt"],
+        "ChinesePhienAmWords_2.txt",
+    ),
     (
         "VietPhrase.txt",
-        ["VietPhrase_1.txt", "VietPhrase_2.txt", "VietPhrase_3.txt"],
-        "VietPhrase_3.txt",
+        ["VietPhrase_1.txt", "VietPhrase_2.txt", "VietPhrase_3.txt", "VietPhrase_4.txt"],
+        "VietPhrase_4.txt",
     ),
     (
         "vietphrase.txt",
-        ["VietPhrase_1.txt", "VietPhrase_2.txt", "VietPhrase_3.txt"],
-        "VietPhrase_3.txt",
+        ["VietPhrase_1.txt", "VietPhrase_2.txt", "VietPhrase_3.txt", "VietPhrase_4.txt"],
+        "VietPhrase_4.txt",
     ),
 ]
 

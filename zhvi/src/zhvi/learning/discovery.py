@@ -37,6 +37,26 @@ _REALM_PREFIXES = (
 )
 _REALM_SUFFIXES = frozenset("境期层重")
 _PATTERN_ORDER = ("person", "place", "sect", "technique", "realm")
+# VietPhrase detector: 2 chu sau ngram — chi *道/*着/*向, khong dung 1 chu 道/看.
+_SPEECH_RIGHT = frozenset(
+    {
+        "说道",
+        "问道",
+        "笑道",
+        "喝道",
+        "怒道",
+        "叹道",
+        "喊道",
+        "叫道",
+        "答道",
+        "回道",
+        "看着",
+        "看向",
+        "望着",
+        "走来",
+        "站在",
+    }
+)
 
 # Reuse CJK_RE range tu document.py — khong dinh nghia range moi.
 _RUN_RE = re.compile(f"(?:{CJK_RE.pattern})+")
@@ -81,6 +101,7 @@ class _Accum:
     unknown: bool = False
     alt_segmentation: bool = False
     repetition_unstable: bool = False
+    speech_right: int = 0
 
 
 def _merge_adjacent(spans: list[tuple[int, int]]) -> list[tuple[int, int]]:
@@ -102,7 +123,7 @@ def _shannon(counts: dict[str, int]) -> float:
     return -sum((c / total) * math.log2(c / total) for c in counts.values())
 
 
-def _pattern_hits(gram: str) -> list[str]:
+def _pattern_hits(gram: str, acc: _Accum) -> list[str]:
     hits: set[str] = set()
     if gram[0] in _PERSON_SURNAMES:
         hits.add("person")
@@ -114,6 +135,17 @@ def _pattern_hits(gram: str) -> list[str]:
         hits.add("technique")
     if gram.startswith(_REALM_PREFIXES) or gram[-1] in _REALM_SUFFIXES:
         hits.add("realm")
+    # Thoai ben phai (说道…) — ten khong bat dau bang ho van la person.
+    if acc.speech_right >= 2 or (
+        acc.speech_right >= 1 and acc.speech_right * 2 >= acc.total
+    ):
+        hits.add("person")
+    # Ho dung truoc on dinh (>= 4/5 lan) — 美辰 sau 向 → person, de candidate
+    # ghep 向美辰 (ngram dai hon) thang fragment.
+    if acc.total >= 2 and acc.left:
+        ch, count = max(acc.left.items(), key=lambda kv: (kv[1], kv[0]))
+        if ch in _PERSON_SURNAMES and count * 5 >= acc.total * 4:
+            hits.add("person")
     return [p for p in _PATTERN_ORDER if p in hits]
 
 
@@ -190,6 +222,8 @@ def run_discovery(
                         acc.right[run[i + n]] = acc.right.get(run[i + n], 0) + 1
                     if not acc.original:
                         acc.original = orig_nfc[base + i : base + i + n]
+                    if run[i + n : i + n + 2] in _SPEECH_RIGHT:
+                        acc.speech_right += 1
                     gs, ge = base + i, base + i + n
                     # Spec buoc 4: is_unknown = ngram CHUA ky tu thuoc unknown
                     # span (overlap) — khong yeu cau phu tron ca run.
@@ -243,7 +277,7 @@ def run_discovery(
                 is_unknown=int(acc.unknown),
                 alt_segmentation=int(acc.alt_segmentation),
                 repetition_unstable=int(acc.repetition_unstable),
-                pattern_hits_json=json.dumps(_pattern_hits(gram)),
+                pattern_hits_json=json.dumps(_pattern_hits(gram, acc)),
             )
         )
 

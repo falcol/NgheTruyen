@@ -215,6 +215,82 @@ def test_build_candidates_skips_manual_conflict(tmp_path):
     assert summary.candidates == 0 and summary.unresolved == 0
 
 
+def test_build_candidates_surname_compound_gets_phien_am(tmp_path):
+    """Ho + ten (向美辰) la person — phien am ca 3 chu; 美辰 van la manh (learn giu)."""
+    text = (
+        "第一章\n\n向美辰看着前方。\n\n"
+        "第二章\n\n向美辰运转玄天诀。\n\n"
+        "第三章\n\n向美辰望着紫霄山。\n\n"
+    )
+    dict_dir = _dict_dir(tmp_path)
+    (dict_dir / "ChinesePhienAmWords.txt").write_text(
+        "李=lý\n慕=mộ\n白=bạch\n向=hướng\n美=mỹ\n辰=thần\n",
+        encoding="utf-8",
+    )
+    src = tmp_path / "truyen.txt"
+    src.write_text(text, encoding="utf-8")
+    project = create_project(tmp_path / "proj")
+    rev = import_snapshot(project, src)
+    st = State(project.db_path)
+    try:
+        st.upsert_source_revision(
+            rev.id, rev.content_hash, rev.encoding, rev.byte_size, str(rev.snapshot_path)
+        )
+        drev = ensure_active_revision(dict_dir, project)
+        dic = load_revision_dictionary(project, drev)
+        run_discovery(st, source_revision=rev, dictionary=dic, dictionary_revision_id=drev)
+        build_candidates(
+            st,
+            book_id=project.book_id,
+            dictionary=dic,
+            dictionary_revision_id=drev,
+            source_revision_id=rev.id,
+        )
+        full = _cand(st, "向美辰")
+        assert full["kind"] == "name"
+        assert full["proposed_target"] == "hướng mỹ thần"
+        assert json.loads(full["provenance_json"])["resolver"] == "phien_am"
+    finally:
+        st.close()
+
+
+def test_build_candidates_speech_name_gets_phien_am(tmp_path):
+    """Ten khong ho, nhung *道 ben phai → person → phien am."""
+    text = (
+        "第一章\n\n美辰说道。\n\n第二章\n\n美辰问道。\n\n第三章\n\n美辰笑道。\n\n"
+    )
+    dict_dir = _dict_dir(tmp_path)
+    (dict_dir / "ChinesePhienAmWords.txt").write_text(
+        "李=lý\n慕=mộ\n白=bạch\n美=mỹ\n辰=thần\n",
+        encoding="utf-8",
+    )
+    src = tmp_path / "truyen.txt"
+    src.write_text(text, encoding="utf-8")
+    project = create_project(tmp_path / "proj")
+    rev = import_snapshot(project, src)
+    st = State(project.db_path)
+    try:
+        st.upsert_source_revision(
+            rev.id, rev.content_hash, rev.encoding, rev.byte_size, str(rev.snapshot_path)
+        )
+        drev = ensure_active_revision(dict_dir, project)
+        dic = load_revision_dictionary(project, drev)
+        run_discovery(st, source_revision=rev, dictionary=dic, dictionary_revision_id=drev)
+        build_candidates(
+            st,
+            book_id=project.book_id,
+            dictionary=dic,
+            dictionary_revision_id=drev,
+            source_revision_id=rev.id,
+        )
+        name = _cand(st, "美辰")
+        assert name["kind"] == "name"
+        assert name["proposed_target"] == "mỹ thần"
+        assert json.loads(name["provenance_json"])["resolver"] == "phien_am"
+    finally:
+        st.close()
+
+
 def test_build_candidates_deterministic(tmp_path):
     st, summary, drev = _learned(tmp_path)
     first = st.conn.execute(

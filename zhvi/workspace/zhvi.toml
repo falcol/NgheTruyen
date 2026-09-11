@@ -1,0 +1,29 @@
+# Shared zhvi workspace — moi truyen dung chung (glossary + dist + DB).
+# Runtime state (.zhvi/) gitignore; toml / glossary.manual / dist commit duoc.
+book_id = "zhvi-shared-workspace"
+style = "convert-qt"
+output_policy = "strict-final"
+collapse_repetitions = true
+qa_strip_junk = true
+pattern_rules = true
+global_glossary = "~/.config/zhvi/glossary.manual.tsv"
+
+[input]
+encoding = "utf-8"
+chapter_detection = "auto"
+
+[learning]
+enabled = true
+auto_scope = "book"
+max_phrase_chars = 8
+min_name_occurrences = 3
+min_term_occurrences = 5
+min_chapters = 2
+require_unambiguous_target = true
+require_affected_block_isolation = true
+global_min_books = 3
+global_min_occurrences = 20
+global_require_golden_suite = true
+
+[runtime]
+checkpoint_blocks = 50

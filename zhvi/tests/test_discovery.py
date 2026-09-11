@@ -203,6 +203,60 @@ def test_discovery_deterministic(discovered, tmp_path):
         assert a == b
 
 
+def test_discovery_speech_tags_person_without_surname(tmp_path):
+    """说道/问道 ben phai — ten khong bat dau bang ho van la person."""
+    dict_dir = _mini_dict_dir(tmp_path)
+    src = tmp_path / "truyen.txt"
+    src.write_text(
+        "第一章\n\n美辰说道。\n\n第二章\n\n美辰问道。\n\n第三章\n\n美辰笑道。\n\n",
+        encoding="utf-8",
+    )
+    project = create_project(tmp_path / "proj")
+    rev = import_snapshot(project, src)
+    st = State(project.db_path)
+    try:
+        st.upsert_source_revision(
+            rev.id, rev.content_hash, rev.encoding, rev.byte_size, str(rev.snapshot_path)
+        )
+        drev = ensure_active_revision(dict_dir, project)
+        dic = load_revision_dictionary(project, drev)
+        run_discovery(st, source_revision=rev, dictionary=dic, dictionary_revision_id=drev)
+        row = _obs(st, "美辰")
+        assert row["total_count"] == 3
+        assert "person" in json.loads(row["pattern_hits_json"])
+    finally:
+        st.close()
+
+
+def test_discovery_surname_prefix_tags_given_name(tmp_path):
+    """美辰 luon sau 向 — fragment cung nhan person (candidate se de 向美辰 thang)."""
+    dict_dir = _mini_dict_dir(tmp_path)
+    src = tmp_path / "truyen.txt"
+    src.write_text(
+        "第一章\n\n向美辰看着前方。\n\n第二章\n\n向美辰运转玄天诀。\n\n"
+        "第三章\n\n向美辰望着紫霄山。\n\n",
+        encoding="utf-8",
+    )
+    project = create_project(tmp_path / "proj")
+    rev = import_snapshot(project, src)
+    st = State(project.db_path)
+    try:
+        st.upsert_source_revision(
+            rev.id, rev.content_hash, rev.encoding, rev.byte_size, str(rev.snapshot_path)
+        )
+        drev = ensure_active_revision(dict_dir, project)
+        dic = load_revision_dictionary(project, drev)
+        run_discovery(st, source_revision=rev, dictionary=dic, dictionary_revision_id=drev)
+        given = _obs(st, "美辰")
+        full = _obs(st, "向美辰")
+        assert given["total_count"] == 3
+        assert json.loads(given["left_contexts_json"]).get("向") == 3
+        assert "person" in json.loads(given["pattern_hits_json"])
+        assert "person" in json.loads(full["pattern_hits_json"])
+    finally:
+        st.close()
+
+
 def test_discovery_does_not_touch_engine(tmp_path):
     """Fingerprint load TRUOC discovery — phat hien duoc mutation neu co."""
     dict_dir = _mini_dict_dir(tmp_path)

@@ -385,10 +385,8 @@ def _load_project(project_dir: Path | None, source: Path | None) -> Project:
     if project_dir is not None:
         return open_project(project_dir)
     if source is not None:
-        ws = workspace_for(source)
-        if ws.exists():
-            return open_project(ws)
-        return create_project(ws)
+        # create_project idempotent — clone chi co toml/dist van tao duoc .zhvi/
+        return create_project(workspace_for(source))
     raise typer.Exit(code=EXIT_USAGE)
 
 

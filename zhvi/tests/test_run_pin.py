@@ -199,11 +199,10 @@ def test_cache_key_includes_renderer_version(tmp_path, monkeypatch):
 
     cfg = Config()
     k1 = block_cache_key("src-hash-x", "rev-1", cfg)
-    monkeypatch.setattr("zhvi.pipeline.RENDERER_VERSION", "zhvi-renderer-2")
+    monkeypatch.setattr("zhvi.pipeline.RENDERER_VERSION", "zhvi-renderer-test-bump")
     k2 = block_cache_key("src-hash-x", "rev-1", cfg)
     assert k1 != k2
-    # cung moi truong -> key on dinh
-    monkeypatch.setattr("zhvi.pipeline.RENDERER_VERSION", "zhvi-renderer-1")
+    monkeypatch.setattr("zhvi.pipeline.RENDERER_VERSION", "zhvi-renderer-7")
     assert block_cache_key("src-hash-x", "rev-1", cfg) == k1
 
 

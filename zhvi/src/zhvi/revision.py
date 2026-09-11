@@ -410,6 +410,11 @@ def _manual_layers_stale(project: Project, active_id: str, global_glossary: Path
     return False
 
 
+def _bundle_complete(project: Project, revision_id: str) -> bool:
+    bundle = project.revisions_dir / revision_id
+    return bundle.is_dir() and all((bundle / n).is_file() for n in BUNDLE_FILES)
+
+
 def ensure_active_revision(
     dict_dir: Path,
     project: Project,
@@ -425,6 +430,8 @@ def ensure_active_revision(
     refresh=True (correction flow 2.5 — fork run + dich lai affected); mac
     dinh giu active hien hanh de resume run paused van pin revision cu
     (AC 2.3: doi file giua chang khong lam fork run).
+    Bundle dir mat (revisions/ gitignore, clone chi co sqlite) -> publish lai;
+    content-addressed nen cung dict -> cung id, block cache van hit.
     """
     st = State(project.db_path)
     try:
@@ -432,7 +439,8 @@ def ensure_active_revision(
     finally:
         st.close()
     if active is not None:
-        if not refresh or not _manual_layers_stale(project, active, global_glossary):
+        complete = _bundle_complete(project, active)
+        if complete and (not refresh or not _manual_layers_stale(project, active, global_glossary)):
             return active
         result = publish_revision(
             dict_dir, project, global_glossary=global_glossary, patterns=patterns,

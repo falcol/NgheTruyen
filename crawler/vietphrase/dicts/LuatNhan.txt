@@ -24294,6 +24294,7 @@
 龙神的{0}={0} của long thần
 龙组的{0}={0} của long tổ
 龟裂的{0}={0} nứt nẻ
+# local extras after official 2026.08.23.2
 今天下午的{0}点钟左右=chừng {0} giờ chiều hôm nay
 自己的这些{0}们=những {0} này của mình
 自己的那些{0}们=những {0} kia của mình
@@ -25162,10 +25163,10 @@
 从{0}身上爬了下来=bò xuống khỏi người {0}
 在{0}之上=trên {0}
 在{0}初=tại đầu {0}
-在{0}初=tại đầu {0}
 在{0}室=tại phòng {0}
 在{0}底=tại cuối {0}
 拖{0}下来=kéo {0} xuống
 比{0}瘦=còn gầy hơn {0}
 的{0}里=trong {0}
 端{0}来=đem {0} tới
+{0}年=năm {0}
