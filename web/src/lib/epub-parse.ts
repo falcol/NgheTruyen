@@ -212,16 +212,20 @@ export async function warmEpubFile(filename: string): Promise<EpubListSummary | 
     const total = cached.meta.chapters.length;
     console.log(`  ${filename}: ${total} chapters`);
 
-    for (let i = 0; i < total; i++) {
-      if (hasChapterCache(META_CACHE_DIR, filename, i)) continue;
+    if (!process.env.VERCEL) {
+      for (let i = 0; i < total; i++) {
+        if (hasChapterCache(META_CACHE_DIR, filename, i)) continue;
 
-      const chapter = await extractChapter(cached, i, epub);
-      if (!chapter) continue;
+        const chapter = await extractChapter(cached, i, epub);
+        if (!chapter) continue;
 
-      writeChapterCache(META_CACHE_DIR, filename, chapter);
-      if ((i + 1) % 100 === 0 || i + 1 === total) {
-        console.log(`    ${i + 1}/${total}`);
+        writeChapterCache(META_CACHE_DIR, filename, chapter);
+        if ((i + 1) % 100 === 0 || i + 1 === total) {
+          console.log(`    ${i + 1}/${total}`);
+        }
       }
+    } else {
+      console.log(`  Skipping chapter extraction on Vercel to save build output limits.`);
     }
 
     return {
