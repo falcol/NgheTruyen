@@ -136,7 +136,7 @@ export default function ChapterList({
         <p className="text-center text-[var(--color-text-muted)] py-8 text-sm">Không tìm thấy chương nào</p>
       )}
 
-      <div className="grid grid-cols-1 gap-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-x-5">
         {filtered.map((ch) => {
           const isRead = progress && progress.chapterIdx >= ch.index;
           const isCurrent = progress && progress.chapterIdx === ch.index;

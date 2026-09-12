@@ -7,6 +7,8 @@ import ContinueReadingSection, {
   type StoryMeta,
 } from "@/components/ContinueReadingSection";
 
+import SiteFooter from "@/components/SiteFooter";
+
 export default function HomePage() {
   const stories = listStories();
 
@@ -45,9 +47,23 @@ export default function HomePage() {
             Nghe
             <span className="text-[var(--color-accent)]"> Truyện</span>
           </h1>
-          <p className="text-[var(--color-text-muted)] text-sm leading-relaxed max-w-xs">
+          <p className="text-[var(--color-text-muted)] text-sm leading-relaxed max-w-xs mb-5">
             Trải nghiệm đọc cá nhân.&ensp;Yên tĩnh, không quảng cáo.
           </p>
+
+          {/* Stats strip */}
+          <div className="flex flex-wrap gap-2">
+            <span className="stat-pill">
+              <span className="stat-value">{storyMetas.length}</span>
+              <span className="stat-label">truyện</span>
+            </span>
+            <span className="stat-pill">
+              <span className="stat-value">
+                {storyMetas.reduce((sum, s) => sum + s.totalChapters, 0)}
+              </span>
+              <span className="stat-label">chương</span>
+            </span>
+          </div>
         </div>
 
         <Link
@@ -99,6 +115,8 @@ export default function HomePage() {
           </div>
         </>
       )}
+
+      <SiteFooter />
     </main>
   );
 }
@@ -115,25 +133,37 @@ function StoryCard({ meta }: { meta: StoryMeta }) {
       >
         {/* Gradient background */}
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
-        {/* Depth overlay — darker at top for title visibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
+        {/* Depth overlay — darker at bottom for title legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/15" />
+
+        {/* Light sheen sweep on hover */}
+        <div className="card-sheen rounded-[inherit]" />
 
         {/* Content */}
         <div className="relative z-20 h-full flex flex-col p-3.5">
-          <div className="flex-1 flex items-center justify-center">
+          {/* Top: floating spine tag */}
+          <div className="flex justify-start">
+            <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/50">
+              {slug.length > 18 ? `${slug.slice(0, 18)}…` : slug}
+            </span>
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Bottom: title + chapter count — like a real cover */}
+          <div>
             <h2
               style={{ fontFamily: "var(--font-ui-serif)" }}
-              className="font-bold text-center text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] text-sm md:text-base leading-snug line-clamp-5 px-1"
+              className="font-bold text-left text-white/95 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] text-sm md:text-[15px] leading-snug line-clamp-4 mb-2"
             >
               {title}
             </h2>
-          </div>
-
-          {/* Bottom: chapter count */}
-          <div className="mt-auto pt-2 flex justify-center">
-            <span className="inline-flex items-center bg-black/50 backdrop-blur-md text-white/80 text-[10px] font-bold tracking-widest px-3 py-1 rounded-full border border-white/10">
-              {totalChapters > 0 ? `${totalChapters} CH` : "···"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="h-px w-4 bg-[var(--color-accent)]/70" />
+              <span className="text-[10px] font-semibold tracking-wide text-white/60">
+                {totalChapters > 0 ? `${totalChapters} chương` : "Đang cập nhật"}
+              </span>
+            </div>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ import { estimateReadingTime, getChapterIndex, getStoryTitle, listStories } from
 import ChapterList from "@/components/ChapterList";
 import ReadCTA from "@/components/ReadCTA";
 import { getGradientFromString } from "@/lib/color";
+import SiteFooter from "@/components/SiteFooter";
 import { ArrowLeft, Clock } from "@/components/icons";
 
 export function generateStaticParams() {
@@ -37,7 +38,10 @@ export default async function StoryPage({
         <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center md:items-start">
           {/* Big book cover representation */}
           <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
-            <h2 className="font-serif font-bold text-center text-white/95 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] text-xl leading-snug line-clamp-6">
+            <h2
+              style={{ fontFamily: "var(--font-ui-serif)" }}
+              className="font-bold text-center text-white/95 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] text-xl leading-snug line-clamp-6"
+            >
               {storyTitle}
             </h2>
           </div>
@@ -69,12 +73,24 @@ export default async function StoryPage({
       </div>
 
       <div className="max-w-2xl mx-auto">
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white/90">
-          <span className="w-8 h-[2px] bg-[var(--color-accent)] rounded-full"></span>
-          Mục lục
-        </h3>
+        <div className="ornament-divider mb-6">
+          <span className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] candle-glow" />
+            <span
+              style={{ fontFamily: "var(--font-ui-serif)" }}
+              className="text-[11px] font-semibold text-[var(--color-text-muted)] tracking-[0.25em]"
+            >
+              Mục Lục
+            </span>
+            <span className="text-[var(--color-accent)] text-[10px] opacity-50">
+              {chapters.length}
+            </span>
+          </span>
+        </div>
         <ChapterList slug={slug} chapters={chapters} />
       </div>
+
+      <SiteFooter />
     </main>
   );
 }

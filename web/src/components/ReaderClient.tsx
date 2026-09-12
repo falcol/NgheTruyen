@@ -696,7 +696,7 @@ function ReaderClientInner({
         />
       </div>
       <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown && !pickerOpen ? "-translate-y-full" : "translate-y-0"}`}>
-        <div className="max-w-3xl mx-auto px-4 md:px-6 py-4">
+        <div className="max-w-2xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <p className="text-[10px] md:text-xs reader-accent opacity-80 font-bold tracking-widest uppercase mb-1 break-words leading-snug">{storyTitle}</p>
@@ -793,7 +793,7 @@ function ReaderClientInner({
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 md:px-6 pt-48 md:pt-36 pb-40 reader-content relative">
+      <main className="max-w-2xl mx-auto px-5 md:px-6 pt-48 md:pt-36 pb-40 reader-content relative">
 
         {chapterState.status === "loading" && (
           <div className="space-y-3" aria-busy="true">
@@ -864,10 +864,35 @@ function ReaderClientInner({
           </button>
         </div>
 
+        {/* Kindle-style next-chapter card */}
         {hasNext && (
-          <div className="text-center mt-16 pb-8 opacity-50 reader-muted text-sm flex flex-col items-center gap-2">
+          <button
+            onClick={goNext}
+            className="group w-full text-left mt-8 p-5 rounded-2xl reader-surface border reader-border hover:border-[var(--color-accent)]/50 transition-all duration-300 flex items-center justify-between gap-4 btn-spring"
+          >
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--color-accent)] mb-1">
+                Chương tiếp theo
+              </p>
+              <p className="font-semibold truncate">
+                {chapters[activeChapterIdx + 1]?.title ??
+                  `Chương ${activeChapterIdx + 2}`}
+              </p>
+            </div>
+            <div className="w-10 h-10 shrink-0 rounded-full bg-[var(--color-accent)]/10 flex items-center justify-center group-hover:bg-[var(--color-accent)]/20 transition-colors">
+              <CaretRight
+                size={18}
+                weight="bold"
+                className="text-[var(--color-accent)] group-hover:translate-x-0.5 transition-transform"
+              />
+            </div>
+          </button>
+        )}
+
+        {hasNext && (
+          <div className="text-center mt-12 pb-8 opacity-50 reader-muted text-sm flex flex-col items-center gap-2">
             <CaretDown size={14} />
-            <span>Kéo lên để sang chương sau</span>
+            <span>Cuộn xuống để sang chương sau</span>
           </div>
         )}
       </main>

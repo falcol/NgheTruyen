@@ -36,7 +36,12 @@ export async function POST(req: NextRequest) {
   );
 
   try {
-    const audio = await synthesizeMp3(text, voice);
+    const audio = await synthesizeMp3(text, voice, req.signal);
+
+    // Client disappeared while synthesizing — nothing to send back.
+    if (req.signal.aborted) {
+      return new NextResponse(null, { status: 499 });
+    }
 
     // Immutable-ish: same text+voice → same bytes; browser/CDN can reuse
     const cacheKey = Buffer.from(`${voice}|${text}`).toString("base64url");
@@ -51,6 +56,10 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      // Client cancelled (chapter switch/stop) — normal, not an error.
+      return new NextResponse(null, { status: 499 });
+    }
     console.error("[api/tts]", err);
     return NextResponse.json(
       { error: "TTS synthesis failed" },

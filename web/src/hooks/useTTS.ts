@@ -14,10 +14,12 @@ import {
 
 const VOICE_STORAGE_KEY = "nghetruyen-tts-voice";
 /** Warm ahead while playing — Read Aloud prefetches next; keep pipeline short so chunk 0 wins Edge slots */
-const PREFETCH_AHEAD = 3;
-const WARM_ON_PREPARE = 3;
+const PREFETCH_AHEAD = 2;
+const WARM_ON_PREPARE = 2;
 const MAX_BLOB_CACHE = 64;
 const CLIENT_FETCH_RETRIES = 2;
+/** In-flight fetch aborters — aborted when playback resets (chapter switch/stop). */
+const inflightAborters = new Set<AbortController>();
 /**
  * Window where we may swap if secondary is ready.
  * timeupdate alone is ~4Hz (~250ms) — pair with a tight poll for Read Aloud-like joins.
@@ -125,7 +127,11 @@ function createAudioEl(): HTMLAudioElement {
   return el;
 }
 
-async function fetchChunkAudio(text: string, voice: string): Promise<Blob> {
+async function fetchChunkAudio(
+  text: string,
+  voice: string,
+  signal: AbortSignal,
+): Promise<Blob> {
   let lastErr: unknown;
   for (let attempt = 1; attempt <= CLIENT_FETCH_RETRIES; attempt++) {
     try {
@@ -133,6 +139,7 @@ async function fetchChunkAudio(text: string, voice: string): Promise<Blob> {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, voice }),
+        signal,
       });
       if (!res.ok) {
         const msg = await res.text().catch(() => res.statusText);
@@ -142,6 +149,8 @@ async function fetchChunkAudio(text: string, voice: string): Promise<Blob> {
       if (blob.size < 64) throw new Error("TTS empty blob");
       return blob;
     } catch (err) {
+      // Aborted: user moved on — do NOT retry the dead request.
+      if (err instanceof DOMException && err.name === "AbortError") throw err;
       lastErr = err;
       if (attempt < CLIENT_FETCH_RETRIES) {
         await new Promise((r) => setTimeout(r, 180 * attempt));
@@ -149,6 +158,18 @@ async function fetchChunkAudio(text: string, voice: string): Promise<Blob> {
     }
   }
   throw lastErr instanceof Error ? lastErr : new Error("TTS fetch failed");
+}
+
+/** Abort every in-flight /api/tts POST — used when playback resets. */
+function abortInflightFetches() {
+  for (const ac of inflightAborters) {
+    try {
+      ac.abort();
+    } catch {
+      /* ignore */
+    }
+  }
+  inflightAborters.clear();
 }
 
 /**
@@ -288,7 +309,8 @@ export function useTTS() {
       const inflight = inflightRef.current.get(key);
       if (inflight) return inflight;
 
-      const promise = fetchChunkAudio(text, voice)
+      const ac = new AbortController();
+      const promise = fetchChunkAudio(text, voice, ac.signal)
         .then((blob) => {
           const url = URL.createObjectURL(blob);
           blobCacheRef.current.set(key, url);
@@ -299,9 +321,13 @@ export function useTTS() {
         .catch((err) => {
           inflightRef.current.delete(key);
           throw err;
+        })
+        .finally(() => {
+          inflightAborters.delete(ac);
         });
 
       inflightRef.current.set(key, promise);
+      inflightAborters.add(ac);
       return promise;
     },
     [trimCache],
@@ -753,6 +779,9 @@ export function useTTS() {
       if (preparedKeyRef.current !== null && preparedKeyRef.current !== key) {
         playIdRef.current += 1;
         stopAudio();
+        // Chapter switched: kill zombie prefetches for the old chapter so they
+        // stop hogging Edge slots server-side.
+        abortInflightFetches();
         currentChunkIdxRef.current = -1;
         dispatch({ type: "COMPLETE" });
       }
@@ -845,6 +874,7 @@ export function useTTS() {
     stoppedRef.current = true;
     playIdRef.current += 1;
     stopAudio();
+    abortInflightFetches();
     // Keep onCompleteRef — playId bump + cleared audio handlers prevent late fire.
     // Clearing it would break auto-next after user Stop → Play → finish chapter.
     chunksRef.current = [];
@@ -892,6 +922,7 @@ export function useTTS() {
       stoppedRef.current = true;
       playIdRef.current += 1;
       stopAudio();
+      abortInflightFetches();
       currentChunkIdxRef.current = -1;
       dispatch({ type: "COMPLETE" });
     },
@@ -907,6 +938,7 @@ export function useTTS() {
       stoppedRef.current = true;
       playIdRef.current += 1;
       stopAudio();
+      abortInflightFetches();
       revokeAllBlobs();
     };
   }, [revokeAllBlobs, stopAudio]);

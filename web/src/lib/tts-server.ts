@@ -3,7 +3,7 @@ import { isValidEdgeVoice, DEFAULT_EDGE_VOICE } from "@/lib/tts-voices";
 
 const MAX_TEXT_CHARS = 800;
 const MAX_CACHE_ENTRIES = 96;
-const MAX_CONCURRENT = 3;
+const MAX_CONCURRENT = 4;
 const MAX_ATTEMPTS = 3;
 
 /** Escape text for SSML (required by msedge-tts). */
@@ -54,9 +54,33 @@ function cacheSet(key: string, value: Buffer) {
 let active = 0;
 const waitQueue: Array<() => void> = [];
 
-async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
+async function withSlot<T>(
+  fn: () => Promise<T>,
+  signal?: AbortSignal,
+): Promise<T> {
+  if (signal?.aborted) {
+    throw new DOMException("Request aborted.", "AbortError");
+  }
   if (active >= MAX_CONCURRENT) {
-    await new Promise<void>((resolve) => waitQueue.push(resolve));
+    // Wait for a slot, but bail out if the client disconnects while queued —
+    // otherwise zombie requests hold queue positions for tens of seconds.
+    await new Promise<void>((resolve, reject) => {
+      const onAbort = () => reject(new DOMException("Request aborted.", "AbortError"));
+      if (signal) {
+        if (signal.aborted) return onAbort();
+        signal.addEventListener("abort", onAbort, { once: true });
+      }
+      waitQueue.push(() => {
+        signal?.removeEventListener("abort", onAbort);
+        resolve();
+      });
+    });
+  }
+  if (signal?.aborted) {
+    // Client is gone — pass the freed/unused slot to the next waiter.
+    const next = waitQueue.shift();
+    if (next) next();
+    throw new DOMException("Request aborted.", "AbortError");
   }
   active += 1;
   try {
@@ -68,19 +92,47 @@ async function withSlot<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
+// ── Connection pool ─────────────────────────────────────────────────────────
+// setMetadata() performs the WebSocket handshake — the dominant latency per
+// chunk. Reuse idle connections per voice instead of dialing per request.
+const idlePool = new Map<string, MsEdgeTTS[]>();
+const POOL_MAX_PER_VOICE = 2;
+
+async function acquireConn(voice: string): Promise<MsEdgeTTS> {
+  const idle = idlePool.get(voice);
+  const reused = idle?.pop();
+  if (reused) return reused;
+  const fresh = new MsEdgeTTS();
+  await fresh.setMetadata(
+    voice,
+    OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3,
+  );
+  return fresh;
+}
+
+function releaseConn(voice: string, conn: MsEdgeTTS, healthy: boolean) {
+  if (!healthy) {
+    try { conn.close(); } catch { /* already closed */ }
+    return;
+  }
+  const idle = idlePool.get(voice) ?? [];
+  if (idle.length >= POOL_MAX_PER_VOICE) {
+    try { conn.close(); } catch { /* ignore */ }
+    return;
+  }
+  idle.push(conn);
+  idlePool.set(voice, idle);
+}
+
 function sleep(ms: number) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
 async function synthesizeOnce(text: string, voiceName: string): Promise<Buffer> {
-  const tts = new MsEdgeTTS();
+  const conn = await acquireConn(voiceName);
+  let healthy = false;
   try {
-    await tts.setMetadata(
-      voiceName,
-      OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3,
-    );
-
-    const { audioStream } = tts.toStream(escapeXml(text), { rate: 1 });
+    const { audioStream } = conn.toStream(escapeXml(text), { rate: 1 });
 
     const chunks: Buffer[] = [];
     for await (const chunk of audioStream) {
@@ -91,11 +143,16 @@ async function synthesizeOnce(text: string, voiceName: string): Promise<Buffer> 
       throw new Error("Empty TTS audio");
     }
 
+    healthy = true;
     return Buffer.concat(chunks);
   } finally {
-    tts.close();
+    releaseConn(voiceName, conn, healthy);
   }
 }
+
+// Deduplicate concurrent synthesis for the same text+voice — duplicate
+// prefetches must not consume two Edge slots for identical work.
+const inflightSynth = new Map<string, Promise<Buffer>>();
 
 /**
  * Synthesize one chunk to an MP3 Buffer via Edge Read Aloud.
@@ -105,10 +162,14 @@ async function synthesizeOnce(text: string, voiceName: string): Promise<Buffer> 
 export async function synthesizeMp3(
   text: string,
   voice: string,
+  signal?: AbortSignal,
 ): Promise<Buffer> {
   const safe = validateTtsText(text);
   if (!safe) {
     throw new Error("Invalid TTS text");
+  }
+  if (signal?.aborted) {
+    throw new DOMException("Request aborted.", "AbortError");
   }
 
   const voiceName = normalizeTtsVoice(voice);
@@ -117,21 +178,37 @@ export async function synthesizeMp3(
   const cached = cacheGet(key);
   if (cached) return cached;
 
-  let lastErr: unknown;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    try {
-      const audio = await withSlot(() => synthesizeOnce(safe, voiceName));
-      cacheSet(key, audio);
-      return audio;
-    } catch (err) {
-      lastErr = err;
-      if (attempt < MAX_ATTEMPTS) {
-        await sleep(150 * attempt);
+  const pending = inflightSynth.get(key);
+  if (pending) return pending;
+
+  const promise = (async () => {
+    let lastErr: unknown;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      if (signal?.aborted) {
+        throw new DOMException("Request aborted.", "AbortError");
+      }
+      try {
+        const audio = await withSlot(
+          () => synthesizeOnce(safe, voiceName),
+          signal,
+        );
+        cacheSet(key, audio);
+        return audio;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") throw err;
+        lastErr = err;
+        if (attempt < MAX_ATTEMPTS) {
+          await sleep(150 * attempt);
+        }
       }
     }
-  }
+    throw lastErr instanceof Error
+      ? lastErr
+      : new Error("TTS synthesis failed");
+  })().finally(() => {
+    inflightSynth.delete(key);
+  });
 
-  throw lastErr instanceof Error
-    ? lastErr
-    : new Error("TTS synthesis failed");
+  inflightSynth.set(key, promise);
+  return promise;
 }
