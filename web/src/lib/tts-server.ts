@@ -1,10 +1,26 @@
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
-import { isValidEdgeVoice, DEFAULT_EDGE_VOICE } from "@/lib/tts-voices";
+import { synthesizeGoogleMp3 } from "@/lib/tts-google";
+import {
+  DEFAULT_TTS_VOICE,
+  getVoiceEngine,
+  isValidTtsVoice,
+} from "@/lib/tts-voices";
+import { createLimiter } from "@/lib/tts-limiter";
 
 const MAX_TEXT_CHARS = 800;
 const MAX_CACHE_ENTRIES = 96;
 const MAX_CONCURRENT = 4;
 const MAX_ATTEMPTS = 3;
+
+/**
+ * Google gets rate-limited/blocked hard from datacenter IPs. After repeated
+ * failures, stop paying the retry cost: synthesize Google-voice chunks with
+ * the Edge fallback voice until the cooldown expires — reading continuity
+ * beats voice purity (header X-TTS-Voice still reports the requested voice).
+ */
+const GOOGLE_COOLDOWN_MS = 60_000;
+let googleCooldownUntil = 0;
+
 
 /** Escape text for SSML (required by msedge-tts). */
 export function escapeXml(text: string): string {
@@ -17,8 +33,8 @@ export function escapeXml(text: string): string {
 }
 
 export function normalizeTtsVoice(voice: string | null | undefined): string {
-  if (voice && isValidEdgeVoice(voice)) return voice;
-  return DEFAULT_EDGE_VOICE;
+  if (voice && isValidTtsVoice(voice)) return voice;
+  return DEFAULT_TTS_VOICE;
 }
 
 export function validateTtsText(text: string): string | null {
@@ -50,47 +66,10 @@ function cacheSet(key: string, value: Buffer) {
   }
 }
 
-// Limit concurrent Edge websocket sessions (parallel spam → empty audio)
-let active = 0;
-const waitQueue: Array<() => void> = [];
-
-async function withSlot<T>(
-  fn: () => Promise<T>,
-  signal?: AbortSignal,
-): Promise<T> {
-  if (signal?.aborted) {
-    throw new DOMException("Request aborted.", "AbortError");
-  }
-  if (active >= MAX_CONCURRENT) {
-    // Wait for a slot, but bail out if the client disconnects while queued —
-    // otherwise zombie requests hold queue positions for tens of seconds.
-    await new Promise<void>((resolve, reject) => {
-      const onAbort = () => reject(new DOMException("Request aborted.", "AbortError"));
-      if (signal) {
-        if (signal.aborted) return onAbort();
-        signal.addEventListener("abort", onAbort, { once: true });
-      }
-      waitQueue.push(() => {
-        signal?.removeEventListener("abort", onAbort);
-        resolve();
-      });
-    });
-  }
-  if (signal?.aborted) {
-    // Client is gone — pass the freed/unused slot to the next waiter.
-    const next = waitQueue.shift();
-    if (next) next();
-    throw new DOMException("Request aborted.", "AbortError");
-  }
-  active += 1;
-  try {
-    return await fn();
-  } finally {
-    active -= 1;
-    const next = waitQueue.shift();
-    if (next) next();
-  }
-}
+// Limit concurrent Edge websocket sessions (parallel spam → empty audio).
+// Google requests share the same pattern but with their own (stricter) limit
+// inside tts-google.ts, so one engine's bursts can't starve the other.
+const withSlot = createLimiter(MAX_CONCURRENT);
 
 // ── Connection pool ─────────────────────────────────────────────────────────
 // setMetadata() performs the WebSocket handshake — the dominant latency per
@@ -150,14 +129,40 @@ async function synthesizeOnce(text: string, voiceName: string): Promise<Buffer> 
   }
 }
 
+/**
+ * Synthesize one Google-voice chunk: Google Translate TTS first; on failure
+ * fall back to the default Edge voice so a chapter never loses paragraphs
+ * just because Google rate-limits the server IP (cooldown avoids paying the
+ * retry cost on every chunk while Google is down).
+ */
+async function synthesizeGoogleChunk(
+  text: string,
+  signal?: AbortSignal,
+): Promise<Buffer> {
+  if (Date.now() < googleCooldownUntil) {
+    return withSlot(() => synthesizeOnce(text, DEFAULT_TTS_VOICE), signal);
+  }
+  try {
+    return await synthesizeGoogleMp3(text, signal);
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") throw err;
+    googleCooldownUntil = Date.now() + GOOGLE_COOLDOWN_MS;
+    console.warn(
+      `[tts-server] Google TTS unavailable → Edge fallback for ${GOOGLE_COOLDOWN_MS}ms`,
+      err,
+    );
+    return withSlot(() => synthesizeOnce(text, DEFAULT_TTS_VOICE), signal);
+  }
+}
+
 // Deduplicate concurrent synthesis for the same text+voice — duplicate
 // prefetches must not consume two Edge slots for identical work.
 const inflightSynth = new Map<string, Promise<Buffer>>();
 
 /**
- * Synthesize one chunk to an MP3 Buffer via Edge Read Aloud.
- * Rate is applied client-side (playbackRate) so server always uses rate 1
- * for better cache reuse and lower latency.
+ * Synthesize one chunk to an MP3 Buffer (Edge neural or Google Translate,
+ * chosen by the voice id). Rate is applied client-side (playbackRate) so
+ * server always uses rate 1 for better cache reuse and lower latency.
  */
 export async function synthesizeMp3(
   text: string,
@@ -173,6 +178,7 @@ export async function synthesizeMp3(
   }
 
   const voiceName = normalizeTtsVoice(voice);
+  const engine = getVoiceEngine(voiceName) ?? "edge";
   const key = `${voiceName}\0${safe}`;
 
   const cached = cacheGet(key);
@@ -183,21 +189,24 @@ export async function synthesizeMp3(
 
   const promise = (async () => {
     let lastErr: unknown;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    // Google already retries per segment internally — an extra outer loop
+    // would triple worst-case latency; its failure path falls back to Edge.
+    const attempts = engine === "google" ? 1 : MAX_ATTEMPTS;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
       if (signal?.aborted) {
         throw new DOMException("Request aborted.", "AbortError");
       }
       try {
-        const audio = await withSlot(
-          () => synthesizeOnce(safe, voiceName),
-          signal,
-        );
+        const audio =
+          engine === "google"
+            ? await synthesizeGoogleChunk(safe, signal)
+            : await withSlot(() => synthesizeOnce(safe, voiceName), signal);
         cacheSet(key, audio);
         return audio;
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") throw err;
         lastErr = err;
-        if (attempt < MAX_ATTEMPTS) {
+        if (attempt < attempts) {
           await sleep(150 * attempt);
         }
       }

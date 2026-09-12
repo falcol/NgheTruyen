@@ -7,13 +7,13 @@ import {
   type TTSChunk,
 } from "@/lib/tts-chunks";
 import {
-  DEFAULT_EDGE_VOICE,
-  EDGE_VI_VOICES,
-  type EdgeTTSVoice,
+  DEFAULT_TTS_VOICE,
+  TTS_VOICES,
+  type TTSVoice,
 } from "@/lib/tts-voices";
 
 const VOICE_STORAGE_KEY = "nghetruyen-tts-voice";
-/** Warm ahead while playing — Read Aloud prefetches next; keep pipeline short so chunk 0 wins Edge slots */
+/** Warm ahead while playing — Read Aloud prefetches next; keep pipeline short so chunk 0 wins TTS slots */
 const PREFETCH_AHEAD = 2;
 const WARM_ON_PREPARE = 2;
 const MAX_BLOB_CACHE = 64;
@@ -105,10 +105,10 @@ function ttsReducer(state: TTSPlaybackState, action: TTSAction): TTSPlaybackStat
 // ---------------------------------------------------------------------------
 
 function getSavedVoiceName(): string {
-  if (typeof window === "undefined") return DEFAULT_EDGE_VOICE;
+  if (typeof window === "undefined") return DEFAULT_TTS_VOICE;
   const saved = localStorage.getItem(VOICE_STORAGE_KEY);
-  if (saved && EDGE_VI_VOICES.some((v) => v.name === saved)) return saved;
-  return DEFAULT_EDGE_VOICE;
+  if (saved && TTS_VOICES.some((v) => v.name === saved)) return saved;
+  return DEFAULT_TTS_VOICE;
 }
 
 function cacheKey(text: string, voice: string): string {
@@ -225,13 +225,13 @@ function waitCanPlay(
 export function useTTS() {
   const [state, dispatch] = useReducer(ttsReducer, INITIAL_PLAYBACK);
   const [rate, setRateState] = useState(1);
-  const [viVoices] = useState<EdgeTTSVoice[]>(EDGE_VI_VOICES);
+  const [voices] = useState<TTSVoice[]>(TTS_VOICES);
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>(
-    DEFAULT_EDGE_VOICE,
+    DEFAULT_TTS_VOICE,
   );
 
   const rateRef = useRef(1);
-  const voiceRef = useRef(DEFAULT_EDGE_VOICE);
+  const voiceRef = useRef(DEFAULT_TTS_VOICE);
   const stoppedRef = useRef(false);
   const playIdRef = useRef(0);
   const onCompleteRef = useRef<(() => void) | null>(null);
@@ -780,7 +780,7 @@ export function useTTS() {
         playIdRef.current += 1;
         stopAudio();
         // Chapter switched: kill zombie prefetches for the old chapter so they
-        // stop hogging Edge slots server-side.
+        // stop hogging TTS slots server-side.
         abortInflightFetches();
         currentChunkIdxRef.current = -1;
         dispatch({ type: "COMPLETE" });
@@ -912,7 +912,7 @@ export function useTTS() {
 
   const setVoice = useCallback(
     (voiceName: string) => {
-      if (!EDGE_VI_VOICES.some((v) => v.name === voiceName)) return;
+      if (!TTS_VOICES.some((v) => v.name === voiceName)) return;
       if (voiceRef.current === voiceName) return;
 
       voiceRef.current = voiceName;
@@ -952,7 +952,7 @@ export function useTTS() {
     rate,
     totalChunks: state.totalChunks,
     currentChunkIdx: currentChunkIdxRef.current,
-    viVoices,
+    voices,
     selectedVoiceName,
     play,
     playFromParagraph,

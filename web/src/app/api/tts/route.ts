@@ -6,7 +6,8 @@ import {
 } from "@/lib/tts-server";
 
 export const runtime = "nodejs";
-// Edge TTS websocket can need a few seconds on cold start
+// Edge websocket handshake / Google segment fetching can need a few seconds
+// on cold start
 export const maxDuration = 30;
 
 type TtsBody = {

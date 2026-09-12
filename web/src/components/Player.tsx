@@ -19,7 +19,7 @@ import {
   CircleNotch,
   PlayCircle,
 } from "@/components/icons";
-import type { EdgeTTSVoice } from "@/lib/tts-voices";
+import type { TTSVoice } from "@/lib/tts-voices";
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
 
@@ -28,16 +28,19 @@ function Chip({
   onClick,
   children,
   className = "",
+  title,
 }: {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
   className?: string;
+  title?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      title={title}
       className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 active:scale-95 ${className} ${
         active
           ? "bg-[var(--color-accent)] text-black font-semibold"
@@ -56,7 +59,7 @@ export default function Player({
   rate,
   currentIdx,
   totalParagraphs,
-  viVoices,
+  voices,
   selectedVoiceName,
   onPlay,
   onPlayFromHere,
@@ -75,7 +78,7 @@ export default function Player({
   rate: number;
   currentIdx: number;
   totalParagraphs: number;
-  viVoices: EdgeTTSVoice[];
+  voices: TTSVoice[];
   selectedVoiceName: string | null;
   onPlay: () => void;
   onPlayFromHere?: () => void;
@@ -327,11 +330,16 @@ export default function Player({
                 </label>
                 <div className="space-y-4">
                   <div className="flex flex-wrap gap-2">
-                    {viVoices.map((v) => (
+                    {voices.map((v) => (
                       <Chip
                         key={v.name}
                         active={selectedVoiceName === v.name}
                         onClick={() => onVoiceChange(v.name)}
+                        title={
+                          v.engine === "google"
+                            ? "Giọng Google Translate (miễn phí) — giống engine Google Translate của Read Aloud"
+                            : "Microsoft Edge Neural (chất lượng cao)"
+                        }
                       >
                         {v.label}
                       </Chip>

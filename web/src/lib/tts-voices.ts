@@ -1,27 +1,66 @@
-/** Fixed Vietnamese neural voices from Microsoft Edge TTS (server-side). */
+/**
+ * Voice registry for /api/tts.
+ * Two engines:
+ * - "edge":   Microsoft Edge neural voices (msedge-tts websocket proxy)
+ * - "google": Google Translate TTS (translate_tts) — the free voice the
+ *             Read Aloud extension's "Google Translate" engine uses
+ */
 
-export interface EdgeTTSVoice {
-  /** ShortName sent to /api/tts (e.g. vi-VN-HoaiMyNeural) */
+export type TtsEngine = "edge" | "google";
+
+export interface TTSVoice {
+  /** Voice id sent to /api/tts (e.g. vi-VN-HoaiMyNeural, gt-vi) */
   name: string;
   label: string;
   gender: "Female" | "Male";
+  engine: TtsEngine;
 }
 
-export const EDGE_VI_VOICES: EdgeTTSVoice[] = [
+/** Fixed Vietnamese neural voices from Microsoft Edge TTS. */
+export const EDGE_VI_VOICES: TTSVoice[] = [
   {
     name: "vi-VN-HoaiMyNeural",
     label: "Hoài My (Nữ)",
     gender: "Female",
+    engine: "edge",
   },
   {
     name: "vi-VN-NamMinhNeural",
     label: "Nam Minh (Nam)",
     gender: "Male",
+    engine: "edge",
   },
 ];
 
-export const DEFAULT_EDGE_VOICE = EDGE_VI_VOICES[0].name;
+/**
+ * Free Google Translate voice for Vietnamese (translate_tts, client=tw-ob).
+ * Google exposes a single voice per language — the same one Read Aloud's
+ * "Google Translate" engine plays. Quality is below Edge neural, but there is
+ * no websocket handshake cost and it does not depend on msedge-tts.
+ */
+export const GOOGLE_VI_VOICES: TTSVoice[] = [
+  {
+    name: "gt-vi",
+    label: "Google (Nữ · Free)",
+    gender: "Female",
+    engine: "google",
+  },
+];
 
-export function isValidEdgeVoice(name: string): boolean {
-  return EDGE_VI_VOICES.some((v) => v.name === name);
+/** All selectable voices, in picker order. */
+export const TTS_VOICES: TTSVoice[] = [...EDGE_VI_VOICES, ...GOOGLE_VI_VOICES];
+
+export const DEFAULT_TTS_VOICE = TTS_VOICES[0].name;
+
+export function getVoice(name: string): TTSVoice | undefined {
+  return TTS_VOICES.find((v) => v.name === name);
 }
+
+export function isValidTtsVoice(name: string): boolean {
+  return getVoice(name) !== undefined;
+}
+
+export function getVoiceEngine(name: string): TtsEngine | null {
+  return getVoice(name)?.engine ?? null;
+}
+

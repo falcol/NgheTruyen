@@ -4,7 +4,7 @@ import {
   normalizeTtsVoice,
   validateTtsText,
 } from "@/lib/tts-server";
-import { DEFAULT_EDGE_VOICE } from "@/lib/tts-voices";
+import { DEFAULT_TTS_VOICE, getVoiceEngine } from "@/lib/tts-voices";
 
 describe("tts-server helpers", () => {
   it("escapes SSML-sensitive characters", () => {
@@ -21,11 +21,19 @@ describe("tts-server helpers", () => {
     expect(validateTtsText("x".repeat(800))?.length).toBe(800);
   });
 
-  it("normalizes voice ids", () => {
+  it("normalizes voice ids across engines", () => {
     expect(normalizeTtsVoice("vi-VN-NamMinhNeural")).toBe(
       "vi-VN-NamMinhNeural",
     );
-    expect(normalizeTtsVoice("evil-voice")).toBe(DEFAULT_EDGE_VOICE);
-    expect(normalizeTtsVoice(undefined)).toBe(DEFAULT_EDGE_VOICE);
+    expect(normalizeTtsVoice("gt-vi")).toBe("gt-vi");
+    expect(normalizeTtsVoice("evil-voice")).toBe(DEFAULT_TTS_VOICE);
+    expect(normalizeTtsVoice(undefined)).toBe(DEFAULT_TTS_VOICE);
+  });
+
+  it("maps voice ids to engines", () => {
+    expect(getVoiceEngine("vi-VN-HoaiMyNeural")).toBe("edge");
+    expect(getVoiceEngine("vi-VN-NamMinhNeural")).toBe("edge");
+    expect(getVoiceEngine("gt-vi")).toBe("google");
+    expect(getVoiceEngine("bogus")).toBeNull();
   });
 });

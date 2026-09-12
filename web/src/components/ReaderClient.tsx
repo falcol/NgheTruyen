@@ -905,7 +905,7 @@ function ReaderClientInner({
         rate={tts.rate}
         currentIdx={tts.currentIdx}
         totalParagraphs={paragraphs?.length ?? 0}
-        viVoices={tts.viVoices}
+        voices={tts.voices}
         selectedVoiceName={tts.selectedVoiceName}
         onPlay={() => paragraphs && tts.play(chapterKey, paragraphs)}
         onPlayFromHere={handlePlayFromHere}
