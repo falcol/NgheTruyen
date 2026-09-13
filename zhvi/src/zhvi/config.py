@@ -9,13 +9,13 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 PARSER_VERSION = "zhvi-parser-1"
-SEGMENTER_VERSION = "zhvi-segmenter-2"  # name-guard: Names>=3 tran + glossary inner
+SEGMENTER_VERSION = "zhvi-segmenter-3"  # Custom name collision + ordinal title
 QA_VERSION = "zhvi-qa-1"
 PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # Version cua logic nap tu dien / render target — tham gia canonical manifest
 # cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
 LOADER_VERSION = "zhvi-loader-6"  # {p} P_STOP + 上里后 (Adj+N neo)
-RENDERER_VERSION = "zhvi-renderer-7"  # sense 吞: nuốt (động từ) / thôn (hợp thể, 吞吃)
+RENDERER_VERSION = "zhvi-renderer-8"  # sense lattice/commit 79ccba80
 # Version cua preprocessing view (junk strip + repetition collapse rules,
 # AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
 # collapse phai bump nay (run/cache cu tu invalid).

@@ -1,4 +1,8 @@
 # crawler/data is committed for Vercel deployment
+# scratch fill dumps (keep on disk, do not commit)
+crawler/data/**/_preview*
+crawler/data/**/_missing*
+zhvi/workspace/dist/_preview*
 __pycache__/
 *.pyc
 .env
