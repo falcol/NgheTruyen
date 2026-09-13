@@ -27,7 +27,7 @@ from .patterns import (
     fill_target,
     is_num_start,
 )
-from .sense import apply_sense
+from .sense import _IDIOMS, _ORD_TITLE2, apply_sense, dehua_conditional, ordinal_tail
 from .trace import SourceSpan, VpDraft, VpSpan
 
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
@@ -108,6 +108,24 @@ def _is_name_prec(prec: tuple) -> bool:
     return layer == int(Layer.BASE_MULTI) and trust == _NAME_FILE_TRUST
 
 
+# Custom.txt tron ten rieng (Tieu My...) + cum tu (cau truc, fix).
+# Chi muc TEN duoc quyen name (chon nuot edge glue): target viet hoa +
+# source khong chua hat chuc nang. Cum (桌上的, 足以让人...) khong duoc
+# nuot nguoc edge khac.
+_NAME_PARTICLES = frozenset("的得地了着过吗呢吧啊")
+
+
+def _is_custom_name(layer: int, trust: float, target: str, source: str) -> bool:
+    """True neu entry la ten rieng khai tay trong Custom.txt."""
+    return (
+        layer == int(Layer.GLOBAL_MANUAL)
+        and trust >= TRUST_BY_FILE["Custom.txt"]
+        and bool(target)
+        and target[0].isupper()
+        and not _NAME_PARTICLES.intersection(source)
+    )
+
+
 def _span_is_protected(dic: Dictionary, text: str, start: int, end: int) -> bool:
     """Edge hien tai la ten/glossary/Custom/QO — dung de junk Names cat ngang."""
     node = dic.root
@@ -145,6 +163,116 @@ def _inner_name(dic: Dictionary, text: str, pos: int) -> tuple[int, bool] | None
     return last
 
 
+def _custom_name_collision(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Ten Custom (Tieu My...) bi edge glue ngan (是小) nuot mat chu dau.
+    Drop de ten thang.
+
+    Hep co chu dich: chi edge len<=3 (glue) — cum dai co nghia nhu
+    数学老师 giu nguyen; ten phai keo dai qua edge.end; entry phai la
+    TEN Custom (target viet hoa, source khong hat), khong phai cum
+    (桌上的, 足以让人...).
+    """
+    if edge.is_pattern or edge.end - edge.start > 3:
+        return False
+    if _span_is_protected(dic, text, edge.start, edge.end):
+        return False
+    for i in range(edge.start + 1, edge.end):
+        node = dic.root
+        j = i
+        n = len(text)
+        while j < n:
+            node = node.children.get(text[j])
+            if node is None:
+                break
+            j += 1
+            if j - i < 2 or j <= edge.end:
+                continue
+            for _t, p, _pol in node.entries:
+                if _is_custom_name(p[0], p[1], _t, text[i:j]):
+                    return True
+    return False
+
+
+def _ordinal_title_collision(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Ordinal 第X<C> (VD 第一掌=chuong phap) nuot chu dau cua title
+    (VD 掌门). Drop de 第X + title thang (sense de N + trace sach).
+
+    Chi khi title (C + chu ke) thuoc bank ton hieu VA co that trong trie —
+    tranh che sai khi cum khong ton tai (VD 第一掌 don le van giu).
+    """
+    if edge.is_pattern:
+        return False
+    if ordinal_tail(text[edge.start : edge.end]) is None:
+        return False
+    if edge.end >= len(text):
+        return False
+    title = text[edge.end - 1 : edge.end + 1]
+    if title not in _ORD_TITLE2:
+        return False
+    node = dic.root
+    for ch in title:
+        node = node.children.get(ch)
+        if node is None:
+            return False
+    return bool(node.entries)
+
+
+def _longest_word_len(dic: Dictionary, text: str, pos: int) -> int:
+    """Do dai match dai nhat trong trie bat dau tai pos (0 neu khong co)."""
+    node = dic.root
+    best = 0
+    j = pos
+    n = len(text)
+    while j < n:
+        node = node.children.get(text[j])
+        if node is None:
+            break
+        j += 1
+        if node.entries:
+            best = j - pos
+    return best
+
+
+def _stolen_bu(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Edge generic ket thuc bang 不 (VD 到不) cuop 不 cua tu dai hon
+    bat dau tai do (VD 不可思议). Drop de longest-match thang.
+
+    Chi khi tu 不 dai hon edge (不可思议 4 > 到不 2); 不了 (2) vs
+    到不 (2) giu nguyen — bao ve 到不了 that. Tu X不 da thanh lap
+    (要不/这不/那不/毫不/莫不/并不) khong bao gio drop.
+    """
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    if text[edge.end - 1] != "不":
+        return False
+    if text[edge.start : edge.end] in ("要不", "这不", "那不", "毫不", "莫不", "并不"):
+        return False
+    if _span_is_protected(dic, text, edge.start, edge.end):
+        return False
+    return _longest_word_len(dic, text, edge.end - 1) > edge.end - edge.start
+
+
+def _idiom_overflow(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Edge 2 chu (VD 人望) che chu dau cua thanh ngu curated (VD 望其项背)
+    bat dau tai cuoi edge va tran khoi. Drop de thanh ngu thang.
+
+    Hep co chu dich: chi thanh ngu trong _IDIOMS (khong phai moi tu dai
+    trong trie — VD 就忍不住/果然如此/个人观点 chia doi duoc nen khong
+    bao ve, 早就/如果 an toan); thanh ngu phai co that trong trie; tu
+    不... do _stolen_bu phu trach.
+    """
+    if edge.is_pattern:
+        return False
+    if edge.end - edge.start != 2:
+        return False
+    if _span_is_protected(dic, text, edge.start, edge.end):
+        return False
+    tail = edge.end - 1
+    if text[tail : tail + 4] not in _IDIOMS:
+        return False
+    return _longest_word_len(dic, text, tail) >= 4
+
+
 def _swallows_name(dic: Dictionary, text: str, edge: Edge) -> bool:
     """Bo generic neu ten bat dau lech ben trong va (tran khoi span | glossary).
 
@@ -157,6 +285,10 @@ def _swallows_name(dic: Dictionary, text: str, edge: Edge) -> bool:
         return False
     if _span_is_protected(dic, text, edge.start, edge.end):
         return False
+    if _ordinal_title_collision(dic, text, edge):
+        return True
+    if _custom_name_collision(dic, text, edge):
+        return True
     for i in range(edge.start + 1, edge.end):
         hit = _inner_name(dic, text, i)
         if hit is None:
@@ -177,6 +309,8 @@ def _candidates_at(dic: Dictionary, text: str, pos: int, *, patterns: bool) -> l
     if CJK_RE.match(text[pos]) or pat_edges:
         candidates = _find_edges(dic.root, text, pos) + pat_edges
         candidates = [e for e in candidates if not _swallows_name(dic, text, e)]
+        candidates = [e for e in candidates if not _idiom_overflow(dic, text, e)]
+        candidates = [e for e in candidates if not _stolen_bu(dic, text, e)]
         if not candidates:
             candidates = [
                 Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
@@ -248,6 +382,14 @@ def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
                 break
         if skip:
             continue
+        # So huu X的{p} nuot hat dieu kien 的话 (VD 要是杀掉凌天的话 ->
+        # "loi noi cua Lang Thien"). Chi skip khi dehua_conditional xac
+        # nhan conditional; topic X的话 + dong tu (VD 凌天的话让...) va
+        # ngu canh nghe/tin (VD 听到凌天的话) giu "loi noi cua X".
+        if rule.key.endswith("的{p}") and rule.slots[-1:] == ("p",):
+            if m.group(len(rule.slots)) in ("话", "話"):
+                if dehua_conditional(text, m.end() - 2, m.end()):
+                    continue
         filled = fill_target(rule, m, lambda s: _translate_capture(dic, s))
         if not filled:
             continue

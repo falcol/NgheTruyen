@@ -23,8 +23,10 @@ def context_rules() -> list[tuple[str, str]]:
 
 def mini(entries: list[tuple[str, str, Layer]], rules: list[tuple[str, str]] | None = None) -> Dictionary:
     root = TrieNode()
-    for i, (zh, vi, layer) in enumerate(entries):
-        _insert(root, zh, vi, (int(layer), float(layer) * 10, i), "CONTEXTUAL")
+    for i, entry in enumerate(entries):
+        zh, vi, layer = entry[0], entry[1], entry[2]
+        trust = entry[3] if len(entry) > 3 else float(layer) * 10
+        _insert(root, zh, vi, (int(layer), trust, i), "CONTEXTUAL")
     compiled = []
     for zh, vi in rules or []:
         r = compile_rule(zh, vi, (int(Layer.GLOBAL_MANUAL), 25.0, 0), "PREFERRED")
@@ -780,3 +782,329 @@ def test_dehua_ruguo_neu_thi():
     assert "nếu như" in t
     assert "thì" in t
     assert t.count("nếu") == 1
+
+
+def _diyi_dic() -> Dictionary:
+    return mini(
+        [
+            ("禀告", "bẩm báo", Layer.BASE_MULTI),
+            ("第一", "thứ nhất", Layer.BASE_MULTI),
+            ("第二", "thứ hai", Layer.BASE_MULTI),
+            ("第三", "thứ ba", Layer.BASE_MULTI),
+            ("第四", "thứ tư", Layer.BASE_MULTI),
+            ("第七", "thứ bảy", Layer.BASE_MULTI),
+            ("第十一", "thứ mười một", Layer.BASE_MULTI),
+            ("第十八", "thứ mười tám", Layer.BASE_MULTI),
+            ("第二十", "thứ hai mươi", Layer.BASE_MULTI),
+            ("始祖", "thủy tổ", Layer.BASE_MULTI),
+            ("神尊", "Thần Tôn", Layer.BASE_MULTI),
+            ("长老", "trưởng lão", Layer.BASE_MULTI),
+            ("波", "đợt", Layer.BASE_SINGLE),
+            ("攻击", "công kích", Layer.BASE_MULTI),
+            ("人", "người", Layer.BASE_SINGLE),
+            ("个", "cái", Layer.BASE_SINGLE),
+        ]
+    )
+
+
+def test_diyi_shizu_de_nhat():
+    t = vp_plan(_diyi_dic(), "禀告第一始祖").text.lower()
+    assert "đệ nhất thủy tổ" in t
+    assert "thứ nhất" not in t
+
+
+def test_dier_disan_shizu():
+    t = vp_plan(_diyi_dic(), "第二始祖").text.lower()
+    assert "đệ nhị thủy tổ" in t
+    t = vp_plan(_diyi_dic(), "第三始祖").text.lower()
+    assert "đệ tam thủy tổ" in t
+
+
+def test_diyi_shenzun_de_nhat():
+    t = vp_plan(_diyi_dic(), "第一神尊").text.lower()
+    assert "đệ nhất" in t
+    assert "thứ nhất" not in t
+
+
+def test_diyi_counter_keeps_thu_nhat():
+    """第一波 / 第二个人 — thu tu, khong phai danh hieu."""
+    t = vp_plan(_diyi_dic(), "第一波攻击").text.lower()
+    assert "thứ nhất" in t
+    assert "đệ nhất" not in t
+    t = vp_plan(_diyi_dic(), "第二个人").text.lower()
+    assert "thứ hai" in t
+    assert "đệ nhị" not in t
+
+
+def test_diyi_ren_de_nhat_nhan():
+    t = vp_plan(_diyi_dic(), "第一人").text.lower()
+    assert "đệ nhất" in t
+
+
+def test_ordinal_title_scales():
+    """第X + ton hieu -> de + so Han-Viet (tu, that, thap nhat...)."""
+    cases = [
+        ("第四始祖", "đệ tứ thủy tổ"),
+        ("第七神尊", "đệ thất"),
+        ("第十一始祖", "đệ thập nhất thủy tổ"),
+        ("第十八始祖", "đệ thập bát thủy tổ"),
+        ("第二十神尊", "đệ nhị thập"),
+        ("第十一长老", "đệ thập nhất trưởng lão"),
+    ]
+    for zh, want in cases:
+        t = vp_plan(_diyi_dic(), zh).text.lower()
+        assert want in t, (zh, t)
+        assert "thứ" not in t, (zh, t)
+
+
+def test_ordinal_counter_keeps_thu():
+    t = vp_plan(_diyi_dic(), "第四波攻击").text.lower()
+    assert "thứ tư" in t
+    assert "đệ tứ" not in t
+
+
+def _zhangmen_dic(with_title: bool = True) -> Dictionary:
+    entries = [
+        ("第一", "thứ nhất", Layer.BASE_MULTI),
+        ("第一掌", "chưởng thứ nhất", Layer.BASE_MULTI),
+        ("掌", "chưởng", Layer.BASE_SINGLE),
+        ("门", "cửa", Layer.BASE_SINGLE),
+        ("掌门人", "chưởng môn nhân", Layer.BASE_MULTI),
+    ]
+    if with_title:
+        entries.append(("掌门", "chưởng môn", Layer.BASE_MULTI))
+    return mini(entries)
+
+
+def test_ordinal_zhangmen_not_split():
+    """第一掌门 — 第X + title thang, khong che thanh chuong phap + cua."""
+    t = vp_plan(_zhangmen_dic(), "第一掌门").text.lower()
+    assert "đệ nhất chưởng môn" in t
+    assert "cửa" not in t
+
+
+def test_ordinal_zhangmenren():
+    t = vp_plan(_zhangmen_dic(), "第一掌门人").text.lower()
+    assert "đệ nhất chưởng môn nhân" in t
+
+
+def test_ordinal_palm_strike_kept():
+    """第一掌 don le (chuong phap) — khong title theo sau, giu nguyen."""
+    t = vp_plan(_zhangmen_dic(), "第一掌").text.lower()
+    assert "chưởng thứ nhất" in t
+
+
+def test_ordinal_guard_needs_title_in_trie():
+    """Title khong co trong trie -> khong che (giu hanh vi cu)."""
+    t = vp_plan(_zhangmen_dic(with_title=False), "第一掌门").text.lower()
+    assert "chưởng thứ nhất" in t
+
+
+def _busi_dic() -> Dictionary:
+    return mini(
+        [
+            ("弱", "yếu", Layer.BASE_SINGLE),
+            ("到不", "không đến được", Layer.BASE_MULTI),
+            ("到", "đến", Layer.BASE_SINGLE),
+            ("不可思议", "không thể tưởng tượng nổi", Layer.BASE_MULTI),
+            ("可", "nhưng", Layer.BASE_SINGLE),
+            ("思议", "tư nghị", Layer.BASE_MULTI),
+            ("不了", "không xong", Layer.BASE_MULTI),
+            ("了", "đã", Layer.BASE_SINGLE),
+        ]
+    )
+
+
+def test_busi_not_split_by_daobu():
+    """弱到不可思议 — 到不 cuop 不, drop de 不可思议 thang."""
+    t = vp_plan(_busi_dic(), "弱到不可思议").text.lower()
+    assert "không thể tưởng tượng nổi" in t
+    assert "không đến được" not in t
+    assert "nhưng tư nghị" not in t
+
+
+def test_daobuliao_kept():
+    """到不了 that — 不了 (2) khong dai hon 到不 (2), giu nguyen."""
+    t = vp_plan(_busi_dic(), "到不了").text.lower()
+    assert "không đến được" in t
+
+
+def _bu_keep_dic() -> Dictionary:
+    return mini(
+        [
+            ("要不", "nếu không", Layer.BASE_MULTI),
+            ("要", "muốn", Layer.BASE_SINGLE),
+            ("这不", "đây không phải", Layer.BASE_MULTI),
+            ("这", "này", Layer.BASE_SINGLE),
+            ("毫不", "không chút nào", Layer.BASE_MULTI),
+            ("毫", "hào", Layer.BASE_SINGLE),
+            ("开着车", "lái xe", Layer.BASE_MULTI),
+            ("还没到", "còn chưa tới", Layer.BASE_MULTI),
+            ("设防", "phòng bị", Layer.BASE_MULTI),
+            ("不设防", "không đề phòng", Layer.BASE_MULTI),
+            ("莫不", "không ai không", Layer.BASE_MULTI),
+            ("莫", "chớ", Layer.BASE_SINGLE),
+            ("并不", "cũng không", Layer.BASE_MULTI),
+            ("并", "cũng", Layer.BASE_SINGLE),
+            ("多见", "thấy nhiều", Layer.BASE_MULTI),
+        ]
+    )
+
+
+def test_yaobu_kept():
+    """要不 da thanh lap — khong drop du 不开着 dai hon."""
+    t = vp_plan(_bu_keep_dic(), "要不开着车").text.lower()
+    assert "nếu không" in t
+    assert "muốn" not in t
+
+
+def test_zhebu_kept():
+    t = vp_plan(_bu_keep_dic(), "这不还没到").text.lower()
+    assert "đây không phải" in t
+
+
+def test_haobu_kept():
+    """毫不 da thanh lap — khong drop du 不设防 dai hon."""
+    t = vp_plan(_bu_keep_dic(), "毫不设防").text.lower()
+    assert "không chút nào phòng bị" in t
+    assert "hào" not in t
+
+
+def test_mobu_bingbu_kept():
+    """莫不/并不 da thanh lap — khong drop."""
+    t = vp_plan(_bu_keep_dic(), "莫不都是").text.lower()
+    assert "không ai không" in t
+    t = vp_plan(_bu_keep_dic(), "并不多见").text.lower()
+    assert "cũng không" in t
+
+
+def test_custom_name_beats_glue():
+    """左边是小美 — glue 是小 khong duoc nuot ten Custom 小美."""
+    dic = mini(
+        [
+            ("左边", "bên trái", Layer.BASE_MULTI),
+            ("是", "là", Layer.BASE_SINGLE),
+            ("是小", "là nhỏ", Layer.BASE_MULTI),
+            ("小", "nhỏ", Layer.BASE_SINGLE),
+            ("美", "đẹp", Layer.BASE_SINGLE),
+            ("小美", "Tiểu Mỹ", Layer.GLOBAL_MANUAL, 100.0),
+        ]
+    )
+    t = vp_plan(dic, "左边是小美").text
+    assert "Tiểu Mỹ" in t
+    assert "nhỏ đẹp" not in t.lower()
+
+
+def test_yiyue_tiao_no_dup():
+    """一跃跳上 — nhay vot len, khong 'nhay len nhay len'."""
+    dic = mini(
+        [
+            ("一跃", "nhảy lên", Layer.BASE_MULTI),
+            ("跳上", "nhảy lên", Layer.BASE_MULTI),
+            ("洗手台", "bồn rửa tay", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "一跃跳上洗手台").text.lower()
+    assert "nhảy vọt lên" in t
+    assert t.count("nhảy") == 1
+
+
+def test_yiyue_erqi_kept():
+    """一跃而起 — phrase dai thang, giu nguyen."""
+    dic = mini(
+        [
+            ("一跃", "nhảy lên", Layer.BASE_MULTI),
+            ("一跃而起", "nhảy lên một cái", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "一跃而起").text.lower()
+    assert "nhảy lên một cái" in t
+
+
+def _idiom_dic() -> Dictionary:
+    return mini(
+        [
+            ("人望", "nhân vọng", Layer.BASE_MULTI),
+            ("人", "người", Layer.BASE_SINGLE),
+            ("望其项背", "nhìn theo bóng lưng", Layer.BASE_MULTI),
+            ("早就", "đã sớm", Layer.BASE_MULTI),
+            ("早", "sớm", Layer.BASE_SINGLE),
+            ("就忍不住", "liền không nhịn được", Layer.BASE_MULTI),
+        ]
+    )
+
+
+def test_idiom_head_not_glued():
+    """人望 + 望其项背 — drop edge 2 chu de thanh ngu thang."""
+    t = vp_plan(_idiom_dic(), "人望其项背").text.lower()
+    assert "nhìn theo bóng lưng" in t
+    assert "nhân vọng" not in t
+
+
+def test_compositional_phrase_not_idiom():
+    """早就 — 就忍不住 chia doi duoc, khong bao ve, giu nguyen."""
+    t = vp_plan(_idiom_dic(), "早就忍不住").text.lower()
+    assert "đã sớm" in t
+
+
+def _dehua_possessive_dic() -> Dictionary:
+    return mini(
+        [
+            ("要是", "nếu là", Layer.BASE_MULTI),
+            ("杀掉", "giết chết", Layer.BASE_MULTI),
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI),
+            ("的话", "nếu", Layer.GLOBAL_MANUAL),
+            ("话", "lời nói", Layer.BASE_SINGLE),
+            ("剑", "kiếm", Layer.BASE_SINGLE),
+            ("他说", "hắn nói", Layer.BASE_MULTI),
+        ],
+        [("凌天的{p}", "{p} của Lăng Thiên")],
+    )
+
+
+def test_dehua_conditional_not_possessive():
+    """要是杀掉凌天的话，他… — conditional thi, khong 'loi noi cua'."""
+    t = vp_plan(_dehua_possessive_dic(), "要是杀掉凌天的话，他说").text.lower()
+    assert "lăng thiên thì" in t
+    assert "lời nói" not in t
+
+
+def test_possessive_still_works_for_noun():
+    """凌天的剑 — so huu that, pattern van dao N."""
+    t = vp_plan(_dehua_possessive_dic(), "凌天的剑").text.lower()
+    assert "kiếm của lăng thiên" in t
+
+
+def test_dehua_topic_keeps_possessive():
+    """凌天的话让... — topic + dong tu, giu 'loi noi cua', khong thi."""
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI),
+            ("的话", "nếu", Layer.GLOBAL_MANUAL),
+            ("话", "lời nói", Layer.BASE_SINGLE),
+            ("让", "khiến", Layer.BASE_SINGLE),
+            ("一群", "một đám", Layer.BASE_MULTI),
+        ],
+        [("凌天的{p}", "{p} của Lăng Thiên")],
+    )
+    t = vp_plan(dic, "凌天的话让一群").text.lower()
+    assert "lời nói của lăng thiên" in t
+    assert "thì" not in t
+
+
+def test_dehua_speech_keeps_possessive():
+    """听到凌天的话，转身 — ngu canh nghe, giu 'loi noi cua' (dao ngu)."""
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI),
+            ("的话", "nếu", Layer.GLOBAL_MANUAL),
+            ("话", "lời nói", Layer.BASE_SINGLE),
+            ("听到", "nghe tới", Layer.BASE_MULTI),
+            ("转身", "quay người", Layer.BASE_MULTI),
+        ],
+        [("凌天的{p}", "{p} của Lăng Thiên")],
+    )
+    t = vp_plan(dic, "听到凌天的话，转身").text.lower()
+    assert "lời nói của lăng thiên" in t
+    assert "nếu" not in t
+    assert "thì" not in t
