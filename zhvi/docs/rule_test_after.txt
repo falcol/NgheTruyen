@@ -1,0 +1,53 @@
+# -*- coding: utf-8 -*-
+# Rule test (renderer-8) — verified inline via vp_plan trên shipped dict
+# (các entry được sắp xếp dài→ngắn, priority suffix > prefix)
+
+## 1. Zero numeric → lẻ (trong câu số học)
+# 101: 一百零五 → một trăm lẻ năm (không "số không")
+input: 一百零五
+output: một trăm lẻ năm
+reason: 零 nằm giữa 2 ký tự CJK trong _NUM_CHARS → lẻ
+
+## 2. Zero trong compound — KHÔNG áp dụng
+# 103: 零食好吃吗 → đồ ăn vặt ngon khong? (零 ở đầu, không có số liệu trước)
+input: 零食好吃吗
+output: đồ ăn vặt ngon không?
+reason: 零 ở đầu từ (synthetic) → dict override "đồ ăn vặt", sense không apply
+
+## 3. 吗 cuối câu → chưa (nếu có 了/过 trước)
+# 105: 吃了吗 → ăn đã chưa?
+input: 吃了吗
+output: ăn chưa?
+reason: left[-1] = 了 (past) → chưa
+
+## 3b. 吗 cuối câu → à (không past)
+input: 你知道吗
+output: ngươi biết à?
+reason: left[-1] = 知 (không phải 了/过) → à
+
+## 4. 呢 sau đại từ, cuối câu → chứ
+input: 你呢
+output: ngươi chứ?
+reason: left = 你 (PRONOUNS), _rest_is_sentence_end → chứ
+
+## 5. 连…都 → cũng
+input: 连饭都不吃
+output: cho dù cơm cũng không ăn
+reason: ctx có "连", không có "一连" → cũng
+
+## 6. 无论…都 → vẫn
+input: 无论他都懂
+output: dù ở đâu cũng hiểu
+reason: ctx có "无论" → vẫn
+
+## 7. 吗 mid-clause — giữ "sao" (rule chỉ trigger cuối câu)
+# 108: 吗你都知道 → sao ngươi đều biết (không áp dụng rule cuối câu)
+input: 吗你都知道
+output: sao ngươi đều biết
+reason: ไม่ _rest_is_sentence_end (còn CJK sau 吗) → return None, dùng dict target
+
+## 8. 呢 mid-clause — drop (rule chỉ trigger cuối câu + projection)
+# 110: 你呢他都知道 → ngươi hắn đều biết (drop, không phải "chứ")
+input: 你呢他都知道
+output: ngươi hắn đều biết
+reason: ไม่ _rest_is_sentence_end → không apply rule → drop (DROP_PARTICLES)

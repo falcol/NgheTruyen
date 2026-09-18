@@ -29,6 +29,8 @@ INLINE_JUNK_RES = (
     re.compile(r"百万\\?小说"),
     re.compile(r"[每天]天看(?:小說|小说)解(?:書|书)荒[，,、]?"),
 )
+# HTML leak / GBK-mojibake ads (piaotia: 銆愭帹鑽…/p> , PUA).
+HTML_AD_RE = re.compile(r"</?p\b|/p>|銆|[\ue000-\uf8ff]")
 
 
 @dataclass(frozen=True)
@@ -37,7 +39,7 @@ class JunkSpan:
 
     start: int
     end: int
-    reason: str  # SITE_WATERMARK | BOOKMARK_LINE | EMPTY_QUOTES | INLINE_JUNK
+    reason: str  # SITE_WATERMARK | BOOKMARK_LINE | EMPTY_QUOTES | INLINE_JUNK | HTML_AD
 
 
 def sanitize_source(text: str) -> tuple[str, list[JunkSpan]]:
@@ -53,6 +55,8 @@ def sanitize_source(text: str) -> tuple[str, list[JunkSpan]]:
         return "", [JunkSpan(0, len(text), "SITE_WATERMARK")]
     if BOOKMARK_RE.match(text):
         return "", [JunkSpan(0, len(text), "BOOKMARK_LINE")]
+    if HTML_AD_RE.search(text):
+        return "", [JunkSpan(0, len(text), "HTML_AD")]
 
     spans: list[JunkSpan] = [
         JunkSpan(m.start(), m.end(), "EMPTY_QUOTES") for m in EMPTY_QUOTES_RE.finditer(text)

@@ -37,6 +37,7 @@ from .vietphrase.loader import (
     Dictionary,
     TrieNode,
     _insert,
+    iter_global_glossary_files,
     load_dictionary,
     load_trad_simp,
     normalize_nfc,
@@ -235,8 +236,11 @@ def build_revision(
         _add_layer(f"auto:{scope}", scope, entries, layer=AUTO_LAYER_BY_SCOPE[scope])
 
     # buoc 3: manual layers
-    if global_glossary is not None and global_glossary.is_file():
-        _add_layer("manual:global", "global", _parse_file_entries(global_glossary), layer=Layer.SERIES_MANUAL)
+    global_entries: list[tuple[str, str]] = []
+    for gpath in iter_global_glossary_files(global_glossary):
+        global_entries.extend(_parse_file_entries(gpath))
+    if global_entries:
+        _add_layer("manual:global", "global", global_entries, layer=Layer.SERIES_MANUAL)
     if project.manual_glossary.is_file():
         _add_layer("manual:book", "book", _parse_file_entries(project.manual_glossary), layer=Layer.BOOK_MANUAL)
 
@@ -384,10 +388,17 @@ def publish_revision(
 
 def _manual_layer_digest(project: Project, layer_name: str, global_glossary: Path | None) -> tuple[str, int] | None:
     """Digest canonical hien tai cua layer manual (book/global) tu file."""
-    path = project.manual_glossary if layer_name == "manual:book" else global_glossary
-    if path is None or not path.is_file():
+    if layer_name == "manual:book":
+        path = project.manual_glossary
+        if path is None or not path.is_file():
+            return None
+        return _layer_hash(_parse_file_entries(path))
+    entries: list[tuple[str, str]] = []
+    for gpath in iter_global_glossary_files(global_glossary):
+        entries.extend(_parse_file_entries(gpath))
+    if not entries:
         return None
-    return _layer_hash(_parse_file_entries(path))
+    return _layer_hash(entries)
 
 
 def _manual_layers_stale(project: Project, active_id: str, global_glossary: Path | None) -> bool:

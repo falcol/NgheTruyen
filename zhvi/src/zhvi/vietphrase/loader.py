@@ -109,6 +109,37 @@ class Dictionary:
     patterns: dict = field(default_factory=dict)  # bucket -> list[PatternRule] (muc 11.1 luat nhan)
 
 
+def iter_global_glossary_files(global_glossary: Path | None) -> list[Path]:
+    """File global chinh + drop-in `{parent}/glossary.d/*.tsv` (sorted).
+
+    Chi nap glossary.d khi da co file global (tranh load ~/.config luc test
+    goi load_dictionary ma khong truyen global_glossary).
+    """
+    files: list[Path] = []
+    seen: set[Path] = set()
+
+    def _add(path: Path) -> None:
+        if not path.is_file():
+            return
+        try:
+            key = path.resolve()
+        except OSError:
+            return
+        if key in seen:
+            return
+        seen.add(key)
+        files.append(path)
+
+    if global_glossary is None:
+        return files
+    _add(global_glossary)
+    dropin = global_glossary.parent / "glossary.d"
+    if dropin.is_dir():
+        for path in sorted(dropin.glob("*.tsv")):
+            _add(path)
+    return files
+
+
 def dict_files_fingerprint(
     dict_dir: Path,
     manual_glossary: Path | None,
@@ -126,9 +157,10 @@ def dict_files_fingerprint(
             with path.open("rb") as f:
                 while chunk := f.read(1 << 20):
                     h.update(chunk)
-    if global_glossary is not None and global_glossary.is_file():
+    for gpath in iter_global_glossary_files(global_glossary):
         h.update(b"global:")
-        h.update(global_glossary.read_bytes())
+        h.update(gpath.name.encode())
+        h.update(gpath.read_bytes())
     if manual_glossary is not None and manual_glossary.is_file():
         h.update(b"manual:")
         h.update(manual_glossary.read_bytes())
@@ -204,10 +236,10 @@ def load_dictionary(
                 if simp != zh:
                     _insert(root, simp, vi, prec, _policy_for(layer))
             count += 1
-    if global_glossary is not None and global_glossary.is_file():
-        # term chuan toan cuc (Vi du Tieu Ban dung moi truyen) — layer SERIES_MANUAL,
+    for gpath in iter_global_glossary_files(global_glossary):
+        # term chuan toan cuc (Tieu Ban + glossary.d/*.tsv) — SERIES_MANUAL,
         # thang dict nen nhung BOOK_MANUAL cua truyen van override duoc.
-        for line in global_glossary.read_text(encoding="utf-8-sig").splitlines():
+        for line in gpath.read_text(encoding="utf-8-sig").splitlines():
             parsed = parse_dict_line(line)
             if parsed is None:
                 continue

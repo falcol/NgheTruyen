@@ -40,6 +40,30 @@ def test_global_changes_fingerprint(tmp_path):
     assert fp0 != fp1
 
 
+def test_glossary_d_dropin_loads_with_main_file(tmp_path):
+    g = tmp_path / "glossary.manual.tsv"
+    g.write_text("小胖=Tiểu Bàn\n", encoding="utf-8")
+    d = tmp_path / "glossary.d"
+    d.mkdir()
+    (d / "hoang-co.tsv").write_text("君逍遥=Quân Tiêu Dao\n", encoding="utf-8")
+    dic = load_dictionary(DICT_DIR, global_glossary=g)
+    assert greedy_path(dic, "小胖")[0].target == "Tiểu Bàn"
+    assert greedy_path(dic, "君逍遥")[0].target == "Quân Tiêu Dao"
+
+
+def test_glossary_d_changes_fingerprint(tmp_path):
+    from zhvi.vietphrase.loader import dict_files_fingerprint
+
+    g = tmp_path / "glossary.manual.tsv"
+    g.write_text("小胖=Tiểu Bàn\n", encoding="utf-8")
+    fp0 = dict_files_fingerprint(DICT_DIR, None, g)
+    d = tmp_path / "glossary.d"
+    d.mkdir()
+    (d / "extra.tsv").write_text("姜家=Khương gia\n", encoding="utf-8")
+    fp1 = dict_files_fingerprint(DICT_DIR, None, g)
+    assert fp0 != fp1
+
+
 def test_missing_global_file_is_noop(tmp_path):
     """File global khong ton tai -> hanh vi giong het khong truyen global."""
     dic_none = load_dictionary(DICT_DIR)

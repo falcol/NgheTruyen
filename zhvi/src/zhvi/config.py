@@ -19,7 +19,7 @@ RENDERER_VERSION = "zhvi-renderer-8"  # sense lattice/commit 79ccba80
 # Version cua preprocessing view (junk strip + repetition collapse rules,
 # AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
 # collapse phai bump nay (run/cache cu tu invalid).
-PREPROCESS_VERSION = "zhvi-preprocess-1"
+PREPROCESS_VERSION = "zhvi-preprocess-2"
 # Route duy nhat cua duong dich VP-only (SPEC CAP-9: run moi chi ghi route nay).
 ROUTE_VIETPHRASE = "VIETPHRASE"
 
@@ -42,6 +42,7 @@ CUSTOM_FILE = "Custom.txt"
 
 DEFAULT_DICT_DIR = "crawler/vietphrase/dicts"
 # Glossary chuan toan cuc (moi truyen dung chung): ~/.config/zhvi/glossary.manual.tsv
+# Drop-in them: ~/.config/zhvi/glossary.d/*.tsv (SERIES_MANUAL, de sua tung file).
 DEFAULT_GLOBAL_GLOSSARY = "~/.config/zhvi/glossary.manual.tsv"
 
 

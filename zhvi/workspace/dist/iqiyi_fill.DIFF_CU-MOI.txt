@@ -1,0 +1,2390 @@
+# Lô iQiyi fill: 279 chương CŨ (zhvi renderer-7, đã gán volume) vs MỚI (renderer-8 / segmenter-3)
+# CŨ = zhvi/workspace/dist/iqiyi_fill.zhvi.vi.txt
+# MỚI = zhvi/workspace/dist/iqiyi_fill.zhvi.MOI.vi.txt
+
+# Khác 153/279 chương, 275 đoạn.
+# Trùng hoàn toàn: 126 chương.
+
+===== Chương 204: chương 204: quả thực đánh mặt (1 chỗ) =====
+
+----- đoạn 10 -----
+CŨ
+Hướng Mỹ Thần nghe vậy, nhẹ gật đầu, Lăng Thiên người còn không có bồn rửa tay cao, nhảy lên bồn rửa tay, ngồi xuống bắt đầu rửa tay, đương nhiên chỉ là tùy ý tẩy tẩy, trước đó sờ đến thi thể thời điểm, thi thể và tay ở giữa, cách một đạo linh khí, cùng vốn không bẩn.
+
+MỚI
+Hướng Mỹ Thần nghe vậy, nhẹ gật đầu, Lăng Thiên người còn không có bồn rửa tay cao, nhảy vọt lên bồn rửa tay, ngồi xuống bắt đầu rửa tay, đương nhiên chỉ là tùy ý tẩy tẩy, trước đó sờ đến thi thể thời điểm, thi thể và tay ở giữa, cách một đạo linh khí, cùng vốn không bẩn.
+
+
+===== Chương 538: Chương 538: thái độ cường ngạnh (1 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Lưu Sướng nhìn xem Lăng Thiên không nhượng bộ, trầm mặc:“Thời gian ngắn như vậy, ta không có có thể cầm tới nhiều như vậy thảo dược, cho dù thời gian đầy đủ, với ta bây giờ đã cùng gia tộc trở mặt, dạng này, lại cho ta thời gian một năm!”
+
+MỚI
+Lưu Sướng nhìn xem Lăng Thiên không nhượng bộ, trầm mặc:“Thời gian ngắn như vậy, ta không có khả năng cầm tới nhiều như vậy thảo dược, cho dù thời gian đầy đủ, với ta bây giờ đã cùng gia tộc trở mặt, dạng này, lại cho ta thời gian một năm!”
+
+
+===== Chương 647: Chương 647: khoe của nhỏ đạt nhân (3 chỗ) =====
+
+----- đoạn 1 -----
+CŨ
+Thái Dũng sắc mặt biến đến có chút khó coi, đối Tiểu Bàn ấn tượng đầu tiên sẽ không quá tốt, thế mà cho là chính mình bắt đầu hãm hại xe, bĩu môi nói:“Ngươi ngày sau tuyệt đối là khi đại minh tinh liệu, những người này, ngày sau hoàn toàn không cách nào trèo cao ngươi, lên xe, không cần thiết cùng bọn hắn pha trộn, học tập liền hảo hảo học tập, không quá nặng tâm vẫn là phải đặt ở diễn nghệ bên trên, ta rất xem trọng ngươi.”
+
+MỚI
+Thái Dũng sắc mặt biến đến có chút khó coi, đối Tiểu Bàn ấn tượng đầu tiên liền không tốt lắm, thế mà cho là chính mình bắt đầu hãm hại xe, bĩu môi nói:“Ngươi ngày sau tuyệt đối là khi đại minh tinh liệu, những người này, ngày sau hoàn toàn không cách nào trèo cao ngươi, lên xe, không cần thiết cùng bọn hắn pha trộn, học tập liền hảo hảo học tập, không quá nặng tâm vẫn là phải đặt ở diễn nghệ bên trên, ta rất xem trọng ngươi.”
+
+----- đoạn 3 -----
+CŨ
+Thái Dũng đang nghĩ ngợi như thế nào cùng Tiểu Mỹ giữ gìn mối quan hệ, Tiểu Mỹ đang nghe tin đồn môi cơ hồ là độc nhất cái, rất được nghe gió ưu ái, tăng thêm Tiểu Mỹ bản thân cũng rất có thiên phú, quay phim thời điểm, nàng cá nhân phần diễn, trên cơ bản đều là một đã vượt qua, không hề sẽ, cũng là thoáng chỉ điểm sẽ biết, đạo diễn đều là khen không dứt miệng!
+
+MỚI
+Thái Dũng đang nghĩ ngợi như thế nào cùng Tiểu Mỹ giữ gìn mối quan hệ, Tiểu Mỹ đang nghe tin đồn môi cơ hồ là độc nhất cái, rất được nghe gió ưu ái, tăng thêm Tiểu Mỹ bản thân cũng rất có thiên phú, quay phim thời điểm, nàng cá nhân phần diễn, trên cơ bản đều là một đã vượt qua, có sẽ không, cũng là thoáng chỉ điểm sẽ biết, đạo diễn đều là khen không dứt miệng!
+
+----- đoạn 7 -----
+CŨ
+Thái Dũng tay cứng ngắc lại, chậm rãi thu tay lại:“Ta đây nói gì, có lẽ để ngươi mất hứng, nhưng là, đây đều là sự thật!” Tiểu Mỹ đã có chút tức giận, Thái Dũng không tiếp tục nói quá nặng lời nói, sợ Tiểu Mỹ rất giận hắn, ngày sau hai người chơi cứng sẽ không thật tốt quá.
+
+MỚI
+Thái Dũng tay cứng ngắc lại, chậm rãi thu tay lại:“Ta đây nói gì, có lẽ để ngươi mất hứng, nhưng là, đây đều là sự thật!” Tiểu Mỹ đã có chút tức giận, Thái Dũng không tiếp tục nói quá nặng lời nói, sợ Tiểu Mỹ rất giận hắn, ngày sau hai người chơi cứng liền không tốt lắm.
+
+
+===== Chương 771: Chương 771: Tiểu Xe Thần (1 chỗ) =====
+
+----- đoạn 17 -----
+CŨ
+Triệu công tử cũng nhìn xem, trầm giọng nói:“Đây đúng là bình thường, phía trước đường quanh co tương đối nhiều, xe nhất định phải giảm tốc, bất quá, ta không có tin tưởng đứa trẻ kia có thể có tốc độ nhanh như vậy, đạo diễn, cắt một hạ, cắt đến trong xe bộ phận.”
+
+MỚI
+Triệu công tử cũng nhìn xem, trầm giọng nói:“Đây đúng là bình thường, phía trước đường quanh co tương đối nhiều, xe nhất định phải giảm tốc, bất quá, ta không tin đứa trẻ kia có thể có tốc độ nhanh như vậy, đạo diễn, cắt một hạ, cắt đến trong xe bộ phận.”
+
+
+===== Chương 782: Chương 782: cơ hội buôn bán (1 chỗ) =====
+
+----- đoạn 16 -----
+CŨ
+Hướng đẹp tốt thở dài:“Thật không nhường người bớt lo, ta đi cùng Tiểu Thiên nói mấy câu.” Nói chuyện, bước nhanh lên lầu.
+
+MỚI
+Hướng đẹp tốt thở dài:“Thật không khiến người ta bớt lo, ta đi cùng Tiểu Thiên nói mấy câu.” Nói chuyện, bước nhanh lên lầu.
+
+
+===== Chương 783: Chương 783: đại minh tinh mời ăn cơm (1 chỗ) =====
+
+----- đoạn 9 -----
+CŨ
+“Hay là ta cơ linh, theo bộ dáng của Lăng Thiên, ta không có lôi kéo hắn, hắn có thể lề mề mười phút, đến lúc đó người liền có thêm, người hơn một, đến lúc đó nhiều người như vậy gặp lại ngươi, làm không tốt liền biến thành giao thông hỗn loạn đã!” Tiểu Bàn nói chuyện, nhìn thấy Lãnh Sương Lão sư rất im lặng bộ dạng, lại nhìn về phía Lăng Thiên, Lăng Thiên căn bản không để ý tới mình, thở dài:“Hảo tâm trở thành lòng lang dạ thú, chúng ta đã đến Na Tra?”
+
+MỚI
+“Hay là ta cơ linh, theo bộ dáng của Lăng Thiên, ta không lôi kéo hắn, hắn có thể lề mề mười phút, đến lúc đó người liền có thêm, người hơn một, đến lúc đó nhiều người như vậy gặp lại ngươi, làm không tốt liền biến thành giao thông hỗn loạn đã!” Tiểu Bàn nói chuyện, nhìn thấy Lãnh Sương Lão sư rất im lặng bộ dạng, lại nhìn về phía Lăng Thiên, Lăng Thiên căn bản không để ý tới mình, thở dài:“Hảo tâm trở thành lòng lang dạ thú, chúng ta đã đến Na Tra?”
+
+
+===== Chương 784: Chương 784: gặp chuyện bất bình mỹ nữ (1 chỗ) =====
+
+----- đoạn 20 -----
+CŨ
+“Ta không có muốn cùng ngươi nói chuyện, cút sang một bên!” Đao Ba Nam lạnh giọng nói chuyện đồng thời, trở tay từ sau hông rút ra môt cây chủy thủ, đâm vào bằng gỗ trên mặt bàn, cái bàn lung lay, nam nhân giơ tay lên bên trong chén rượu:“Ta uống trước rồi nói!”
+
+MỚI
+“Ta không muốn cùng ngươi nói chuyện, cút sang một bên!” Đao Ba Nam lạnh giọng nói chuyện đồng thời, trở tay từ sau hông rút ra môt cây chủy thủ, đâm vào bằng gỗ trên mặt bàn, cái bàn lung lay, nam nhân giơ tay lên bên trong chén rượu:“Ta uống trước rồi nói!”
+
+
+===== Chương 786: Chương 786: lại cho một cơ hội (1 chỗ) =====
+
+----- đoạn 24 -----
+CŨ
+“Ta bên này gặp người, nhìn hắn đã đến trên người ta ảnh chụp, nói là tiềm phục tại người bên cạnh mục tiêu, muốn câu thông sau lưng ta nhân!” Đao Ba Nam nói rằng.
+
+MỚI
+“Ta bên này gặp người, hắn nhìn thấy vào ta trên người ảnh chụp, nói là tiềm phục tại người bên cạnh mục tiêu, muốn câu thông sau lưng ta nhân!” Đao Ba Nam nói rằng.
+
+
+===== Chương 789: Chương 789: sát thủ tới cửa (1 chỗ) =====
+
+----- đoạn 21 -----
+CŨ
+Mực sư hít sâu một hơi, chính để suy nghĩ bình tĩnh trở lại, nhận biết Lăng Thiên, là của hắn cơ duyên, mặc dù không có thể tu luyện Đại Địa Thánh Tôn Quyết, nhưng có thể được chỉ điểm của Lăng Thiên, đã đủ rồi, liền vội hỏi tự mình tu luyện không trúng được hiểu vấn đề.
+
+MỚI
+Mực sư hít sâu một hơi, chính để suy nghĩ bình tĩnh trở lại, nhận biết Lăng Thiên, là của hắn cơ duyên, mặc dù không có thể tu luyện Đại Địa Thánh Tôn Quyết, nhưng có thể được chỉ điểm của Lăng Thiên, đã đủ rồi, liền vội hỏi tự mình tu luyện bên trong không hiểu vấn đề.
+
+
+===== Chương 790: Chương 790: TaeKwonDo uy lực (1 chỗ) =====
+
+----- đoạn 53 -----
+CŨ
+Lăng Thiên quay đầu nhìn về phía Diệp Phong, Diệp Phong cũng không tị huý Tống Uyển Quân:“Có người ở ám võng thượng hoa trăm vạn treo thưởng mệnh của nàng! Muốn sau khi tra được trước mặt cố chủ, cần một chút thời gian!”
+
+MỚI
+Lăng Thiên quay đầu nhìn về phía Diệp Phong, Diệp Phong cũng không tị hiềm Tống Uyển Quân:“Có người ở ám võng thượng hoa trăm vạn treo thưởng mệnh của nàng! Muốn sau khi tra được trước mặt cố chủ, cần một chút thời gian!”
+
+
+===== Chương 944: Chương 944: không rơi vào thế hạ phong (2 chỗ) =====
+
+----- đoạn 11 -----
+CŨ
+“Tại sao ngươi có thể sử dụng giọng uy hiếp cùng ngươi gia gia nói chuyện? Trước gọi một tiếng, a, không đúng, ta không có có thể làm gia gia ngươi, như ngươi loại này không biết xấu hổ người, không xứng làm cháu của ta!” Lăng Thiên gặm một cái nhân sâm, lông mày nhẹ nhàng chớp chớp:“Vật gì, không thể ăn!”
+
+MỚI
+“Tại sao ngươi có thể sử dụng giọng uy hiếp cùng ngươi gia gia nói chuyện? Trước gọi một tiếng, a, không đúng, ta không thể làm gia gia ngươi, như ngươi loại này không biết xấu hổ người, không xứng làm cháu của ta!” Lăng Thiên gặm một cái nhân sâm, lông mày nhẹ nhàng chớp chớp:“Vật gì, không thể ăn!”
+
+----- đoạn 19 -----
+CŨ
+Nhưng đối phương là Tiên Thiên đỉnh phong, một cái Tiểu Giai Đoạn lực lượng chênh lệch, phải không dừng gấp đôi, nhưng thời gian ngắn chống lại, vẫn là có thể.
+
+MỚI
+Nhưng đối phương là Tiên Thiên đỉnh phong, một cái Tiểu Giai Đoạn lực lượng chênh lệch, là không chỉ gấp đôi, nhưng thời gian ngắn chống lại, vẫn là có thể.
+
+
+===== Chương 949: Chương 949: vu oan (1 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+Lăng Thiên không tiếp tục tiếp tục nhìn chằm chằm, thời gian của hắn không nhiều lắm, bốn giờ, đã đủ để cho người hoài nghi, chuyện kế tiếp, một giờ sắp xong xuôi.
+
+MỚI
+Lăng Thiên không tiếp tục tiếp tục nhìn chằm chằm, thời gian của hắn không nhiều lắm, bốn giờ, đã đủ để khiến người ta hoài nghi, chuyện kế tiếp, một giờ sắp xong xuôi.
+
+
+===== Chương 950: Chương 950: giá họa (1 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+Bành tôn lâm ngừng lại:“Đừng ép ta động thủ, thực lực các ngươi cũng không bằng ta, ta không có muốn giết các ngươi!”
+
+MỚI
+Bành tôn lâm ngừng lại:“Đừng ép ta động thủ, thực lực các ngươi cũng không bằng ta, ta không muốn giết các ngươi!”
+
+
+===== Chương 953: Chương 953: liên tục biến cố (1 chỗ) =====
+
+----- đoạn 14 -----
+CŨ
+“Ta không có cho rằng Triệu gia thảo dược là bành tôn lâm trộm, hắn không có loại thủ đoạn này!” Có người nói.
+
+MỚI
+“Ta không cho rằng Triệu gia thảo dược là bành tôn lâm trộm, hắn không có loại thủ đoạn này!” Có người nói.
+
+
+===== Chương 954: Chương 954: đồng ý hợp tác (1 chỗ) =====
+
+----- đoạn 29 -----
+CŨ
+Tôn Dao tiếp tục nói:“Bây giờ công ty nghiên cứu bộ phận bị người cho thẩm thấu, mà ta không có nghĩ bại lộ ngươi tồn tại, ngươi bị bại lộ, đoán chừng cũng sẽ cảm thấy rất phiền phức.”
+
+MỚI
+Tôn Dao tiếp tục nói:“Bây giờ công ty nghiên cứu bộ phận bị người cho thẩm thấu, mà ta không muốn bại lộ ngươi tồn tại, ngươi bị bại lộ, đoán chừng cũng sẽ cảm thấy rất phiền phức.”
+
+
+===== Chương 955: Chương 955: vênh mặt hất hàm sai khiến (2 chỗ) =====
+
+----- đoạn 9 -----
+CŨ
+Lời của lão nhân bị đánh gãy, lạnh lùng nhìn Tiêu Tâm Vũ liếc mắt, tiếp tục nói:“Còn có, các ngươi trước đó yêu cầu, năm mươi phần trăm lợi nhuận chia, đây là không có thể, trải qua cân nhắc, quyết định của chúng ta cho các ngươi hai mươi phần trăm! Năm mươi phần trăm, có chút quá cao!”
+
+MỚI
+Lời của lão nhân bị đánh gãy, lạnh lùng nhìn Tiêu Tâm Vũ liếc mắt, tiếp tục nói:“Còn có, các ngươi trước đó yêu cầu, năm mươi phần trăm lợi nhuận chia, đây là không thể nào, trải qua cân nhắc, quyết định của chúng ta cho các ngươi hai mươi phần trăm! Năm mươi phần trăm, có chút quá cao!”
+
+----- đoạn 26 -----
+CŨ
+Tiêu gia lão giả gật gật đầu:“Không biết lễ phép, không chút nào cho ta mặt mũi....”
+
+MỚI
+Tiêu gia lão giả gật gật đầu:“Không biết lễ phép, mảy may không nể mặt ta....”
+
+
+===== Chương 956: Chương 956: thỏa hiệp (1 chỗ) =====
+
+----- đoạn 34 -----
+CŨ
+Tôn miểu bọn người nhìn xem Tôn Dao rời đi, thay đổi cả sắc mặt đến khó coi, Tôn Dao rõ ràng hẳn là dễ dàng nhất nắm trong tay người, bây giờ lại biến thành không...Nhất dễ dàng nắm trong tay người.
+
+MỚI
+Tôn miểu bọn người nhìn xem Tôn Dao rời đi, thay đổi cả sắc mặt đến khó coi, Tôn Dao rõ ràng hẳn là dễ dàng nhất nắm trong tay người, bây giờ lại biến thành nhất không dễ dàng nắm trong tay người.
+
+
+===== Chương 957: Chương 957: xem xét (1 chỗ) =====
+
+----- đoạn 32 -----
+CŨ
+Tiêu Vân Long nghe nói như thế, cười lạnh khinh thường:“Các ngươi có thể nhận biết Âu Dương Thuận Đức đạo diễn? Khoác lác cũng không làm bản nháp!”
+
+MỚI
+Tiêu Vân Long nghe nói như thế, cười lạnh khinh thường:“Các ngươi có thể nhận biết Âu Dương Thuận Đức đạo diễn? Khoác lác đều không bản thảo bản thảo!”
+
+
+===== Chương 958: Chương 958: không thể thực chiến (2 chỗ) =====
+
+----- đoạn 9 -----
+CŨ
+Tiêu Vân Long cũng cười lạnh nói:“Này Lăng Thiên, không phải kia Lăng Thiên, cho dù thật sự là tiểu hài này trên danh nghĩa, ta cũng không tin tưởng cái này kịch bản là hắn viết, mạ vàng liền hảo hảo mạ vàng!”
+
+MỚI
+Tiêu Vân Long cũng cười lạnh nói:“Này Lăng Thiên, không phải kia Lăng Thiên, cho dù thật sự là tiểu hài này trên danh nghĩa, ta cũng không tin cái này kịch bản là hắn viết, mạ vàng liền hảo hảo mạ vàng!”
+
+----- đoạn 16 -----
+CŨ
+Tiêu Vân Long mày nhăn lại, nhìn về phía Lăng Thiên:“Chúng ta lúc đối thoại, ngươi có thể hay không không cần nói? Ngươi muốn thật nói động tác này, có thể thành, ngươi tìm người đến biểu diễn xuống, chỉ cần có người có thể không mượn nhờ bất kỳ đồ biểu diễn gì làm ra động tác như vậy, ta tuyệt đối không lời nào để nói!”
+
+MỚI
+Tiêu Vân Long mày nhăn lại, nhìn về phía Lăng Thiên:“Chúng ta lúc đối thoại, ngươi có thể hay không không cần nói? Ngươi muốn thật nói động tác này, có thể thành, ngươi tìm người đến biểu diễn xuống, chỉ cần có người có thể không tá trợ bất kỳ đồ biểu diễn gì làm ra động tác như vậy, ta tuyệt đối không lời nào để nói!”
+
+
+===== Chương 960: Chương 960: lừa gạt tiểu hài (1 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+Tại điện thoại một chỗ khác, Tôn Dao trạng thái tựa hồ cũng không tệ lắm, Lăng Thiên thuận miệng hỏi vài câu khuếch trương gặp phải vấn đề gì không có, nghe tới Tôn Dao nói không có, Lăng Thiên cũng sẽ không thế nào để ý, chỉ cho là, Tôn gia người, còn không có tìm tới Tôn Dao.
+
+MỚI
+Tại điện thoại một chỗ khác, Tôn Dao trạng thái tựa hồ cũng không tệ lắm, Lăng Thiên thuận miệng hỏi vài câu khuếch trương gặp phải vấn đề gì không có, nghe tới Tôn Dao nói không có, Lăng Thiên cũng liền không chút nào để ý đã, chỉ cho là, Tôn gia người, còn không có tìm tới Tôn Dao.
+
+
+===== Chương 964: Chương 964: đánh nổ bao cát (3 chỗ) =====
+
+----- đoạn 24 -----
+CŨ
+Không có người trả lời bọn hắn, nhìn thấy nhiều như vậy thương, đủ để cho người coi trọng, một đám người bị giải đi.
+
+MỚI
+Không có người trả lời bọn hắn, nhìn thấy nhiều như vậy thương, đủ để khiến người ta coi trọng, một đám người bị giải đi.
+
+----- đoạn 29 -----
+CŨ
+Loại sự tình này, tiền tĩnh đã sớm nghĩ đã đến, mà lại hắn cũng không thế nào để ý, có Đỗ Phi ở bên cạnh hắn, hắn có đầy đủ sức mạnh, hắn gặp qua đỗ phi thực lực, đối Đỗ Phi cực kì tự tin, bất quá Lăng Thiên tự mình căn dặn, hắn cũng bắt đầu coi trọng, làm cho người ta đi nhìn chằm chằm chuyện này.
+
+MỚI
+Loại sự tình này, tiền tĩnh đã sớm nghĩ đã đến, mà lại hắn cũng không chút nào để ý, có Đỗ Phi ở bên cạnh hắn, hắn có đầy đủ sức mạnh, hắn gặp qua đỗ phi thực lực, đối Đỗ Phi cực kì tự tin, bất quá Lăng Thiên tự mình căn dặn, hắn cũng bắt đầu coi trọng, làm cho người ta đi nhìn chằm chằm chuyện này.
+
+----- đoạn 38 -----
+CŨ
+Lý Sảng lui ra phía sau, nhìn thấy người chung quanh ánh mắt, trên mặt có một tia đỏ ửng, không biết là kích động, còn chưa có ý tốt.
+
+MỚI
+Lý Sảng lui ra phía sau, nhìn thấy người chung quanh ánh mắt, trên mặt có một tia đỏ ửng, không biết là kích động, vẫn là không có ý tứ.
+
+
+===== Chương 966: Chương 966: lực lượng mười phần (1 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+“Có ở đây không đơn giản, có thể....” Tôn ngạo nói chuyện, ngừng lại, mắt nhìn phía trước, đứng nơi đó, bất chính trước kia chính là ở bên ngoài gặp nhau, đánh cho mình cái kia Thiên Long Bang người sao?
+
+MỚI
+“Tại không đơn giản, có thể....” Tôn ngạo nói chuyện, ngừng lại, mắt nhìn phía trước, đứng nơi đó, bất chính trước kia chính là ở bên ngoài gặp nhau, đánh cho mình cái kia Thiên Long Bang người sao?
+
+
+===== Chương 973: Chương 973: ôm cây đợi thỏ (2 chỗ) =====
+
+----- đoạn 26 -----
+CŨ
+Diệp Phong ánh mắt ngưng lại:“Ta không có muốn tìm sự tình, ta khuyên ngươi đừng muốn chết!”
+
+MỚI
+Diệp Phong ánh mắt ngưng lại:“Ta không muốn tìm sự tình, ta khuyên ngươi đừng muốn chết!”
+
+----- đoạn 52 -----
+CŨ
+“Biết rõ chúng ta là Thiên Long Bang nhân, còn dám lớn lối như thế?!” Đường Hổ lạnh giọng nói qua, sau lưng có thể đánh nhau tay chân mái chèo phong vây lại.
+
+MỚI
+“Biết rõ chúng ta là Thiên Long Bang nhân, còn dám lớn lối như thế?!” Đường Hổ lạnh giọng nói qua, sau lưng có thể đánh nhau tay chân đem Diệp Phong vây lại.
+
+
+===== Chương 983: Chương 983: phản phệ (1 chỗ) =====
+
+----- đoạn 44 -----
+CŨ
+“Ân.” Lưu song nói chuyện, nhìn về phía Lăng Thiên nói “Tiểu Thiên, thật xin lỗi a, ta không có biết tình huống bên này, chỉ có một mình ta đã tới.” Lưu song nói rằng.
+
+MỚI
+“Ân.” Lưu song nói chuyện, nhìn về phía Lăng Thiên nói “Tiểu Thiên, thật xin lỗi a, ta không biết tình huống bên này, chỉ có một mình ta đã tới.” Lưu song nói rằng.
+
+
+===== Chương 984: Chương 984: một ngựa đi đầu (1 chỗ) =====
+
+----- đoạn 18 -----
+CŨ
+Diệp Phong lắc đầu:“Ta không có quan tâm, ngươi đem những lễ vật này, đem đi đi.”
+
+MỚI
+Diệp Phong lắc đầu:“Ta không quan tâm, ngươi đem những lễ vật này, đem đi đi.”
+
+
+===== Chương 986: Chương 986: bành trướng Liễu Sinh Gia Tộc (2 chỗ) =====
+
+----- đoạn 27 -----
+CŨ
+Lăng Thiên nhìn xem Liễu Sinh nhã anh bộ dạng, không dùng được nhưng hoài nghi ngữ khí nói:“Lên!”
+
+MỚI
+Lăng Thiên nhìn xem Liễu Sinh nhã anh bộ dạng, dùng không thể hoài nghi giọng của nói “Lên!”
+
+----- đoạn 43 -----
+CŨ
+“Ta nói đầu óc ngươi có vấn đề sao?” Lăng Thiên dùng Nhật ngữ nói qua, trầm giọng nói:“Nàng đã sớm là người của ta, cùng sinh gia tộc, không tiếp tục bất kỳ liên quan, sao là phản bội vừa nói? Mặt khác, các ngươi có phải hay không phải thật tốt giải thích xuống, tại sao phải nhường nàng nhìn ta chằm chằm?!”
+
+MỚI
+“Ta nói đầu óc ngươi có vấn đề sao?” Lăng Thiên dùng Nhật ngữ nói qua, trầm giọng nói:“Nàng đã sớm là người của ta, cùng Liễu Sinh Gia Tộc, không tiếp tục bất kỳ liên quan, sao là phản bội vừa nói? Mặt khác, các ngươi có phải hay không phải thật tốt giải thích xuống, tại sao phải nhường nàng nhìn ta chằm chằm?!”
+
+
+===== Chương 988: Chương 988: chó cắn chó (1 chỗ) =====
+
+----- đoạn 44 -----
+CŨ
+Liễu Sinh nhã anh nghe nói như thế, hiểu lầm, coi là Lăng Thiên là tức giận, tức giận Liễu Sinh Gia Tộc không biết tốt xấu, mà cùng nàng đoạn tuyệt quan hệ về sau, sẽ tốt hơn đối Liễu Sinh Gia Tộc động thủ, thần sắc phức tạp hơn, nội tâm của nàng phải không hi vọng Liễu Sinh Gia Tộc bị diệt, nhưng là thật sự cách Lăng Thiên, chỉ sợ một cơ hội nhỏ nhoi cũng không có, chậm rãi quỳ xuống, Trịnh trọng nói:“Ta cùng Liễu Sinh Gia Tộc, tái vô quan hệ!”
+
+MỚI
+Liễu Sinh nhã anh nghe nói như thế, hiểu lầm, coi là Lăng Thiên là tức giận, tức giận Liễu Sinh Gia Tộc không biết tốt xấu, mà cùng nàng đoạn tuyệt quan hệ về sau, sẽ tốt hơn đối Liễu Sinh Gia Tộc động thủ, thần sắc phức tạp hơn, nội tâm của nàng là không hi vọng Liễu Sinh Gia Tộc bị diệt, nhưng là thật sự cách Lăng Thiên, chỉ sợ một cơ hội nhỏ nhoi cũng không có, chậm rãi quỳ xuống, Trịnh trọng nói:“Ta cùng Liễu Sinh Gia Tộc, tái vô quan hệ!”
+
+
+===== Chương 990: Chương 990: rời đi (2 chỗ) =====
+
+----- đoạn 16 -----
+CŨ
+Lăng Thiên nghe tiểu nha đầu trên thân nhàn nhạt hương thơm khí tức, tâm thần run lên, không biết vì cái gì, bỗng nhiên có loại rất không bỏ cảm giác.
+
+MỚI
+Lăng Thiên nghe tiểu nha đầu trên thân nhàn nhạt hương thơm khí tức, tâm thần run lên, không biết vì cái gì, bỗng nhiên có loại rất không thôi cảm giác.
+
+----- đoạn 24 -----
+CŨ
+Để Tiểu Vân không cách nào dễ dàng tha thứ là, nàng lại còn nói Lăng Thiên, quay đầu dùng ửng đỏ đôi mắt nhìn xem nữ nhân này, ánh mắt dần dần mang theo một chút uy áp:“Ta không có cho phép ngươi nói hắn như vậy, xin lỗi!”
+
+MỚI
+Để Tiểu Vân không cách nào dễ dàng tha thứ là, nàng lại còn nói Lăng Thiên, quay đầu dùng ửng đỏ đôi mắt nhìn xem nữ nhân này, ánh mắt dần dần mang theo một chút uy áp:“Ta không cho phép ngươi nói hắn như vậy, xin lỗi!”
+
+
+===== Chương 994: Chương 994: toa thuốc mới (1 chỗ) =====
+
+----- đoạn 1 -----
+CŨ
+Lăng Thiên nắm trong tay quá nhiều phương thuốc, mà lại chỉ cần nguyện ý, chính hắn đều có thể phối trí ra thuốc đặc hiệu phương đến, bất quá cùng thế giới này có chênh lệch chính là, phương thuốc của hắn bên trong một ít thuốc, cùng thế giới này một chút thuốc phải không thất phối, hắn cần phải đi hiểu rõ, mình xứng đôi đang làm.
+
+MỚI
+Lăng Thiên nắm trong tay quá nhiều phương thuốc, mà lại chỉ cần nguyện ý, chính hắn đều có thể phối trí ra thuốc đặc hiệu phương đến, bất quá cùng thế giới này có chênh lệch chính là, phương thuốc của hắn bên trong một ít thuốc, cùng thế giới này một chút thuốc là không xứng đôi, hắn cần phải đi hiểu rõ, mình xứng đôi đang làm.
+
+
+===== Chương 995: Chương 995: hắc thủ sau màn (3 chỗ) =====
+
+----- đoạn 1 -----
+CŨ
+Liêu Phàm ngẩn người, thầm nghĩ trong lòng một tiếng thao đản, lại nhìn Lăng Thiên liếc mắt, vội vàng sửa lời nói:“Hóa ra là Tôn tổng người mang tới, trách không được cuồng như vậy, tiểu gia hỏa trông cao cường như vậy, ngày sau tiền đồ tuyệt đối không nhưng hạn lượng, mang đến công ty nhìn một chút sự tình, nhìn một chút người, cũng là có thể.”
+
+MỚI
+Liêu Phàm ngẩn người, thầm nghĩ trong lòng một tiếng thao đản, lại nhìn Lăng Thiên liếc mắt, vội vàng sửa lời nói:“Hóa ra là Tôn tổng người mang tới, trách không được cuồng như vậy, tiểu gia hỏa trông cao cường như vậy, ngày sau tiền đồ tuyệt đối bất khả hạn lượng, mang đến công ty nhìn một chút sự tình, nhìn một chút người, cũng là có thể.”
+
+----- đoạn 7 -----
+CŨ
+Do dự nói:“Cái này Liêu Phàm là trước kia khâu đông công ty lão nhân, ta không có quá tốt khai trừ, để tránh công ty kia trong lòng người khác không nhớ quá, mà lại tại quản lý bên trên, thật sự là hắn thực cũng có một bộ.”
+
+MỚI
+Do dự nói:“Cái này Liêu Phàm là trước kia khâu đông công ty lão nhân, ta không tốt lắm khai trừ, để tránh công ty kia trong lòng người khác không nhớ quá, mà lại tại quản lý bên trên, thật sự là hắn thực cũng có một bộ.”
+
+----- đoạn 37 -----
+CŨ
+“Công ty tổng giám đốc Lăng Thiên, lại là một tiểu hài, ta không có biết, nhìn thấy hắn ở đây công ty, nói vài câu!” Liêu Phàm thấp thỏm nói rằng.
+
+MỚI
+“Công ty tổng giám đốc Lăng Thiên, lại là một tiểu hài, ta không biết, nhìn thấy hắn ở đây công ty, nói vài câu!” Liêu Phàm thấp thỏm nói rằng.
+
+
+===== Chương 997: Chương 997: vũ nhục heo (1 chỗ) =====
+
+----- đoạn 16 -----
+CŨ
+Lăng Thiên đưa tay chỉ thương lượng vĩ:“Đầu kia heo mập yêu cầu sẽ không vô lễ? Hắn quấy rối người ta, ở bên ngoài hoàn toàn là phạm tội hành vi, hoặc nói, nơi này đã thành tàng ô nạp cấu chi địa, chỉ cần ở chỗ này mua đồ, liền có thể ở đây phạm tội?!”
+
+MỚI
+Lăng Thiên đưa tay chỉ thương lượng vĩ:“Đầu kia heo mập yêu cầu liền không vô lễ? Hắn quấy rối người ta, ở bên ngoài hoàn toàn là phạm tội hành vi, hoặc nói, nơi này đã thành tàng ô nạp cấu chi địa, chỉ cần ở chỗ này mua đồ, liền có thể ở đây phạm tội?!”
+
+
+===== Chương 998: Chương 998: sa thải (2 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Bảo an đều mộng bức đã, khu vực quản lý âm thanh lạnh lùng nói:“Còn không xuống dưới? Ai bảo các ngươi hạn chế bọn hắn tự do?!”
+
+MỚI
+Bảo an đều mộng bức đã, khu vực quản lý âm thanh lạnh lùng nói:“Còn không đi xuống? Ai bảo các ngươi hạn chế bọn hắn tự do?!”
+
+----- đoạn 27 -----
+CŨ
+Vương tổng nhìn xem khang oánh mộng bức đang, coi là khang oánh phải không nguyện ý, cắn răng một cái:“Còn có một quản lý vị trí, Hứa quản lý bị sa thải về sau, ngươi có thể trực tiếp tới đi làm!”
+
+MỚI
+Vương tổng nhìn xem khang oánh mộng bức đang, coi là khang oánh là không nguyện ý, cắn răng một cái:“Còn có một quản lý vị trí, Hứa quản lý bị sa thải về sau, ngươi có thể trực tiếp tới đi làm!”
+
+
+===== Chương 999: Chương 999: thái độ chuyển biến (1 chỗ) =====
+
+----- đoạn 54 -----
+CŨ
+“Ân, ta tra được đồ vật, đều là từ bình thường con đường tra, nhưng còn có chút đồ vật, cần chưa từng chính quy con đường tra, những người kia nghe tới Lăng Thiên cái tên này, thần sắc có chút không quá bình thường, ta tùy tiện đánh một cái ngụy trang.” Nam tử gầy gò nói rằng.
+
+MỚI
+“Ân, ta tra được đồ vật, đều là từ bình thường con đường tra, nhưng còn có chút đồ vật, cần từ không chính quy con đường tra, những người kia nghe tới Lăng Thiên cái tên này, thần sắc có chút không quá bình thường, ta tùy tiện đánh một cái ngụy trang.” Nam tử gầy gò nói rằng.
+
+
+===== Chương 1000: Chương 1000: đánh cờ (1 chỗ) =====
+
+----- đoạn 47 -----
+CŨ
+Bao minh nghe tới Lăng Thiên không nói thêm gì nữa, cũng sẽ không lại nói cái gì, lái xe đã đến thanh hồ tiệm cơm.
+
+MỚI
+Bao minh nghe tới Lăng Thiên không nói thêm gì nữa, cũng liền không nói gì nữa, lái xe đã đến thanh hồ tiệm cơm.
+
+
+===== Chương 1003: Chương 1003: thương gia thái độ (2 chỗ) =====
+
+----- đoạn 20 -----
+CŨ
+Trình Hoan hơi chút do dự, cũng đáp ứng, Lăng Thiên suy nghĩ lại một chút, hình như chung quanh không ít người đều biết mình rất lợi hại, chỉ có chính mình bên người gần đây mấy người, cái gì cũng không rõ ràng.
+
+MỚI
+Trình Hoan hơi chút do dự, cũng đáp ứng, Lăng Thiên suy nghĩ lại một chút, hình như chung quanh không ít người đều biết mình rất lợi hại, chỉ có chính mình bên người gần đây mấy người, cái gì đều không rõ ràng.
+
+----- đoạn 54 -----
+CŨ
+Mười mấy người mái chèo phong bọc, thương lượng vĩ tiếp tục nói:“Ta cuối cùng cho ngươi thêm một cơ hội, dù sao, ta phải không muốn cùng Thiên Long Bang xích mích, ngươi Thiên Long Bang nói lời xin lỗi, đem đối ta thương gia chiếu thành tổn thất đền bù, lựa chọn cùng thương gia hợp tác, chuyện lúc trước, liền có thể xóa bỏ!”
+
+MỚI
+Mười mấy người đem Diệp Phong bọc, thương lượng vĩ tiếp tục nói:“Ta cuối cùng cho ngươi thêm một cơ hội, dù sao, ta phải không muốn cùng Thiên Long Bang xích mích, ngươi Thiên Long Bang nói lời xin lỗi, đem đối ta thương gia chiếu thành tổn thất đền bù, lựa chọn cùng thương gia hợp tác, chuyện lúc trước, liền có thể xóa bỏ!”
+
+
+===== Chương 1006: Chương 1006: như từng quen biết (1 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+Mắt ưng nghe nói như thế, thở hào hển:“Cố chủ ta không có biết, nhưng là ta tới đến nơi đây, cho một người gọi điện thoại, ta có thể đem điện thoại nói cho ngươi biết, là hắn cho ta đây tư liệu của tiểu hài.”
+
+MỚI
+Mắt ưng nghe nói như thế, thở hào hển:“Cố chủ ta không biết, nhưng là ta tới đến nơi đây, cho một người gọi điện thoại, ta có thể đem điện thoại nói cho ngươi biết, là hắn cho ta đây tư liệu của tiểu hài.”
+
+
+===== Chương 1007: Chương 1007: cẩn thận hắc thủ (1 chỗ) =====
+
+----- đoạn 61 -----
+CŨ
+Ban đêm không có tin tức tới, tại Diệp Phong trong tin tức, Liễu Sinh Gia Tộc cũng một mực dừng lại ở một vị trí không có động tới, Lăng Thiên cũng sẽ không thế nào để ý, bắt đầu luyện chế đan dược.
+
+MỚI
+Ban đêm không có tin tức tới, tại Diệp Phong trong tin tức, Liễu Sinh Gia Tộc cũng một mực dừng lại ở một vị trí không có động tới, Lăng Thiên cũng liền không chút nào để ý đã, bắt đầu luyện chế đan dược.
+
+
+===== Chương 1012: chương 1012: tai bay vạ gió (1 chỗ) =====
+
+----- đoạn 19 -----
+CŨ
+Lưỡi đao nhìn xem Diệp Phong bộ dạng, hít sâu một hơi:“Ta không có biết.”
+
+MỚI
+Lưỡi đao nhìn xem Diệp Phong bộ dạng, hít sâu một hơi:“Ta không biết.”
+
+
+===== Chương 1014: chương 1014: thái độ chuyển biến (1 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+Có người nghi hoặc nhìn Lăng Thiên:“Tô gia trang Tiểu Vân tiểu thư sinh nhật thời điểm....”
+
+MỚI
+Có người nghi hoặc nhìn Lăng Thiên:“Tô gia Tô Tiêu Vân tiểu thư sinh nhật thời điểm....”
+
+
+===== Chương 1021: Chương 1021: cầu ta à (1 chỗ) =====
+
+----- đoạn 61 -----
+CŨ
+Lăng Thiên phất phất tay, lại bất ngờ phát hiện, có đồ vật, nghịch thiên vòng tay đều không thu được đi vào!
+
+MỚI
+Lăng Thiên phất phất tay, lại bất ngờ phát hiện, có đồ vật, nghịch thiên vòng tay đều thu không vào trong!
+
+
+===== Chương 1023: Chương 1023: thần thông tu thành (2 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Sau mười phút, Lăng Thiên về tới nguyên địa, ngẩng đầu nhìn lại, nhìn hắn đến đó ý chí, trên bầu trời, một thanh kinh thiên cự kiếm, lơ lửng trên bầu trời, kia là, Kiếm Ý!
+
+MỚI
+Sau mười phút, Lăng Thiên về tới nguyên địa, ngẩng đầu nhìn lại, hắn nhìn thấy này ý chí, trên bầu trời, một thanh kinh thiên cự kiếm, lơ lửng trên bầu trời, kia là, Kiếm Ý!
+
+----- đoạn 16 -----
+CŨ
+Đây chính là Kiếm Ý, Lăng Thiên tại đây trong kiếm ý, thấy được vô số loại kiếm đạo ý chí, nhìn hắn đã đến mình đã từng đối kiếm lý giải, cái này cự kiếm bên trên, toàn bộ đều có, mà lại càng thâm ảo hơn, thâm ảo đến, Lăng Thiên căn bản thì nhìn không hiểu.
+
+MỚI
+Đây chính là Kiếm Ý, Lăng Thiên tại đây trong kiếm ý, thấy được vô số loại kiếm đạo ý chí, hắn nhìn thấy chính đã đã từng đối kiếm lý giải, cái này cự kiếm bên trên, toàn bộ đều có, mà lại càng thâm ảo hơn, thâm ảo đến, Lăng Thiên căn bản thì nhìn không hiểu.
+
+
+===== Chương 1036: Chương 1036: hắc thủ sau màn (1 chỗ) =====
+
+----- đoạn 19 -----
+CŨ
+Vạn xông nhìn xem cùng trước đó phổ nhạc Lăng Thiên tựa hồ hoàn toàn bất đồng Lăng Thiên, lắc đầu:“Ta không có biết.”
+
+MỚI
+Vạn xông nhìn xem cùng trước đó phổ nhạc Lăng Thiên tựa hồ hoàn toàn bất đồng Lăng Thiên, lắc đầu:“Ta không biết.”
+
+
+===== Chương 1043: Chương 1043: tự tìm đường chết (1 chỗ) =====
+
+----- đoạn 38 -----
+CŨ
+Howard sắc mặt âm trầm, hắn sẽ không nên đến Thủy Nguyệt, đã đến Thủy Nguyệt, hắn nhậm chức nhân ngư thịt, Lăng Thiên một bộ vẻ không có gì sợ, hiển nhiên còn có thủ đoạn khác, Howard cúi đầu trầm tư đang:“Động thủ, bắt lấy đứa trẻ này!”
+
+MỚI
+Howard sắc mặt âm trầm, hắn liền không nên đến Thủy Nguyệt, đã đến Thủy Nguyệt, hắn nhậm chức nhân ngư thịt, Lăng Thiên một bộ vẻ không có gì sợ, hiển nhiên còn có thủ đoạn khác, Howard cúi đầu trầm tư đang:“Động thủ, bắt lấy đứa trẻ này!”
+
+
+===== Chương 1107: Chương 1107: lần đầu gặp mặt (1 chỗ) =====
+
+----- đoạn 37 -----
+CŨ
+Tống khải binh lặng rồi một nháy mắt, đột nhiên nghĩ đến cái gì, lắc đầu:“Ta không có biết, ta lập tức đổi vị trí.”
+
+MỚI
+Tống khải binh lặng rồi một nháy mắt, đột nhiên nghĩ đến cái gì, lắc đầu:“Ta không biết, ta lập tức đổi vị trí.”
+
+
+===== Chương 1129: Chương 1129: quỳ xuống đất cầu xin tha thứ (2 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+Mấy cái nhấc lên thi thể võ giả nhanh chóng đem thi thể trả lại trở về, ở đây tổng cộng bảy võ giả, hai cái võ giả đã không có sức chiến đấu, nội kình kỳ võ giả nhìn xem mấy người ra, quay đầu đối Tô Vân Kim chắp tay một cái:“Chuyện này ta không có nhúng tay, thù lao ta sẽ cùng nhau trả lại!”
+
+MỚI
+Mấy cái nhấc lên thi thể võ giả nhanh chóng đem thi thể trả lại trở về, ở đây tổng cộng bảy võ giả, hai cái võ giả đã không có sức chiến đấu, nội kình kỳ võ giả nhìn xem mấy người ra, quay đầu đối Tô Vân Kim chắp tay một cái:“Chuyện này ta không nhúng tay vào đã, thù lao ta sẽ cùng nhau trả lại!”
+
+----- đoạn 49 -----
+CŨ
+“Chuyện này, ta không có thừa nhận! Mà lại các ngươi còn chưa tới pháp định tuổi tác!” Tô Vân Kim trầm giọng nói.
+
+MỚI
+“Chuyện này, ta không thừa nhận! Mà lại các ngươi còn chưa tới pháp định tuổi tác!” Tô Vân Kim trầm giọng nói.
+
+
+===== Chương 1134: Chương 1134: miểu sát (1 chỗ) =====
+
+----- đoạn 46 -----
+CŨ
+“Có thể, bất quá giải dược cần bồi dưỡng cổ trùng mười mấy loại độc thảo hỗn hợp, vấn đề là, ta bồi dưỡng những này cổ trùng thời điểm, là tùy ý phối độc, ta không có nhớ kỹ lúc trước sử dụng độc thảo đã!” Cổ sư từ tốn nói.
+
+MỚI
+“Có thể, bất quá giải dược cần bồi dưỡng cổ trùng mười mấy loại độc thảo hỗn hợp, vấn đề là, ta bồi dưỡng những này cổ trùng thời điểm, là tùy ý phối độc, ta không nhớ rõ lúc trước sử dụng độc thảo đã!” Cổ sư từ tốn nói.
+
+
+===== Chương 1135: Chương 1135: chân tướng phơi bày (1 chỗ) =====
+
+----- đoạn 41 -----
+CŨ
+Lăng Thiên cười cười:“Cứ đi như thế, Bạch gia há không sẽ nói chúng ta không hiểu đạo đãi khách?”
+
+MỚI
+Lăng Thiên cười cười:“Cứ đi như thế, Bạch gia há sẽ không nói chúng ta không hiểu đạo đãi khách?”
+
+
+===== Chương 1138: Chương 1138: tra ra manh mối (1 chỗ) =====
+
+----- đoạn 30 -----
+CŨ
+Đã không nghĩ ra, cũng sẽ không nghĩ nhiều nữa, bằng nhanh nhất tốc độ nước đọng nguyệt.
+
+MỚI
+Đã không nghĩ ra, cũng liền không nghĩ nhiều nữa, bằng nhanh nhất tốc độ nước đọng nguyệt.
+
+
+===== Chương 1140: Chương 1140: tự tìm đường chết (2 chỗ) =====
+
+----- đoạn 23 -----
+CŨ
+Tô lão gia tử y nguyên mang theo không hiểu, lắc đầu:“Trước đó gia tộc chuyện, đều do hai người bọn họ huynh đệ xử lý, ta không có quá rõ ràng....”
+
+MỚI
+Tô lão gia tử y nguyên mang theo không hiểu, lắc đầu:“Trước đó gia tộc chuyện, đều do hai người bọn họ huynh đệ xử lý, ta không rõ lắm....”
+
+----- đoạn 24 -----
+CŨ
+“Ngươi là Tiểu Vân gia gia, cho nên ta không có đối ngươi dùng thủ đoạn đặc thù, bất quá lần này thủ hạ ta đã chết, chuyện này, ta nhất định sẽ truy cứu tới cùng, ngươi không nói, ta cũng chỉ có thể đối ngài bất kính đã.”
+
+MỚI
+“Ngươi là Tiểu Vân gia gia, cho nên ta không đối với ngươi dùng thủ đoạn đặc thù, bất quá lần này thủ hạ ta đã chết, chuyện này, ta nhất định sẽ truy cứu tới cùng, ngươi không nói, ta cũng chỉ có thể đối ngài bất kính đã.”
+
+
+===== Chương 1193: Chương 1193: biến hóa (3 chỗ) =====
+
+----- đoạn 16 -----
+CŨ
+Tiểu Bạch mang theo mấy cái bị đánh ngất xỉu cổ sư tiếp tục ra bên ngoài chạy, Lôi Kiếp hạ không được có thể có những người khác, nếu không sẽ phải chịu liện lụy.
+
+MỚI
+Tiểu Bạch mang theo mấy cái bị đánh ngất xỉu cổ sư tiếp tục ra bên ngoài chạy, Lôi Kiếp hạ không thể có những người khác, nếu không sẽ phải chịu liện lụy.
+
+----- đoạn 32 -----
+CŨ
+Mà không nơi xa, Tiểu Bạch mắt thấy hết thảy, trợn mắt hốc mồm, đây cũng quá kinh khủng, nó không có đụng phải Lôi Kiếp, nhưng là có thể cảm nhận được trong đó hủy thiên diệt địa năng lượng còn có cực kỳ cường hãn uy thế, Lăng Thiên thế mà trực tiếp nuốt sống, quả thực dữ dội đến khôn cùng.
+
+MỚI
+Mà cách đó không xa, Tiểu Bạch mắt thấy hết thảy, trợn mắt hốc mồm, đây cũng quá kinh khủng, nó không có đụng phải Lôi Kiếp, nhưng là có thể cảm nhận được trong đó hủy thiên diệt địa năng lượng còn có cực kỳ cường hãn uy thế, Lăng Thiên thế mà trực tiếp nuốt sống, quả thực dữ dội đến khôn cùng.
+
+----- đoạn 48 -----
+CŨ
+Cảnh giới tông sư tới gần, phát hiện nơi này không ai, lại nói tiếp, nhìn hắn đã đến mấy trăm thước cát đất, còn có khô cạn tử vong cây cối, vô ý thức nuốt nước miếng, lúc này mới cảm giác quanh người linh khí cơ hồ không có.
+
+MỚI
+Cảnh giới tông sư tới gần, phát hiện nơi này không ai, lại nói tiếp, hắn nhìn thấy đã mấy trăm thước cát đất, còn có khô cạn tử vong cây cối, vô ý thức nuốt nước miếng, lúc này mới cảm giác quanh người linh khí cơ hồ không có.
+
+
+===== Chương 1226: Chương 1226: tài liệu cơ mật (1 chỗ) =====
+
+----- đoạn 1 -----
+CŨ
+Lăng Thiên nhìn xem Hứa lão sư ánh mắt ân cần, lần nữa lắc đầu:“Ta không có tin tưởng bọn họ.”
+
+MỚI
+Lăng Thiên nhìn xem Hứa lão sư ánh mắt ân cần, lần nữa lắc đầu:“Ta không tin bọn hắn.”
+
+
+===== Chương 1233: Chương 1233: hành quân lặng lẽ (1 chỗ) =====
+
+----- đoạn 31 -----
+CŨ
+Nếu như Tô Tiêu Vân không có quan hệ gì với Lăng Thiên, chuyện bên này không tính là gì sự tình, nhưng hiện tại xem ra, Tô Tiêu Vân cùng Lăng Thiên là rất tốt bằng hữu, chuyện kia thì phiền toái, long vệ không thể cùng Quy Nguyên Tông trở mặt, chí ít hiện tại không thể, mà quy nguyên tông đằng sau, là có người rất khủng bố, long vệ còn không có điều tra rõ ràng.
+
+MỚI
+Nếu như Tô Tiêu Vân không có quan hệ gì với Lăng Thiên, chuyện bên này không tính là gì sự tình, nhưng hiện tại xem ra, Tô Tiêu Vân cùng Lăng Thiên là rất tốt bằng hữu, chuyện kia thì phiền toái, long vệ không thể cùng Quy Nguyên Tông trở mặt, chí ít hiện tại không thể, mà Quy Nguyên Tông đằng sau, là có người rất khủng bố, long vệ còn không có điều tra rõ ràng.
+
+
+===== Chương 1242: Chương 1242: không có cái đuôi (1 chỗ) =====
+
+----- đoạn 28 -----
+CŨ
+“Hắn đã thấy ngươi, bất quá chuyện này ta không có có thể làm chủ, ta hỏi một chút gia tộc quyết định.”
+
+MỚI
+“Hắn đã thấy ngươi, bất quá chuyện này ta không thể làm chủ, ta hỏi một chút gia tộc quyết định.”
+
+
+===== Chương 1243: Chương 1243: điềm đại hung (1 chỗ) =====
+
+----- đoạn 26 -----
+CŨ
+Lâm Yến nhìn thấy Tô Tiêu Vân ánh mắt, xông Tô Tiêu Vân khẽ gật đầu:“Thật có lỗi, lần trước ngươi xảy ra chuyện thời điểm, ta không có biết tình huống.”
+
+MỚI
+Lâm Yến nhìn thấy Tô Tiêu Vân ánh mắt, xông Tô Tiêu Vân khẽ gật đầu:“Thật có lỗi, lần trước ngươi xảy ra chuyện thời điểm, ta không biết tình huống.”
+
+
+===== Chương 1264: Chương 1264: không nhận nợ? (1 chỗ) =====
+
+----- đoạn 56 -----
+CŨ
+“Ta không có tin tưởng ngươi, thảo dược cũng không cho!” Lăng Thiên nói chuyện nói “Vũ khí của ngươi hẳn là giá trị mười vạn Quy Nguyên Đan, trước ném tới....”
+
+MỚI
+“Ta không tin ngươi, thảo dược cũng không cho!” Lăng Thiên nói chuyện nói “Vũ khí của ngươi hẳn là giá trị mười vạn Quy Nguyên Đan, trước ném tới....”
+
+
+===== Chương 1277: Chương 1277: Trận Linh (1 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Tử sắc lão hổ đột nhiên xông về phía trước đi, nhưng khi nhánh cây rơi vào mặt đất một nháy mắt, cùng cảnh vật chung quanh hòa làm một thể, tử sắc lão hổ mộng bức đã, bắt đầu ở nguyên địa vòng quanh, Lăng Thiên thu hồi con rắn nhỏ, nhảy lên nhảy xuống, tại tử sắc lão hổ bên người đi qua, vẫn đi vào sơn động.
+
+MỚI
+Tử sắc lão hổ đột nhiên xông về phía trước đi, nhưng khi nhánh cây rơi vào mặt đất một nháy mắt, cùng cảnh vật chung quanh hòa làm một thể, tử sắc lão hổ mộng bức đã, bắt đầu ở nguyên địa vòng quanh, Lăng Thiên thu hồi con rắn nhỏ, nhảy vọt nhảy xuống, tại tử sắc lão hổ bên người đi qua, vẫn đi vào sơn động.
+
+
+===== Chương 1514: Chương 1514: tự tìm đường chết (1 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+Trong tông môn có thần tổ cường giả, cùng trước đó bị Thần Tổ cường giả che chở, là có chênh lệch rất lớn, Tiêu Diêu Thần Tông bởi vì có Hình Khải Thần Tổ tồn tại, nhảy lên đã trở thành thần giới đỉnh cấp tông môn.
+
+MỚI
+Trong tông môn có Thần Tổ cường giả, cùng trước đó bị Thần Tổ cường giả che chở, là có chênh lệch rất lớn, Tiêu Diêu Thần Tông bởi vì có Hình Khải Thần Tổ tồn tại, nhảy lên đã trở thành thần giới đỉnh cấp tông môn.
+
+
+===== Chương 2028: Chương 2028: át chủ bài (5 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+Thạch thôn người đều lộ ra vẻ ngưng trọng, bọn hắn không nghĩ tới Minh Dương Tử sẽ mạnh tới mức này, liền xem như tất cả Thần Tôn Cảnh cùng tiến lên, cũng không nhất định có thể đánh thắng được Minh Dương Tử.
+
+MỚI
+Thạch thôn người đều lộ ra vẻ ngưng trọng, bọn hắn không nghĩ tới Minh Dương Tử sẽ mạnh tới mức này, liền xem như tất cả Thần Tôn Cảnh cùng tiến lên, đều không chắc chắn có thể đánh thắng được Minh Dương Tử.
+
+----- đoạn 11 -----
+CŨ
+Minh Dương Tử kiên nhẫn rất có hạn, nhìn hắn đến Thạch Thôn người chần chờ không động thủ thời điểm, liền trực tiếp lắc tay lên quạt lông, chỉ thấy từng đạo Phong Nhận nhanh như tên bắn mà vụt qua.
+
+MỚI
+Minh Dương Tử kiên nhẫn rất có hạn, hắn nhìn thấy Thạch Thôn người chần chờ không động thủ thời điểm, liền trực tiếp lắc tay lên quạt lông, chỉ thấy từng đạo Phong Nhận nhanh như tên bắn mà vụt qua.
+
+----- đoạn 15 -----
+CŨ
+Từ trắng tinh quạt lông phóng xuất ra từng cái tay cầm đao nhọn khôi giáp binh sĩ, những khôi giáp này binh sĩ là do gió hình thành, gió vốn vô hình, thế nhưng là ở ngoài sáng Dương tử công pháp hạ, lại hóa thành hữu hình công kích!
+
+MỚI
+Từ trắng tinh quạt lông phóng xuất ra từng cái tay cầm đao nhọn khôi giáp binh sĩ, những khôi giáp này binh sĩ là do gió hình thành, gió vốn vô hình, thế nhưng là tại Minh Dương Tử công pháp hạ, lại hóa thành hữu hình công kích!
+
+----- đoạn 21 -----
+CŨ
+“Ha ha, đã quên nói cho các ngươi biết, ta là Thần giới thần tôn cảnh hậu kỳ đệ nhất nhân.” Minh Dương Tử trên mặt hiện ra nụ cười thản nhiên, nếu như không có thực lực, hắn cũng sẽ không đi vào thứ nhất cấm địa.
+
+MỚI
+“Ha ha, đã quên nói cho các ngươi biết, ta là Thần giới Thần Tôn Cảnh hậu kỳ đệ nhất nhân.” Minh Dương Tử trên mặt hiện ra nụ cười thản nhiên, nếu như không có thực lực, hắn cũng sẽ không đi vào thứ nhất cấm địa.
+
+----- đoạn 25 -----
+CŨ
+“Đừng nói như vậy, ta không phải là trở thành Thần Tôn Cảnh đệ nhất nhân, hắn từ xưng thần tôn cảnh hậu kỳ cũng không sai.” Lăng Thiên nhíu mày nói, hắn đánh bại Minh Dương Tử sau, đã đột phá đến Thần Tôn Cảnh đỉnh phong, từ trên logic lý giải, Minh Dương Tử là Thần Tôn Cảnh hậu kỳ đệ nhất nhân cũng không có cái gì không đúng.
+
+MỚI
+“Đừng nói như vậy, ta không phải là trở thành Thần Tôn Cảnh đệ nhất nhân, hắn từ xưng Thần Tôn Cảnh hậu kỳ cũng không sai.” Lăng Thiên nhíu mày nói, hắn đánh bại Minh Dương Tử sau, đã đột phá đến Thần Tôn Cảnh đỉnh phong, từ trên logic lý giải, Minh Dương Tử là Thần Tôn Cảnh hậu kỳ đệ nhất nhân cũng không có cái gì không đúng.
+
+
+===== Chương 2029: Chương 2029: hiểu rõ ngươi nhất nhân (4 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+Tại tàng thư thất tử bên trong Lăng Thiên nhìn thấy loại tình huống này, cũng không chuẩn bị tại trốn trốn tránh tránh, hắn đi tới một cái bên ngoài chiến trường, nói với Vũ Hân:“Gió binh nhìn như lợi hại, trong đó nhược điểm rất rõ ràng, chỉ cần ngươi sử dụng linh cầu tại gió binh trong nháy mắt nổ lên lời nói, gió binh là chống đỡ không nổi.”
+
+MỚI
+Tại tàng thư thất tử bên trong Lăng Thiên nhìn thấy loại tình huống này, cũng không định tại trốn trốn tránh tránh, hắn đi tới một cái bên ngoài chiến trường, nói với Vũ Hân:“Gió binh nhìn như lợi hại, trong đó nhược điểm rất rõ ràng, chỉ cần ngươi sử dụng linh cầu tại gió binh trong nháy mắt nổ lên lời nói, gió binh là chống đỡ không nổi.”
+
+----- đoạn 20 -----
+CŨ
+“Lăng Thiên? Ta tại sao có thể là hắn, Lăng Thiên thế nhưng là thần giới thứ nhất Thần Tôn, mà ta chỉ là một cái Siêu Phàm Cảnh tu giả mà thôi.” Lăng Thiên lắc lắc nói, hắn đương nhiên không có khả năng thừa nhận mình thân phận, nếu không, nói không chừng Minh Dương Tử sẽ thừa dịp hắn khi yếu ớt, liều lĩnh tiêu diệt hắn.
+
+MỚI
+“Lăng Thiên? Ta tại sao có thể là hắn, Lăng Thiên thế nhưng là thần giới đệ nhất Thần Tôn, mà ta chỉ là một cái Siêu Phàm Cảnh tu giả mà thôi.” Lăng Thiên lắc lắc nói, hắn đương nhiên không có khả năng thừa nhận mình thân phận, nếu không, nói không chừng Minh Dương Tử sẽ thừa dịp hắn khi yếu ớt, liều lĩnh tiêu diệt hắn.
+
+----- đoạn 27 -----
+CŨ
+Minh Dương Tử vì cái gì vội vã đột phá, không phải liền là bởi vì Lăng Thiên, nếu là giết chết lời nói của Lăng Thiên, hắn nói không chừng liên đột phá đều dục vọng đều không có, đồng thời tâm cảnh cũng sẽ xảy ra vấn đề.
+
+MỚI
+Minh Dương Tử vì cái gì vội vã đột phá, không phải liền là bởi vì Lăng Thiên, nếu là giết chết Lăng Thiên thì, hắn nói không chừng liên đột phá đều dục vọng đều không có, đồng thời tâm cảnh cũng sẽ xảy ra vấn đề.
+
+----- đoạn 30 -----
+CŨ
+“Bất quá ngươi đừng cao hứng quá sớm, chờ ta lúc đi ra, sẽ đem tin tức của ngươi cáo tri những tu giả khác, dù sao ta cũng rất muốn nhìn một chút, từng đã là thứ nhất Thần Tôn, tại cảnh giới không cao thời điểm, có thể hay không sáng tạo ra kỳ tích!”
+
+MỚI
+“Bất quá ngươi đừng cao hứng quá sớm, chờ ta lúc đi ra, sẽ đem tin tức của ngươi cáo tri những tu giả khác, dù sao ta cũng rất muốn nhìn một chút, từng đã là đệ nhất Thần Tôn, tại cảnh giới không cao thời điểm, có thể hay không sáng tạo ra kỳ tích!”
+
+
+===== Chương 2030: Chương 2030: liễu ám hoa minh hựu nhất thôn (1 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+“Thần giới thứ nhất Thần Tôn? Không nghĩ tới ngươi còn có dạng này một cái thân phận.” Vừa mới Lăng Thiên cùng Minh Dương Tử đối thoại, Vũ Hân đều nghe bên tai bên trong.
+
+MỚI
+“Thần giới đệ nhất Thần Tôn? Không nghĩ tới ngươi còn có dạng này một cái thân phận.” Vừa mới Lăng Thiên cùng Minh Dương Tử đối thoại, Vũ Hân đều nghe bên tai bên trong.
+
+
+===== Chương 2031: Chương 2031: siêu thoát Thần Tổ? (3 chỗ) =====
+
+----- đoạn 21 -----
+CŨ
+“Chớ suy nghĩ quá nhiều, Thần Tổ đều ứng phó không được đồ vật, cho dù ngươi là đã từng thần giới thứ nhất Thần Tôn, cũng không có biện pháp đi tìm tòi nghiên cứu.” Vũ Hân nhìn thấy Lăng Thiên một mặt suy tư bộ dáng, liền nhắc nhở nói.
+
+MỚI
+“Chớ suy nghĩ quá nhiều, Thần Tổ đều ứng phó không được đồ vật, cho dù ngươi là đã từng thần giới đệ nhất Thần Tôn, cũng không có biện pháp đi tìm tòi nghiên cứu.” Vũ Hân nhìn thấy Lăng Thiên một mặt suy tư bộ dáng, liền nhắc nhở nói.
+
+----- đoạn 24 -----
+CŨ
+“Được rồi, ngươi là thứ nhất Thần Tôn, nói lời khẳng định có đạo lý, bất quá các ngươi hay là trước đi thu hoạch được cơ duyên.” Vũ Hân mắt sáng lên, nói rằng.
+
+MỚI
+“Được rồi, ngươi là đệ nhất Thần Tôn, nói lời khẳng định có đạo lý, bất quá các ngươi hay là trước đi thu hoạch được cơ duyên.” Vũ Hân mắt sáng lên, nói rằng.
+
+----- đoạn 30 -----
+CŨ
+Muốn nói Vũ Hân cùng cái khác Thạch Thôn người rất tín nhiệm Lăng Thiên, chính hắn đều cảm thấy rất không có khả năng, mặc dù hắn giúp Thạch Thôn một đại ân, nhưng là Thạch Thôn người nhiều nhất cũng chính là đối hắn trong lòng còn có cảm kích, ngược lại là độ tín nhiệm chắc chắn không có đạt tới có thể loại sự tình này cũng không tị hiềm trình độ.
+
+MỚI
+Muốn nói Vũ Hân cùng cái khác Thạch Thôn người rất tín nhiệm Lăng Thiên, chính hắn đều cảm thấy rất không có khả năng, mặc dù hắn giúp Thạch Thôn một đại ân, nhưng là Thạch Thôn người nhiều nhất cũng chính là đối hắn trong lòng còn có cảm kích, ngược lại là độ tín nhiệm chắc chắn không có đạt tới có thể loại sự tình này đều không tị hiềm trình độ.
+
+
+===== Chương 2032: Chương 2032: cho người khác cơ duyên (2 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+“Ta không có có thể ở bên trong nghỉ ngơi thời gian hai ba năm, mà lại chính ngươi sao không đi vào bên trong?” Lăng Thiên nói rằng, nếu như vạn hoa giới là đỉnh núi tiểu không gian, nói không chừng hắn sẽ tiêu bên trên thời gian hai ba năm đi tiếp thu Thánh Nguyệt Tông truyền thừa, nhưng nơi này mới trôi qua giữa sườn núi không xa.
+
+MỚI
+“Ta không có khả năng ở bên trong nghỉ ngơi thời gian hai ba năm, mà lại chính ngươi sao không đi vào bên trong?” Lăng Thiên nói rằng, nếu như vạn hoa giới là đỉnh núi tiểu không gian, nói không chừng hắn sẽ tiêu bên trên thời gian hai ba năm đi tiếp thu Thánh Nguyệt Tông truyền thừa, nhưng nơi này mới trôi qua giữa sườn núi không xa.
+
+----- đoạn 17 -----
+CŨ
+“Một người cũng được, đem cơ hội cho hảo huynh đệ của ta, cũng không phải là lãng phí.” Lăng Thiên cười cười nói, trước đó nhìn hắn đến Vũ Hân thi triển pháp thuật thời điểm, thuộc tính thiên hướng về nước, vừa vặn thích hợp thủy long vương.
+
+MỚI
+“Một người cũng được, đem cơ hội cho hảo huynh đệ của ta, cũng không phải là lãng phí.” Lăng Thiên cười cười nói, trước đó hắn nhìn thấy Vũ Hân thi triển pháp thuật thời điểm, thuộc tính thiên hướng về nước, vừa vặn thích hợp thủy long vương.
+
+
+===== Chương 2033: Chương 2033: chạy không thoát (3 chỗ) =====
+
+----- đoạn 20 -----
+CŨ
+“Cái này... Chúng ta sẽ không tiến vào, vẫn là chờ Lăng Thiên đến.”
+
+MỚI
+“Cái này... Chúng ta liền không vào, vẫn là chờ Lăng Thiên đến.”
+
+----- đoạn 23 -----
+CŨ
+Cuối cùng nguyên lập vẫn là cự tuyệt Hồng Thiên Tường mời, nguyên bản nguyên nghê còn muốn đi theo vào, nhưng nguyên không lập được đi vào, nàng cũng không khả năng mình đi theo Hồng Thiên Tường hợp âm một mẫn đi vào tòa thứ mười bốn trong cung điện.
+
+MỚI
+Cuối cùng nguyên lập vẫn là cự tuyệt Hồng Thiên Tường mời, nguyên bản nguyên nghê còn muốn đi theo vào, nhưng nguyên lập không vào lời nói, nàng cũng không khả năng mình đi theo Hồng Thiên Tường hợp âm một mẫn đi vào tòa thứ mười bốn trong cung điện.
+
+----- đoạn 25 -----
+CŨ
+Thật là cơ duyên tốt sao? Nguyên không lập được đi vào tòa thứ mười bốn cung điện, có chính mình lý do, ở phía trước trong tiểu không gian, Lăng Thiên đoàn người thực lực cho hắn ấn tượng quá sâu, có thể nói, Lăng Thiên tại nguyên lập trong lòng lưu lại sâu đậm lạc ấn, làm hắn cảm thấy mình nếu là dứt bỏ Lăng Thiên đi vào trong cung điện, rất có thể xảy ra ngoài ý muốn.
+
+MỚI
+Thật là cơ duyên tốt sao? Nguyên lập không vào trong tòa thứ mười bốn cung điện, có chính mình lý do, ở phía trước trong tiểu không gian, Lăng Thiên đoàn người thực lực cho hắn ấn tượng quá sâu, có thể nói, Lăng Thiên tại nguyên lập trong lòng lưu lại sâu đậm lạc ấn, làm hắn cảm thấy mình nếu là dứt bỏ Lăng Thiên đi vào trong cung điện, rất có thể xảy ra ngoài ý muốn.
+
+
+===== Chương 2034: Chương 2034: số một đến số chín (2 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+“Đừng nghĩ đi, thịt của ngươi tản ra hương vị thật tốt quá, ngũ hành khí tức, âm dương khí tức, sinh mạng khí tức, hỗn độn khí tức, còn có một chút ta không có biết đến khí tức, ngươi thực sự quá mê người.” Quái nhân nước bọt đều nhanh chảy đầy đất, trong mắt hắn phảng phất chỉ còn lại Lăng Thiên một người.
+
+MỚI
+“Đừng nghĩ đi, thịt của ngươi tản ra hương vị thật tốt quá, ngũ hành khí tức, âm dương khí tức, sinh mạng khí tức, hỗn độn khí tức, còn có một chút ta không biết khí tức, ngươi thực sự quá mê người.” Quái nhân nước bọt đều nhanh chảy đầy đất, trong mắt hắn phảng phất chỉ còn lại Lăng Thiên một người.
+
+----- đoạn 34 -----
+CŨ
+Theo thời gian trôi qua, Lăng Thiên cũng càng ngày càng tới gần đỉnh núi, trên đường đi nhìn hắn đến tòa thứ mười bốn cung điện, tòa thứ mười lăm cung điện cùng tòa thứ mười sáu cung điện, cuối cùng hai tòa trước cung điện mặt đều có yêu thú cường đại đóng giữ, cái này hai đầu yêu thú khí tức trên thân, so số bảy yếu không đến trình độ gì.
+
+MỚI
+Theo thời gian trôi qua, Lăng Thiên cũng càng ngày càng tới gần đỉnh núi, trên đường đi hắn nhìn thấy tòa thứ mười bốn cung điện, tòa thứ mười lăm cung điện cùng tòa thứ mười sáu cung điện, cuối cùng hai tòa trước cung điện mặt đều có yêu thú cường đại đóng giữ, cái này hai đầu yêu thú khí tức trên thân, so số bảy yếu không đến trình độ gì.
+
+
+===== Chương 2035: Chương 2035: Viễn Cổ thời đại bí mật (5 chỗ) =====
+
+----- đoạn 16 -----
+CŨ
+“Nếu như sinh ở một cái kia thời đại lời nói, có lẽ từng đã là lời nói cũng không gọi được thần giới thứ nhất Thần Tôn.” Lăng Thiên trong lòng tự hỏi nói, tựa như| giống vậy trước mắt hắn số bảy, Lĩnh Vực phương diện liền so với hắn trước kia phải cường đại hơn nhiều!
+
+MỚI
+“Nếu như sinh ở một cái kia thời đại lời nói, có lẽ từng đã là lời nói cũng không gọi được thần giới đệ nhất Thần Tôn.” Lăng Thiên trong lòng tự hỏi nói, tựa như| giống vậy trước mắt hắn số bảy, Lĩnh Vực phương diện liền so với hắn trước kia phải cường đại hơn nhiều!
+
+----- đoạn 17 -----
+CŨ
+“Ngươi là thế hệ này thần giới thứ nhất Thần Tôn?” Số bảy trong mắt lóe lên một tia thần dị, hắn tựa hồ có chút hiếu kì thân phận của Lăng Thiên.
+
+MỚI
+“Ngươi là thế hệ này thần giới đệ nhất Thần Tôn?” Số bảy trong mắt lóe lên một tia thần dị, hắn tựa hồ có chút hiếu kì thân phận của Lăng Thiên.
+
+----- đoạn 19 -----
+CŨ
+“Lấy tư chất của ngươi, quả thật có trở thành người thứ nhất tư bản, nhớ ngày đó số ba cũng là thần giới thứ nhất Thần Tôn, khi đó hắn có thể đem toàn bộ thần giới Thần Tôn đều đè ở trên người, không có một cái nào Thần Tôn có thể đánh thắng hắn.” Số bảy cảm khái nói, trên mặt của hắn có nhớ lại, tựa hồ nhớ tới một ít hơi há ra quen thuộc khuôn mặt tươi cười.
+
+MỚI
+“Lấy tư chất của ngươi, quả thật có trở thành người thứ nhất tư bản, nhớ ngày đó số ba cũng là thần giới đệ nhất Thần Tôn, khi đó hắn có thể đem toàn bộ thần giới Thần Tôn đều đè ở trên người, không có một cái nào Thần Tôn có thể đánh thắng hắn.” Số bảy cảm khái nói, trên mặt của hắn có nhớ lại, tựa hồ nhớ tới một ít hơi há ra quen thuộc khuôn mặt tươi cười.
+
+----- đoạn 20 -----
+CŨ
+Bây giờ Lăng Thiên, tư chất hơn trước kia mạnh lên rất nhiều, trước kia hắn tu luyện Luân Hồi quyết cùng thần hồn quyết, liền đã có thể trở thành thế hệ này thứ nhất Thần Tôn, bây giờ tu luyện vạn năng công, càng có sinh mệnh pháp điển, có thể nói tư cách của hắn lên cao một đại cấp bậc.
+
+MỚI
+Bây giờ Lăng Thiên, tư chất hơn trước kia mạnh lên rất nhiều, trước kia hắn tu luyện Luân Hồi quyết cùng thần hồn quyết, liền đã có thể trở thành thế hệ này đệ nhất Thần Tôn, bây giờ tu luyện vạn năng công, càng có sinh mệnh pháp điển, có thể nói tư cách của hắn lên cao một đại cấp bậc.
+
+----- đoạn 26 -----
+CŨ
+Nhìn xem số bảy khiếp người ánh mắt, Lăng Thiên thở dài một hơi, hướng tòa thứ ba nhà cỏ liền đi qua, khi thấy cửa trên đỉnh viết số ba, hắn nháy mắt liền biết, vì cái gì số bảy muốn để hắn tiến căn phòng này đã, bởi vì số ba đã từng cũng là thần giới thứ nhất Thần Tôn.
+
+MỚI
+Nhìn xem số bảy khiếp người ánh mắt, Lăng Thiên thở dài một hơi, hướng tòa thứ ba nhà cỏ liền đi qua, khi thấy cửa trên đỉnh viết số ba, hắn nháy mắt liền biết, vì cái gì số bảy muốn để hắn tiến căn phòng này đã, bởi vì số ba đã từng cũng là thần giới đệ nhất Thần Tôn.
+
+
+===== Chương 2036: Chương 2036: từng đã là hình ảnh (5 chỗ) =====
+
+----- đoạn 10 -----
+CŨ
+Thứ gì! Ta không có muốn kế thừa ngươi đồ vật! Lăng Thiên muốn hô lên ý tưởng nội tâm của mình, thế nhưng là nghĩ lại, hắn lại nghĩ tới mình nếu là có thể thông qua số ba thí luyện, mới có thể chứng minh chính mình tư chất không kém, thậm chí hơn số ba càng mạnh.
+
+MỚI
+Thứ gì! Ta không muốn kế thừa ngươi đồ vật! Lăng Thiên muốn hô lên ý tưởng nội tâm của mình, thế nhưng là nghĩ lại, hắn lại nghĩ tới mình nếu là có thể thông qua số ba thí luyện, mới có thể chứng minh chính mình tư chất không kém, thậm chí hơn số ba càng mạnh.
+
+----- đoạn 11 -----
+CŨ
+Viễn Cổ thời đại thần giới thứ nhất Thần Tôn, cùng thế hệ này thần giới thứ nhất Thần Tôn, đến cùng ai tư chất tốt hơn, tâm của Lăng Thiên bên trong có chút hưng phấn, bất quá hắn đồng thời hơi nghi hoặc một chút, vì cái gì số ba cùng số bảy có thể sống đến bây giờ, phải biết Viễn Cổ thời đại cho tới bây giờ, không biết trải qua bao nhiêu vạn năm, liền xem như cường đại Thần Tổ đều tại sự ăn mòn của tháng năm hạ diệt vong.
+
+MỚI
+Viễn Cổ thời đại thần giới đệ nhất Thần Tôn, cùng thế hệ này thần giới đệ nhất Thần Tôn, đến cùng ai tư chất tốt hơn, tâm của Lăng Thiên bên trong có chút hưng phấn, bất quá hắn đồng thời hơi nghi hoặc một chút, vì cái gì số ba cùng số bảy có thể sống đến bây giờ, phải biết Viễn Cổ thời đại cho tới bây giờ, không biết trải qua bao nhiêu vạn năm, liền xem như cường đại Thần Tổ đều tại sự ăn mòn của tháng năm hạ diệt vong.
+
+----- đoạn 30 -----
+CŨ
+Tam đại trên ngọn núi ra tổng cộng ra sáu vị Thần Tổ, lại trọn vẹn ngăn trở đối diện tầm mười vị thần tổ, Thần Tổ giữa chiến đấu để Lăng Thiên cảm thấy nhiệt huyết sôi trào, thế nhưng là Sau đó nhìn hắn đến trên ngọn núi tu giả bị tàn sát, lập tức cảm giác được một cỗ cực kỳ bi ai chi ý.
+
+MỚI
+Tam đại trên ngọn núi ra tổng cộng ra sáu vị Thần Tổ, lại trọn vẹn ngăn trở đối diện tầm mười vị Thần Tổ, Thần Tổ giữa chiến đấu để Lăng Thiên cảm thấy nhiệt huyết sôi trào, thế nhưng là Sau đó hắn nhìn thấy trên ngọn núi tu giả bị tàn sát, lập tức cảm giác được một cỗ cực kỳ bi ai chi ý.
+
+----- đoạn 32 -----
+CŨ
+Trận đại chiến này đánh cho hôn thiên ám địa, Thần Tổ đều vẫn lạc chừng mấy vị, Thánh Nguyệt đều bị trọng thương, về phần số bảy sư tôn Kazuichi hào, số hai đều đã sắp gặp tử vong, thế nhưng là địch nhân đồng dạng bị bọn hắn đánh lui, tầm mười vị thần tổ cũng không dám lại triền đấu, toàn bộ đều lui ra ngoài.
+
+MỚI
+Trận đại chiến này đánh cho hôn thiên ám địa, Thần Tổ đều vẫn lạc chừng mấy vị, Thánh Nguyệt đều bị trọng thương, về phần số bảy sư tôn Kazuichi hào, số hai đều đã sắp gặp tử vong, thế nhưng là địch nhân đồng dạng bị bọn hắn đánh lui, tầm mười vị Thần Tổ cũng không dám lại triền đấu, toàn bộ đều lui ra ngoài.
+
+----- đoạn 33 -----
+CŨ
+“Lấy ngô sinh mệnh làm đại giới, diệt sát!” Số bảy sư tôn giận dữ hét, hắn và số một, số hai đồng thời hiến tế ra bản thân sinh mệnh, trực tiếp diệt sát đi hơn ngàn vị thần tôn cảnh đỉnh phong tu giả.
+
+MỚI
+“Lấy ngô sinh mệnh làm đại giới, diệt sát!” Số bảy sư tôn giận dữ hét, hắn và số một, số hai đồng thời hiến tế ra bản thân sinh mệnh, trực tiếp diệt sát đi hơn ngàn vị Thần Tôn Cảnh đỉnh phong tu giả.
+
+
+===== Chương 2037: Chương 2037: khảo nghiệm (3 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Như là số ba sư phó cùng hai vị ca ca, bọn họ cùng cái khác di tích viễn cổ Thần Tổ thời điểm chiến đấu, kỳ thật thỉnh thoảng đều tiến vào trong hư không đi chiến đấu, nếu không, lấy bọn họ chiến đấu rất dễ dàng liền có thể lan đến gần toàn bộ không gian, cuối cùng ba người diệt sát hơn ngàn vị thần tôn cảnh đỉnh phong tu giả trước, kỳ thật chạy tới ngọn đèn mức khô kiệt.
+
+MỚI
+Như là số ba sư phó cùng hai vị ca ca, bọn họ cùng cái khác di tích viễn cổ Thần Tổ thời điểm chiến đấu, kỳ thật thỉnh thoảng đều tiến vào trong hư không đi chiến đấu, nếu không, lấy bọn họ chiến đấu rất dễ dàng liền có thể lan đến gần toàn bộ không gian, cuối cùng ba người diệt sát hơn ngàn vị Thần Tôn Cảnh đỉnh phong tu giả trước, kỳ thật chạy tới ngọn đèn mức khô kiệt.
+
+----- đoạn 23 -----
+CŨ
+Phải biết nửa bước Thần Hoàng cùng Thần Hoàng cảnh sơ kỳ vẫn có một chút chênh lệch, mà lại số ba là Viễn Cổ thời đại thần giới thứ nhất Thần Tôn, tại trở thành mạnh nhất Thần Tôn trước, hắn là thần giới thứ nhất Thần Hoàng cùng đệ nhất nhân thánh tu người!
+
+MỚI
+Phải biết nửa bước Thần Hoàng cùng Thần Hoàng cảnh sơ kỳ vẫn có một chút chênh lệch, mà lại số ba là Viễn Cổ thời đại thần giới đệ nhất Thần Tôn, tại trở thành mạnh nhất Thần Tôn trước, hắn là thần giới đệ nhất Thần Hoàng cùng đệ nhất nhân thánh tu người!
+
+----- đoạn 24 -----
+CŨ
+Số ba rơi vào trầm tư, hắn không nghĩ tới Lăng Thiên sẽ là một tên yêu nghiệt như vậy, nếu như dùng phương pháp thông thường đến khảo nghiệm lời nói của Lăng Thiên, sợ là không có tác dụng gì, mà lại nội tâm của hắn có một đoàn lửa đang thiêu đốt hừng hực, có thể gặp được đến so với mình tư chất còn người mạnh hơn, để hắn hưng phấn vô cùng!
+
+MỚI
+Số ba rơi vào trầm tư, hắn không nghĩ tới Lăng Thiên sẽ là một tên yêu nghiệt như vậy, nếu như dùng phương pháp thông thường đến khảo nghiệm Lăng Thiên thì, sợ là không có tác dụng gì, mà lại nội tâm của hắn có một đoàn lửa đang thiêu đốt hừng hực, có thể gặp được đến so với mình tư chất còn người mạnh hơn, để hắn hưng phấn vô cùng!
+
+
+===== Chương 2038: Chương 2038: tốc độ thời gian trôi qua (6 chỗ) =====
+
+----- đoạn 1 -----
+CŨ
+Sở dĩ nguyện ý đi tới số ba trong phòng, Lăng Thiên chính là muốn biết mình cùng số ba có bao nhiêu chênh lệch, tại Viễn Cổ thời đại thời điểm, số ba có thể trở thành thần giới thứ nhất Thần Tôn, liền chứng minh số ba thiên tư cũng không so trước kia hắn kém.
+
+MỚI
+Sở dĩ nguyện ý đi tới số ba trong phòng, Lăng Thiên chính là muốn biết mình cùng số ba có bao nhiêu chênh lệch, tại Viễn Cổ thời đại thời điểm, số ba có thể trở thành thần giới đệ nhất Thần Tôn, liền chứng minh số ba thiên tư cũng không so trước kia hắn kém.
+
+----- đoạn 3 -----
+CŨ
+“Ngươi không muốn được đến truyền thừa của ta? Phải biết ta thế nhưng là Viễn Cổ thời đại thứ nhất Thần Tôn, cho dù là Thần Tổ truyền thừa cũng không nhất định có ta truyền thừa tốt.” Số ba thần sắc kinh ngạc nói rằng, hắn cảm thấy không ai có thể cự tuyệt mình truyền thừa.
+
+MỚI
+“Ngươi không muốn được đến truyền thừa của ta? Phải biết ta thế nhưng là Viễn Cổ thời đại đệ nhất Thần Tôn, cho dù là Thần Tổ truyền thừa đều không nhất định có ta truyền thừa tốt.” Số ba thần sắc kinh ngạc nói rằng, hắn cảm thấy không ai có thể cự tuyệt mình truyền thừa.
+
+----- đoạn 4 -----
+CŨ
+“Không phải ta không muốn, mà là ta thật không có thời gian, ở lại trong này vô số năm lời nói, đối với ta mà nói cũng không có chỗ tốt.” Lăng Thiên lắc đầu, có thể có được Viễn Cổ thời đại thứ nhất Thần Tôn truyền thừa, tự nhiên là không thể tốt hơn, thế nhưng là hắn nhất định phải sớm đi tầng trời thứ bốn.
+
+MỚI
+“Không phải ta không muốn, mà là ta thật không có thời gian, ở lại trong này vô số năm lời nói, đối với ta mà nói cũng không có chỗ tốt.” Lăng Thiên lắc đầu, có thể có được Viễn Cổ thời đại đệ nhất Thần Tôn truyền thừa, tự nhiên là không thể tốt hơn, thế nhưng là hắn nhất định phải sớm đi tầng trời thứ bốn.
+
+----- đoạn 6 -----
+CŨ
+Khó đảm bảo đến lúc đó những thần kia tôn không biết cầm hắn người thân cận làm uy hiếp, dùng để bức bách hắn xuất hiện, Lăng Thiên rất rõ ràng tam đại Thần Tổ phát chung vải treo thưởng, loại cám dỗ này không có cái nào Thần Tôn có thể chống cự được.
+
+MỚI
+Khó đảm bảo đến lúc đó những cái kia Thần Tôn không biết cầm hắn người thân cận làm uy hiếp, dùng để bức bách hắn xuất hiện, Lăng Thiên rất rõ ràng tam đại Thần Tổ phát chung vải treo thưởng, loại cám dỗ này không có cái nào Thần Tôn có thể chống cự được.
+
+----- đoạn 19 -----
+CŨ
+Tư chất quá kém? Trái tim có chút không phục, so ra kém Lăng Thiên hắn cũng công nhận, thế nhưng là tư chất của hắn tuyệt đối không kém, bằng không thì cũng không thể đạt tới Thần Tôn Cảnh sơ kỳ đỉnh điểm, phải biết Thần Tôn mỗi một cảnh giới bên trong đều có nhỏ xíu phân chia, giống như là Lữ Vĩ một ít Chủng Thần tôn cảnh sơ kỳ, liền xem như đến năm cái đều đánh không lại trái tim.
+
+MỚI
+Tư chất quá kém? Trái tim có chút không phục, so ra kém Lăng Thiên hắn cũng công nhận, thế nhưng là tư chất của hắn tuyệt đối không kém, bằng không thì cũng không thể đạt tới Thần Tôn Cảnh sơ kỳ đỉnh điểm, phải biết Thần Tôn mỗi một cảnh giới bên trong đều có nhỏ xíu phân chia, giống như là Lữ Vĩ một ít loại Thần Tôn Cảnh sơ kỳ, liền xem như đến năm cái đều đánh không lại trái tim.
+
+----- đoạn 30 -----
+CŨ
+Số bảy nói bọn họ là dở sống dở chết trạng thái, cũng không tính chân chính người chết, cũng coi như không phải chân chánh người sống, lúc nào di tích viễn cổ trở về đến thần giới thời điểm, bọn hắn sẽ không phục tồn tại.
+
+MỚI
+Số bảy nói bọn họ là dở sống dở chết trạng thái, cũng không tính chân chính người chết, cũng coi như không phải chân chánh người sống, lúc nào di tích viễn cổ trở về đến thần giới thời điểm, bọn hắn liền không còn tồn tại.
+
+
+===== Chương 2039: Chương 2039: sau cùng khảo nghiệm (5 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+“Mười vạn năm, người này nghị lực cũng quá cường đại một chút, thế mà khô tọa mười vạn năm đều không có tỉnh lại.” Số ba thở dài nói, trường giang sóng sau đè sóng trước, ở thời đại này bên trên, hắn đã không phải là nhân vật chính, cũng không phải trong mắt người khác thần giới thứ nhất Thần Tôn đã.
+
+MỚI
+“Mười vạn năm, người này nghị lực cũng quá cường đại một chút, thế mà khô tọa mười vạn năm đều không có tỉnh lại.” Số ba thở dài nói, trường giang sóng sau đè sóng trước, ở thời đại này bên trên, hắn đã không phải là nhân vật chính, cũng không phải trong mắt người khác thần giới đệ nhất Thần Tôn đã.
+
+----- đoạn 10 -----
+CŨ
+“Không sai, tại vài thập niên trước, ta là Thần giới thứ nhất Thần Tôn, bởi vì một số ngoài ý muốn đi đến hạ giới lại bắt đầu lại từ đầu tu luyện, đi tới ngươi nơi này nguyên nhân, là muốn biết ta với ngươi chênh lệch.” Lăng Thiên không có che giấu, liền trực tiếp nói cho số ba chân tướng.
+
+MỚI
+“Không sai, tại vài thập niên trước, ta là Thần giới đệ nhất Thần Tôn, bởi vì một số ngoài ý muốn đi đến hạ giới lại bắt đầu lại từ đầu tu luyện, đi tới ngươi nơi này nguyên nhân, là muốn biết ta với ngươi chênh lệch.” Lăng Thiên không có che giấu, liền trực tiếp nói cho số ba chân tướng.
+
+----- đoạn 11 -----
+CŨ
+“Hóa ra là cái thời đại này thứ nhất Thần Tôn, trách không được sẽ có nghị lực như thế, mặc dù không biết ngươi trước kia là bộ dáng gì, nhưng là ta có thể nói cho ngươi biết, ngươi bây giờ so với ta trước kia còn lợi hại hơn nhiều.” Không hề nghi ngờ, thiên tư của Lăng Thiên đã vượt qua số ba, số ba nghĩ đến, nếu là Lăng Thiên có thể đi thẳng đi xuống, nói không chừng sẽ trở thành một tôn cường đại Thần Tổ.
+
+MỚI
+“Hóa ra là cái thời đại này đệ nhất Thần Tôn, trách không được sẽ có nghị lực như thế, mặc dù không biết ngươi trước kia là bộ dáng gì, nhưng là ta có thể nói cho ngươi biết, ngươi bây giờ so với ta trước kia còn lợi hại hơn nhiều.” Không hề nghi ngờ, thiên tư của Lăng Thiên đã vượt qua số ba, số ba nghĩ đến, nếu là Lăng Thiên có thể đi thẳng đi xuống, nói không chừng sẽ trở thành một tôn cường đại Thần Tổ.
+
+----- đoạn 12 -----
+CŨ
+Cũng không phải là mỗi một vị Thần Tổ tại Thần Tôn Cảnh đều có thể đạt tới thần giới thứ nhất Thần Tôn tình trạng, nhưng là mỗi một thời đại thần giới thứ nhất Thần Tôn, chỉ cần không nửa đường rơi xuống lời nói, chắc chắn có thể trở thành cường đại Thần Tổ!
+
+MỚI
+Cũng không phải là mỗi một vị Thần Tổ tại Thần Tôn Cảnh đều có thể đạt tới thần giới đệ nhất Thần Tôn tình trạng, nhưng là mỗi một thời đại thần giới đệ nhất Thần Tôn, chỉ cần không nửa đường rơi xuống lời nói, chắc chắn có thể trở thành cường đại Thần Tổ!
+
+----- đoạn 28 -----
+CŨ
+“Ngạc nhiên, tại đây cái bộ dạng vẫn là Viễn Cổ thời đại thần giới thứ nhất Thần Tôn? Những này thánh tước đều bị Lăng Thiên cho rơi xuống gia vị, ăn ngon không thật là bình thường sao?” Trái tim nhếch miệng, khinh bỉ nói.
+
+MỚI
+“Ngạc nhiên, tại đây cái bộ dạng vẫn là Viễn Cổ thời đại thần giới đệ nhất Thần Tôn? Những này thánh tước đều bị Lăng Thiên cho rơi xuống gia vị, ăn ngon không phải là rất bình thường sao?” Trái tim nhếch miệng, khinh bỉ nói.
+
+
+===== Chương 2040: Chương 2040: Đại Ma Đầu (1 chỗ) =====
+
+----- đoạn 26 -----
+CŨ
+“Số bảy, có phải là hẳn là hỏi lại mấy người, không thể chỉ dựa vào nữ nhân này liền kết luận Lăng Thiên là thần giới Đại Ma Đầu.” Số ba nói rằng, nhìn hắn đến bộ dáng của Lăng Thiên, trong lòng cũng hơi kinh ngạc, nếu như có thể đem truyền thừa cho Lăng Thiên, hắn tin tưởng Lăng Thiên nhất định có thể đem truyền thừa cho phát phát dương quang đại.
+
+MỚI
+“Số bảy, có phải là hẳn là hỏi lại mấy người, không thể chỉ dựa vào nữ nhân này liền kết luận Lăng Thiên là thần giới Đại Ma Đầu.” Số ba nói rằng, hắn nhìn thấy bộ dáng của Lăng Thiên, trong lòng cũng hơi kinh ngạc, nếu như có thể đem truyền thừa cho Lăng Thiên, hắn tin tưởng Lăng Thiên nhất định có thể đem truyền thừa cho phát phát dương quang đại.
+
+
+===== Chương 2041: Chương 2041: số bảy trợ giúp (3 chỗ) =====
+
+----- đoạn 11 -----
+CŨ
+Số bảy đâu có thể không minh bạch, Lăng Thiên đây là tại gạt mình, xem như đang trả thù mình vừa mới hiểu lầm chuyện của hắn, không nghĩ tới mình cũng có sẽ không sáng suốt một ngày.
+
+MỚI
+Số bảy đâu có thể không rõ, Lăng Thiên đây là tại gạt mình, xem như đang trả thù mình vừa mới hiểu lầm chuyện của hắn, không nghĩ tới mình cũng có sẽ không sáng suốt một ngày.
+
+----- đoạn 22 -----
+CŨ
+Mà lại để số bảy đi qua hỗ trợ thì, nói không chừng còn có thể để phương lửa được đến cơ duyên, phải biết thủy long vương tại bên trong vạn hoa giới tiếp nhận truyền thừa, nếu như phương lửa không có đạt được một cái tốt truyền thừa lời nói, Lăng Thiên cảm thấy mình sẽ không xứng làm một cái hảo đại ca đã.
+
+MỚI
+Mà lại để số bảy đi qua hỗ trợ thì, nói không chừng còn có thể để phương lửa được đến cơ duyên, phải biết thủy long vương tại bên trong vạn hoa giới tiếp nhận truyền thừa, nếu như phương lửa không có đạt được một cái tốt truyền thừa lời nói, Lăng Thiên cảm thấy mình liền không xứng làm một cái hảo đại ca đã.
+
+----- đoạn 32 -----
+CŨ
+Hai cái thần giới thứ nhất Thần Tôn sở học suốt đời đều kết hợp lại cùng nhau, sẽ có cái gì hoá hợp phản ứng, cái này khiến Lăng Thiên cùng số ba đều rất chờ mong, khi số ba đích ngón tay điểm vào mi tâm của Lăng Thiên, vô số tri thức trong nháy mắt đều tràn vào đến não hải của Lăng Thiên bên trong.
+
+MỚI
+Hai cái thần giới đệ nhất Thần Tôn sở học suốt đời đều kết hợp lại cùng nhau, sẽ có cái gì hoá hợp phản ứng, cái này khiến Lăng Thiên cùng số ba đều rất chờ mong, khi số ba đích ngón tay điểm vào mi tâm của Lăng Thiên, vô số tri thức trong nháy mắt đều tràn vào đến não hải của Lăng Thiên bên trong.
+
+
+===== Chương 2042: Chương 2042: hằng cổ vạn năm (1 chỗ) =====
+
+----- đoạn 9 -----
+CŨ
+Tựa hồ đoán được Lăng Thiên có thể như vậy hỏi, số ba lắc đầu nói:“Đây là không có thể chuyện, mặc dù ta cùng số bảy đối thứ nhất cấm địa có một chút chưởng khống quyền, nhưng là mỗi một tông môn đều có mình cần truyền thừa tiếp đồ vật, cho nên hai chúng ta cái không thể làm nhiều giết chóc.”
+
+MỚI
+Tựa hồ đoán được Lăng Thiên có thể như vậy hỏi, số ba lắc đầu nói:“Đây là chuyện không thể nào, mặc dù ta cùng số bảy đối thứ nhất cấm địa có một chút chưởng khống quyền, nhưng là mỗi một tông môn đều có mình cần truyền thừa tiếp đồ vật, cho nên hai chúng ta cái không thể làm nhiều giết chóc.”
+
+
+===== Chương 2043: Chương 2043: ly biệt thời điểm (3 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+Vẫn đang làm một cái ăn dưa người xem số bảy có chút mờ mịt, mình tại sao sẽ không hiền hậu, không phải giúp cho ngươi bằng hữu muốn tới cơ duyên sao?
+
+MỚI
+Vẫn đang làm một cái ăn dưa người xem số bảy có chút mờ mịt, mình tại sao liền không hiền hậu, không phải giúp cho ngươi bằng hữu muốn tới cơ duyên sao?
+
+----- đoạn 11 -----
+CŨ
+Mê Huyễn Thú chủ tu huyễn cảnh, tà ác Hoa vương tu luyện mê hoặc pháp thuật, hai loại đồ vật này tại bên trong vong linh thế giới thật sự tìm không thấy cơ duyên tốt, Lăng Thiên nhìn thấy số bảy bộ dạng, liền biết muốn từ số bảy trong tay lại thu hết ít đồ phải không quá có thể chuyện, suy nghĩ một chút cũng liền coi như thôi.
+
+MỚI
+Mê Huyễn Thú chủ tu huyễn cảnh, tà ác Hoa vương tu luyện mê hoặc pháp thuật, hai loại đồ vật này tại bên trong vong linh thế giới thật sự tìm không thấy cơ duyên tốt, Lăng Thiên nhìn thấy số bảy bộ dạng, liền biết muốn từ số bảy trong tay lại thu hết ít đồ là chuyện không có khả năng lắm, suy nghĩ một chút cũng liền coi như thôi.
+
+----- đoạn 19 -----
+CŨ
+Đi tới từng mảnh từng mảnh linh điền bên cạnh, Hồng Thiên Tường hợp âm một mẫn đều sớm rời đi, nguyên lập cùng nguyên nghê, Hồ lão nhân đều hướng Lăng Thiên ngỏ ý cảm ơn, phải biết lần này cấm địa chi hành, nếu như không có lời nói của Lăng Thiên, bọn hắn rất có thể đều phải toàn quân phục không có.
+
+MỚI
+Đi tới từng mảnh từng mảnh linh điền bên cạnh, Hồng Thiên Tường hợp âm một mẫn đều sớm rời đi, nguyên lập cùng nguyên nghê, Hồ lão nhân đều hướng Lăng Thiên ngỏ ý cảm ơn, phải biết lần này cấm địa chi hành, nếu như không có Lăng Thiên thì, bọn hắn rất có thể đều phải toàn quân phục không có.
+
+
+===== Chương 2044: Chương 2044: tạo hóa trong đá (1 chỗ) =====
+
+----- đoạn 4 -----
+CŨ
+Số một đã sớm vẫn lạc vô số vạn năm, số ba cùng số bảy có ở đây không lâu về sau cũng sắp muốn tiêu tán ở thế gian, đến lúc đó tạo hóa thạch cũng là tiện nghi người khác, còn không bằng lấy ra cho Lăng Thiên.
+
+MỚI
+Số một đã sớm vẫn lạc vô số vạn năm, số ba cùng số bảy tại không lâu sau cũng sắp muốn tiêu tán ở thế gian, đến lúc đó tạo hóa thạch cũng là tiện nghi người khác, còn không bằng lấy ra cho Lăng Thiên.
+
+
+===== Chương 2045: Chương 2045: toàn tâm thống khổ (1 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+Đi vào vừa nhìn, Lăng Thiên lúc này mới chú ý tới trên mặt bàn vẫn còn đồ vật, tại mỗi một khỏa viên cầu trước mặt của đều đặt vào trang giấy, nhìn hắn đến lạc khoản là số một sẽ hiểu, những giấy này trương là số một lưu cho người đến sau sử dụng.
+
+MỚI
+Đi vào vừa nhìn, Lăng Thiên lúc này mới chú ý tới trên mặt bàn vẫn còn đồ vật, tại mỗi một khỏa viên cầu trước mặt của đều đặt vào trang giấy, hắn nhìn thấy lạc khoản là số một sẽ hiểu, những giấy này trương là số một lưu cho người đến sau sử dụng.
+
+
+===== Chương 2046: Chương 2046: trở về (7 chỗ) =====
+
+----- đoạn 16 -----
+CŨ
+Trước đây biết nhà bên ngoài, la Tiểu Phong mang theo một đoàn tiên tri nhà thủ hạ, cùng trước mặt một cái Thần Tôn Cảnh tu giả tại tranh luận, thần này tôn cảnh tu giả còn mang theo hai tên Thần Hoàng cảnh tột cùng tùy tùng.
+
+MỚI
+Trước đây biết nhà bên ngoài, La Tiểu Phong mang theo một đoàn tiên tri nhà thủ hạ, cùng trước mặt một cái Thần Tôn Cảnh tu giả tại tranh luận, cái này Thần Tôn Cảnh tu giả còn mang theo hai tên Thần Hoàng cảnh tột cùng tùy tùng.
+
+----- đoạn 18 -----
+CŨ
+“Một cái nho nhỏ tiên tri nhà cũng dám ngăn cản ta muốn người? Hôm nay ngươi không đem các nàng giao cho ta lời nói, từ ngày mai trở đi, tầng trời thứ sáu nhưng liền không có tiên tri nhà đã.” Võ Thần tôn khẽ cười nói, ánh mắt của hắn rơi vào la Tiểu Phong bên người Mỹ Đỗ Toa Nữ Vương cùng Mạc Tâm hạ bên trên.
+
+MỚI
+“Một cái nho nhỏ tiên tri nhà cũng dám ngăn cản ta muốn người? Hôm nay ngươi không đem các nàng giao cho ta lời nói, từ ngày mai trở đi, tầng trời thứ sáu nhưng liền không có tiên tri nhà đã.” Võ Thần tôn khẽ cười nói, ánh mắt của hắn rơi vào La Tiểu Phong bên người Mỹ Đỗ Toa Nữ Vương cùng Mạc Tâm hạ bên trên.
+
+----- đoạn 22 -----
+CŨ
+“Đừng nói nhảm, la biết Cẩm Đô bao lâu không có xuất hiện, mà lại ta nhớ được nàng cũng chính là Thần Tôn Cảnh sơ kỳ, một đại đội bên trên tam trọng thiên đều đi không được nữ nhân, có thể có thực lực gì?”
+
+MỚI
+“Đừng nói nhảm, La Tri Cẩm đều bao lâu không có xuất hiện, mà lại ta nhớ được nàng cũng chính là Thần Tôn Cảnh sơ kỳ, một đại đội bên trên tam trọng thiên đều đi không được nữ nhân, có thể có thực lực gì?”
+
+----- đoạn 23 -----
+CŨ
+Tại tầng trời thứ bảy cũng không ít Thần Tôn biết la biết gấm, dù sao cũng là duy nhất bị cấm chế tiến vào bên trên tam trọng thiên nữ thần tôn, từ khi la biết gấm không đi được tầng trời thứ bảy sau, chuyện này đã bị bên trên tam trọng thiên nhân xem như đàm tiếu.
+
+MỚI
+Tại tầng trời thứ bảy cũng không ít Thần Tôn biết La Tri Cẩm, dù sao cũng là duy nhất bị cấm chế tiến vào bên trên tam trọng thiên nữ Thần Tôn, từ khi La Tri Cẩm không đi được tầng trời thứ bảy sau, chuyện này đã bị bên trên tam trọng thiên nhân xem như đàm tiếu.
+
+----- đoạn 24 -----
+CŨ
+Bây giờ tiên tri nhà người mạnh nhất cũng chính là la Tiểu Phong, nàng căn bản là đánh không lại Võ Thần tôn, thế nhưng là Mỹ Đỗ Toa Nữ Vương cùng Mạc Tâm Hạ Đô là người của Lăng Thiên, nếu để cho Lăng Thiên mà biết nàng đem hai người giao ra, chỉ sợ nàng sẽ chết thảm hại hơn.
+
+MỚI
+Bây giờ tiên tri nhà người mạnh nhất cũng chính là La Tiểu Phong, nàng căn bản là đánh không lại Võ Thần tôn, thế nhưng là Mỹ Đỗ Toa Nữ Vương cùng Mạc Tâm Hạ Đô là người của Lăng Thiên, nếu để cho Lăng Thiên mà biết nàng đem hai người giao ra, chỉ sợ nàng sẽ chết thảm hại hơn.
+
+----- đoạn 25 -----
+CŨ
+Tại la Tiểu Phong thủ hạ sau lưng cũng đều rất rõ ràng Mỹ Đỗ Toa Nữ Vương cùng Mạc Tâm mùa hè thân phận, cho nên bọn họ đều không có vì mình sinh mệnh bức bách la Tiểu Phong giao ra hai người.
+
+MỚI
+Sau lưng La Tiểu Phong thủ hạ cũng đều rất rõ ràng Mỹ Đỗ Toa Nữ Vương cùng Mạc Tâm mùa hè thân phận, cho nên bọn họ đều không có vì mình sinh mệnh bức bách La Tiểu Phong giao ra hai người.
+
+----- đoạn 29 -----
+CŨ
+“Có thể làm chúng ta Võ Thần tôn Kỷ Thiên đạo lữ xem như phúc khí của các ngươi, lại còn không nguyện ý, tiện nhân chính là tiện nhân, vẫn là chúng ta tới bắt đi ngươi đi!” Hai cái Thần Hoàng cảnh tột cùng tùy tùng lập tức tựu đi tới Mạc Tâm hạ bên người, bất quá la Tiểu Phong không có bỏ mặc bọn hắn động thủ, một đám tiên tri nhà Thần Hoàng cảnh đỉnh phong tu giả liền trực tiếp vây quanh Võ Thần tôn tùy tùng.
+
+MỚI
+“Có thể làm chúng ta Võ Thần tôn Kỷ Thiên đạo lữ xem như phúc khí của các ngươi, lại còn không nguyện ý, tiện nhân chính là tiện nhân, vẫn là chúng ta tới bắt đi ngươi đi!” Hai cái Thần Hoàng cảnh tột cùng tùy tùng lập tức tựu đi tới Mạc Tâm hạ bên người, bất quá La Tiểu Phong không có bỏ mặc bọn hắn động thủ, một đám tiên tri nhà Thần Hoàng cảnh đỉnh phong tu giả liền trực tiếp vây quanh Võ Thần tôn tùy tùng.
+
+
+===== Chương 2048: Chương 2048: kế hoạch (1 chỗ) =====
+
+----- đoạn 17 -----
+CŨ
+“Lần này ta không có dự định mang quá nhiều người đi qua, dù sao các ngươi muốn lưu tại Huyễn Thủy Môn, Lạc Hoa Tông cùng thất thải Lưu Ly Cung để phòng ngoài ý muốn.” Lăng Thiên gật đầu nói, tầng trời thứ ba không cho phép tu vi quá cao người đi vào, muốn đi vào liền phải áp chế tu vi, điểm này hắn biết rõ.
+
+MỚI
+“Lần này ta không có ý định mang quá nhiều người đi qua, dù sao các ngươi muốn lưu tại Huyễn Thủy Môn, Lạc Hoa Tông cùng thất thải Lưu Ly Cung để phòng ngoài ý muốn.” Lăng Thiên gật đầu nói, tầng trời thứ ba không cho phép tu vi quá cao người đi vào, muốn đi vào liền phải áp chế tu vi, điểm này hắn biết rõ.
+
+
+===== Chương 2052: Chương 2052: đều có lễ vật, đừng nóng vội (2 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+“Sư phó, lần này ngươi có phải hay không chuẩn bị dẫn ta đi đã?” Ninh Dao trong mắt tràn ngập chờ mong, lần trước Lăng Thiên tại tầng trời thứ hai thời điểm, nàng vẫn quấn lấy Lăng Thiên, muốn làm đồ đệ của Lăng Thiên.
+
+MỚI
+“Sư phó, lần này ngươi có phải hay không chuẩn bị dẫn ta đi đã?” Ninh Dao trong mắt tràn ngập chờ mong, lần trước Lăng Thiên tại tầng trời thứ hai thời điểm, nàng vẫn quấn lấy Lăng Thiên, muốn Khi Lăng Thiên đồ đệ.
+
+----- đoạn 18 -----
+CŨ
+“Oa, Lăng Thiên lão đệ, ngươi cũng quá không công bằng đã, vì cái gì Ninh Tông chủ có thần tôn cấp nhạc khí, ta cùng nho nhỏ cái gì cũng không có!” Hắc y nhân đà chủ vẻ mặt khoa trương nói.
+
+MỚI
+“Oa, Lăng Thiên lão đệ, ngươi cũng quá không công bằng đã, vì cái gì Ninh Tông chủ có Thần Tôn cấp nhạc khí, ta cùng nho nhỏ cái gì cũng không có!” Hắc y nhân đà chủ vẻ mặt khoa trương nói.
+
+
+===== Chương 2053: Chương 2053: vụng trộm đi theo (1 chỗ) =====
+
+----- đoạn 10 -----
+CŨ
+“Không được, ngươi chính là ở tại tầng trời thứ hai, nếu là muốn đột phá, liền đi Nữ Nhi Đảo bên trên.” Lăng Thiên nói rằng, hắn còn mặt chống lại tam trọng thiên Thần Tôn truy sát, mang theo Ninh Dao thì thực sự rất không thuận tiện.
+
+MỚI
+“Không được, ngươi chính là ở tại tầng trời thứ hai, nếu là muốn đột phá, liền đi Nữ Nhi Đảo bên trên.” Lăng Thiên nói rằng, hắn còn mặt chống lại tam trọng thiên Thần Tôn truy sát, mang theo Ninh Dao thì thực sự rất không tiện.
+
+
+===== Chương 2055: Chương 2055: vẫn phải là động thủ (1 chỗ) =====
+
+----- đoạn 32 -----
+CŨ
+“Muốn mạng của ta hồn? Ngươi không bằng trực tiếp đem ta giết chết!” Mộc diễm cười nhạo nói, hắn biểu hiện không ra được quan tâm sinh tử bộ dáng, thế nhưng là tay phải lại len lén bấm niệm pháp quyết, muốn phóng thích pháp thuật.
+
+MỚI
+“Muốn mạng của ta hồn? Ngươi không bằng trực tiếp đem ta giết chết!” Mộc diễm cười nhạo nói, hắn biểu hiện ra không quan tâm sinh tử bộ dáng, thế nhưng là tay phải lại len lén bấm niệm pháp quyết, muốn phóng thích pháp thuật.
+
+
+===== Chương 2056: Chương 2056: ngươi muốn làm sao bắt? (2 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+Xem ra thành lập một cái mới Quy Nguyên Tông phải sớm một chút thực hành, nếu như ta có chính mình thế lực, muốn làm chuyện gì đều đơn giản nhiều đã, Lăng Thiên trong lòng thầm nghĩ, hắn hiện tại muốn lại từng cái tông môn đi qua, phải không quá có thể chuyện, mà lại đến lúc đó hắn chọc người ta bất mãn, những tông môn kia mặt ngoài bỏ qua phi thăng giả, vụng trộm rất có thể sẽ đối với phi thăng giả càng thêm tàn nhẫn.
+
+MỚI
+Xem ra thành lập một cái mới Quy Nguyên Tông phải sớm một chút thực hành, nếu như ta có chính mình thế lực, muốn làm chuyện gì đều đơn giản nhiều đã, Lăng Thiên trong lòng thầm nghĩ, hắn hiện tại muốn lại từng cái tông môn đi qua, là chuyện không có khả năng lắm, mà lại đến lúc đó hắn chọc người ta bất mãn, những tông môn kia mặt ngoài bỏ qua phi thăng giả, vụng trộm rất có thể sẽ đối với phi thăng giả càng thêm tàn nhẫn.
+
+----- đoạn 22 -----
+CŨ
+Hơn sáu trăm tên phi thăng giả cũng không có đi xa, bọn hắn cũng không làm sao vậy giải thần giới, cũng không rõ ràng lắm nên đi phương hướng nào đi, cho nên Lăng Thiên xuất phát không đến nửa khắc đồng hồ, liền đuổi kịp bọn hắn.
+
+MỚI
+Hơn sáu trăm tên phi thăng giả cũng không có đi xa, bọn hắn đều không thế nào hiểu rõ thần giới, cũng không rõ ràng lắm nên đi phương hướng nào đi, cho nên Lăng Thiên xuất phát không đến nửa khắc đồng hồ, liền đuổi kịp bọn hắn.
+
+
+===== Chương 2058: Chương 2058: một nửa số người (2 chỗ) =====
+
+----- đoạn 11 -----
+CŨ
+Tu giả bình thường, tại nhập thánh cảnh sơ kỳ thời điểm, không có cách nào đối phó nhập thánh cảnh trung kỳ tu giả, thế nhưng là thiên tài tu giả cũng không một dạng, cảnh giới của bọn hắn cùng thực lực nghiêm trọng không hợp, tại nhập thánh cảnh sơ kỳ thời điểm, đối phó nhập thánh cảnh hậu kỳ hoặc là nhập thánh cảnh sơ kỳ đều không phải vấn đề.
+
+MỚI
+Tu giả bình thường, tại nhập thánh cảnh sơ kỳ thời điểm, không có cách nào đối phó nhập thánh cảnh trung kỳ tu giả, thế nhưng là thiên tài tu giả lại không giống, cảnh giới của bọn hắn cùng thực lực nghiêm trọng không hợp, tại nhập thánh cảnh sơ kỳ thời điểm, đối phó nhập thánh cảnh hậu kỳ hoặc là nhập thánh cảnh sơ kỳ đều không phải vấn đề.
+
+----- đoạn 18 -----
+CŨ
+Gặp qua thực lực của Lăng Thiên, phi thăng giả nhóm cũng sẽ không tiếp tục do dự, có hai người đều muốn chạy đến thân của Lăng Thiên sau, bên trong xen lẫn rất nhiều có ở đây không lâu trước lộ ra tham lam cùng lạnh lùng thần sắc người, bọn hắn đều bị Lăng Thiên cản xuống tới.
+
+MỚI
+Gặp qua thực lực của Lăng Thiên, phi thăng giả nhóm cũng sẽ không tiếp tục do dự, có hai người đều muốn chạy đến thân của Lăng Thiên sau, bên trong xen lẫn rất nhiều tại trước đây không lâu lộ ra tham lam cùng lạnh lùng thần sắc người, bọn hắn đều bị Lăng Thiên cản xuống tới.
+
+
+===== Chương 2060: Chương 2060: sau cùng Nhập Tuyển giả (3 chỗ) =====
+
+----- đoạn 4 -----
+CŨ
+Đột nhiên từng đợt thản nhiên tiếng địch truyền đến, bao quát âm thầm chừng hai mươi danh đô nghe tới tiếng địch, những này tiếng địch chính là Ninh Dao dùng thần tôn cấp nhạc khí phát ra tới, nghe tới tiếng địch nhân, không khỏi đi vào trầm luân.
+
+MỚI
+Đột nhiên từng đợt thản nhiên tiếng địch truyền đến, bao quát âm thầm chừng hai mươi danh đô nghe tới tiếng địch, những này tiếng địch chính là Ninh Dao dùng Thần Tôn cấp nhạc khí phát ra tới, nghe tới tiếng địch nhân, không khỏi đi vào trầm luân.
+
+----- đoạn 10 -----
+CŨ
+Những này phi thăng giả đều ở một cái đặc thù trạng thái, trong mắt bọn hắn, mình ở vào chỗ cũng không giống nhau, Ninh Dao diễn tấu ra tiếng địch giống huyễn cảnh bình thường, để bọn hắn thân ở mình ảo tưởng từng cái tràng cảnh trong.
+
+MỚI
+Những này phi thăng giả đều ở một cái đặc thù trạng thái, trong mắt bọn hắn, mình ở vào chỗ đều không giống nhau, Ninh Dao diễn tấu ra tiếng địch giống huyễn cảnh bình thường, để bọn hắn thân ở mình ảo tưởng từng cái tràng cảnh trong.
+
+----- đoạn 20 -----
+CŨ
+“Hơn hai trăm người, ta thế nào cảm giác đều không được, bọn hắn Liên Minh vui tông đệ tử cũng không sánh nổi.” Ninh Dao nói rằng, nàng dùng tiếng địch đến mê hoặc phía dưới phi thăng giả lúc, có thể nói nàng cũng đi sâu vào mỗi người trong nội tâm, thăm dò được hắn nhóm chân chính nội tâm ý nghĩ.
+
+MỚI
+“Hơn hai trăm người, ta thế nào cảm giác đều không được, bọn hắn ngay cả Minh Nhạc Tông đệ tử cũng không sánh nổi.” Ninh Dao nói rằng, nàng dùng tiếng địch đến mê hoặc phía dưới phi thăng giả lúc, có thể nói nàng cũng đi sâu vào mỗi người trong nội tâm, thăm dò được hắn nhóm chân chính nội tâm ý nghĩ.
+
+
+===== Chương 2065: Chương 2065: có chút danh tiếng (2 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+Làm từng đã là thần giới thứ nhất Thần Tôn, Lăng Thiên nếu là không có nắm chắc để Ninh Dao trở thành cường đại Thần Tôn, hắn dứt khoát tìm một cái khối đậu hũ đâm chết được rồi.
+
+MỚI
+Làm từng đã là thần giới đệ nhất Thần Tôn, Lăng Thiên nếu là không có nắm chắc để Ninh Dao trở thành cường đại Thần Tôn, hắn dứt khoát tìm một cái khối đậu hũ đâm chết được rồi.
+
+----- đoạn 16 -----
+CŨ
+Muốn giết một cái rưỡi bước Thần Hoàng, Tả hộ pháp biết mình không trả giá đắt là chuyện không thể nào, bất quá hắn đi tới tầng trời thứ ba trước, đặc biệt dẫn tới không được thiếu phù triện, những phù triện này đều ẩn chứa mình một đạo lực lượng.
+
+MỚI
+Muốn giết một cái rưỡi bước Thần Hoàng, Tả hộ pháp biết mình không trả giá đắt là chuyện không thể nào, bất quá hắn đi tới tầng trời thứ ba trước, đặc biệt dẫn đến không ít phù triện, những phù triện này đều ẩn chứa mình một đạo lực lượng.
+
+
+===== Chương 2066: Chương 2066: chân chính thế công tiến đến (1 chỗ) =====
+
+----- đoạn 24 -----
+CŨ
+“Làm ngươi chuyện là được, chúng ta vẻn vẹn là nghĩ đến nhìn một chút Quy Nguyên Tông cụ thể nội tình.” Tựa hồ có thần tôn nghe tới Tả hộ pháp thanh âm, hướng hắn truyền âm nói.
+
+MỚI
+“Làm ngươi chuyện là được, chúng ta vẻn vẹn là nghĩ đến nhìn một chút Quy Nguyên Tông cụ thể nội tình.” Tựa hồ có Thần Tôn nghe tới Tả hộ pháp thanh âm, hướng hắn truyền âm nói.
+
+
+===== Chương 2068: Chương 2068: sau cùng đại sát chiêu (3 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+Lăng Thiên đi tới Tả hộ pháp bọn người phụ cận, mượn Hắc Vụ ẩn tàng thân hình, nhìn hắn đến rộng hứng dùng trong tay trận bàn đang phá giải từng cái trận pháp nhỏ, không thể không nói, rộng hứng vẫn có hai lần.
+
+MỚI
+Lăng Thiên đi tới Tả hộ pháp bọn người phụ cận, mượn Hắc Vụ ẩn tàng thân hình, hắn nhìn thấy rộng hứng dùng trong tay trận bàn đang phá giải từng cái trận pháp nhỏ, không thể không nói, rộng hứng vẫn có hai lần.
+
+----- đoạn 9 -----
+CŨ
+Tiện tay một kích chính là nửa bước Thần Hoàng cấp bậc lực lượng, không hổ là Thần Hoàng cảnh tột cùng tu giả, liền xem như áp chế tu vi, thực lực cũng không hề yếu, Lăng Thiên ở trong lòng nói rằng, nhìn hắn đến Tả hộ pháp lực lượng, liền biết nương tựa theo trận pháp và Kiếm Khí là không thể nào diệt đi Thánh Vũ Tông đám người.
+
+MỚI
+Tiện tay một kích chính là nửa bước Thần Hoàng cấp bậc lực lượng, không hổ là Thần Hoàng cảnh tột cùng tu giả, liền xem như áp chế tu vi, thực lực cũng không hề yếu, Lăng Thiên ở trong lòng nói rằng, hắn nhìn thấy Tả hộ pháp lực lượng, liền biết nương tựa theo trận pháp và Kiếm Khí là không thể nào diệt đi Thánh Vũ Tông đám người.
+
+----- đoạn 32 -----
+CŨ
+Dĩ Ninh dao tu vi, tiếng địch của nàng chỉ có thể ảnh hưởng Thánh Vũ Tông tu giả không đến một hơi thời gian, nhưng chính là trong chớp nhoáng này, thần hồn của Lăng Thiên đã đi tới trong trận pháp, mạnh mẽ tiến vào đến Tả hộ pháp thức hải bên trong.
+
+MỚI
+Lấy Ninh Dao tu vi, tiếng địch của nàng chỉ có thể ảnh hưởng Thánh Vũ Tông tu giả không đến một hơi thời gian, nhưng chính là trong chớp nhoáng này, thần hồn của Lăng Thiên đã đi tới trong trận pháp, mạnh mẽ tiến vào đến Tả hộ pháp thức hải bên trong.
+
+
+===== Chương 2070: Chương 2070: ngụy trang (2 chỗ) =====
+
+----- đoạn 1 -----
+CŨ
+Thiêu đốt Hồn Phách Chi Lực, Tả hộ pháp là nhất định sẽ chết, thế nhưng là Lăng Thiên cũng không nhất định, hắn dùng đem hết toàn lực phòng ngự lời nói, tối đa cũng chính là bị thương nặng.
+
+MỚI
+Thiêu đốt Hồn Phách Chi Lực, Tả hộ pháp là nhất định sẽ chết, thế nhưng là Lăng Thiên lại không nhất định, hắn dùng đem hết toàn lực phòng ngự lời nói, tối đa cũng chính là bị thương nặng.
+
+----- đoạn 4 -----
+CŨ
+Tả hộ pháp trầm mặc một hồi lâu, việc quan hệ nhân sinh lựa chọn trọng yếu, hắn không dám tùy tiện liền hạ quyết định quyết định, phải biết đem mệnh hồn giao cho lời nói của Lăng Thiên, từ nay về sau hắn đều muốn nghe khiến tại Lăng Thiên, chẳng khác gì là không có bao nhiêu tự chủ quyền lợi.
+
+MỚI
+Tả hộ pháp trầm mặc một hồi lâu, việc quan hệ nhân sinh lựa chọn trọng yếu, hắn không dám tùy tiện liền hạ quyết định quyết định, phải biết đem mệnh hồn giao cho Lăng Thiên thì, từ nay về sau hắn đều muốn nghe khiến tại Lăng Thiên, chẳng khác gì là không có bao nhiêu tự chủ quyền lợi.
+
+
+===== Chương 2071: Chương 2071: diễn trò muốn làm nguyên bộ (2 chỗ) =====
+
+----- đoạn 3 -----
+CŨ
+“Tả hộ pháp đã tỉnh lại!” Rộng hứng mừng rỡ hô, nhìn hắn đến Tả hộ pháp mở hai mắt ra thời điểm, cảm giác được hi vọng lần nữa giáng lâm.
+
+MỚI
+“Tả hộ pháp đã tỉnh lại!” Rộng hứng mừng rỡ hô, hắn nhìn thấy Tả hộ pháp mở hai mắt ra thời điểm, cảm giác được hi vọng lần nữa giáng lâm.
+
+----- đoạn 7 -----
+CŨ
+Nghĩa rộng cùng rộng Hưng Đô không nghĩ tới mấy trăm Siêu Phàm Cảnh tu giả sẽ xảy ra chuyện, khi bọn hắn đi tới chỗ cũ lúc, nhìn thấy từng cỗ Siêu Phàm Cảnh tu giả thi thể, cũng sẽ không đến không tin.
+
+MỚI
+Nghĩa rộng cùng rộng Hưng Đô không nghĩ tới mấy trăm Siêu Phàm Cảnh tu giả sẽ xảy ra chuyện, khi bọn hắn đi tới chỗ cũ lúc, nhìn thấy từng cỗ Siêu Phàm Cảnh tu giả thi thể, cũng liền không thể không tin đã.
+
+
+===== Chương 2072: Chương 2072: kết minh (1 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Đừng nhìn đám đệ tử này bên trong có không ít nhập thánh cảnh đỉnh phong, nhưng là một trăm nhập thánh cảnh đỉnh phong bên trong, cũng không nhất định có thể có một người đột phá đến Thần Hoàng cảnh, cho nên Tả hộ pháp thì vẫn là rất hữu dụng.
+
+MỚI
+Đừng nhìn đám đệ tử này bên trong có không ít nhập thánh cảnh đỉnh phong, nhưng là một trăm nhập thánh cảnh đỉnh phong bên trong, đều không chắc chắn có thể có đủ một người đột phá đến Thần Hoàng cảnh, cho nên Tả hộ pháp thì vẫn là rất hữu dụng.
+
+
+===== Chương 2073: Chương 2073: tấm mộc (1 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+“Không đúng, ngươi cho bá tượng công tựa hồ là mười vạn năm trước bá Tượng Thần tôn lưu lại, ở tại thần giới tiếng tăm lừng lẫy!” Cẩn thận kỷ niệm Ninh Dao đột nhiên nghĩ đến ở nơi nào nghe qua những công pháp này, nàng trừng to mắt nói rằng.
+
+MỚI
+“Không đúng, ngươi cho bá tượng công tựa hồ là mười vạn năm trước bá tượng Thần Tôn lưu lại, ở tại thần giới tiếng tăm lừng lẫy!” Cẩn thận kỷ niệm Ninh Dao đột nhiên nghĩ đến ở nơi nào nghe qua những công pháp này, nàng trừng to mắt nói rằng.
+
+
+===== Chương 2075: Chương 2075: xông trận pháp phong (3 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+Mặc dù nói thần giới Yêu Tộc cùng nhân tộc trí lực không sai biệt nhiều, nhưng là Yêu Tộc bên trong đối với trận pháp chi đạo cũng không thế nào nhiệt trung, phần lớn Yêu Tộc đều cho rằng sức mạnh của bản thân mới trọng yếu nhất, trận pháp chỉ là vật ngoài thân.
+
+MỚI
+Mặc dù nói thần giới Yêu Tộc cùng nhân tộc trí lực không sai biệt nhiều, nhưng là Yêu Tộc bên trong đối với trận pháp chi đạo đều không thế nào nhiệt trung, phần lớn Yêu Tộc đều cho rằng sức mạnh của bản thân mới trọng yếu nhất, trận pháp chỉ là vật ngoài thân.
+
+----- đoạn 24 -----
+CŨ
+Người tới chính là rộng hứng, tứ trọng thiên cùng ngũ trọng thiên trận pháp sư muốn gia nhập Quy Nguyên Tông, hắn tự nhiên cũng nghe đến một ít tin tức, thân là cường đại trận pháp sư, dĩ nhiên muốn quy thuận Nguyên Tông nhìn một chút là một như thế nào tình huống.
+
+MỚI
+Người tới chính là rộng hứng, tứ trọng thiên cùng ngũ trọng thiên trận pháp sư muốn gia nhập Quy Nguyên Tông, hắn tự nhiên cũng nghe đến một ít tin tức, thân là cường đại trận pháp sư, dĩ nhiên muốn đến Quy Nguyên Tông nhìn một chút là một như thế nào tình huống.
+
+----- đoạn 28 -----
+CŨ
+“Những thứ nhỏ bé này trận pháp tinh diệu trình độ để cho ta đều cảm thấy không bằng, Thiên Tông chủ quả nhiên là Trận Pháp đại sư, so rộng hứng lợi hại hơn nhiều lắm.” Tại đỉnh núi chỗ trận pháp nhỏ, rộng Hưng Đô xem không quá hiểu, thậm chí sườn núi trận pháp, hắn cho rằng chính nương tựa theo thực lực, muốn xông qua đều không phải rất dễ dàng.
+
+MỚI
+“Những thứ nhỏ bé này trận pháp tinh diệu trình độ để cho ta đều cảm thấy không bằng, Thiên Tông chủ quả nhiên là Trận Pháp đại sư, so rộng hứng lợi hại hơn nhiều lắm.” Tại đỉnh núi chỗ trận pháp nhỏ, rộng Hưng Đô nhìn không hiểu nhiều, thậm chí sườn núi trận pháp, hắn cho rằng chính nương tựa theo thực lực, muốn xông qua đều không phải rất dễ dàng.
+
+
+===== Chương 2076: Chương 2076: sóng tuôn ra (3 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+“Ngươi vừa mới cũng không có nói không thể dùng bạo lực phá giải, cho nên ta không có tính phá vỡ quy tắc?” Tên này trận pháp sư rất không trang phục đích nói rằng, trong lòng của hắn thầm nghĩ, mình dựa theo quy tắc xông sơn phong, làm sao lại tính vi quy!
+
+MỚI
+“Ngươi vừa mới cũng không có nói không thể dùng bạo lực phá giải, cho nên ta không có tính phá vỡ quy tắc?” Tên này trận pháp sư rất không phục nói rằng, trong lòng của hắn thầm nghĩ, mình dựa theo quy tắc xông sơn phong, làm sao lại tính vi quy!
+
+----- đoạn 21 -----
+CŨ
+Sắp tối cùng khuê hồ tốc độ của hai người cũng biến thành rất chậm, ngược lại là gạo màu, cuối cùng mới lên núi nàng đã vượt qua sắp tối hai người, từ đầu đến cuối nàng phá giải trận pháp tốc độ bảo hiểm tất cả cầm có ở đây không gấp không chậm.
+
+MỚI
+Sắp tối cùng khuê hồ tốc độ của hai người cũng biến thành rất chậm, ngược lại là gạo màu, cuối cùng mới lên núi nàng đã vượt qua sắp tối hai người, từ đầu đến cuối nàng phá giải trận pháp tốc độ bảo hiểm tất cả cầm tại không nhanh không chậm.
+
+----- đoạn 32 -----
+CŨ
+Sách cùng họa không có bất kỳ cái gì dị nghị, gạo màu chính là trời tiên phái các loại tông môn trận pháp bố trí người, nếu là đầu nhập những tông môn khác lời nói, đối với Thiên Tiên Phái là một trọng đại đả kích.
+
+MỚI
+Sách cùng họa không có bất kỳ cái gì dị nghị, gạo màu là Thiên Tiên Phái các loại tông môn trận pháp bố trí người, nếu là đầu nhập những tông môn khác lời nói, đối với Thiên Tiên Phái là một trọng đại đả kích.
+
+
+===== Chương 2078: Chương 2078: rời đi cùng lưu lại (2 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+“Có một chút đến nói cho các ngươi biết, trừ phi Quy Nguyên Tông làm ra cái gì đúng không dậy nổi chuyện của các ngươi, hoặc là có lý do vạn bất đắc dĩ, nếu không vào hôm nay qua đi, không cho phép thoát ly Quy Nguyên Tông.” Thần sắc rất của Lăng Thiên là nghiêm túc, nhìn hắn đến mỗi người sắc mặt đều phát sinh bất đồng cải biến, liền tiếp tục nói:“Nếu là thoát ly Quy Nguyên Tông, liên quan tới Quy Nguyên Tông hết thảy mọi thứ cũng không chuẩn ngoại truyện.”
+
+MỚI
+“Có một chút đến nói cho các ngươi biết, trừ phi Quy Nguyên Tông làm ra cái gì đúng không dậy nổi chuyện của các ngươi, hoặc là có lý do vạn bất đắc dĩ, nếu không vào hôm nay qua đi, không cho phép thoát ly Quy Nguyên Tông.” Thần sắc rất của Lăng Thiên là nghiêm túc, hắn nhìn thấy mỗi người sắc mặt đều phát sinh bất đồng cải biến, liền tiếp tục nói:“Nếu là thoát ly Quy Nguyên Tông, liên quan tới Quy Nguyên Tông hết thảy mọi thứ cũng không chuẩn ngoại truyện.”
+
+----- đoạn 20 -----
+CŨ
+“Yên tâm đi, ta bố trí trận pháp tại một đoạn thời gian rất dài cũng sẽ không xảy ra chuyện, nếu như các ngươi lo lắng, ta mỗi cách một đoạn thời gian liền có thể trở về trợ giúp.” Gạo màu vẫn là một bộ ngốc manh bộ dáng, nàng đối với Thiên Tiên phái vẫn là có được cảm tình sâu đậm, bất quá đối với nàng mà nói, càng thú vị trận pháp lộ ra càng trọng yếu hơn một chút.
+
+MỚI
+“Yên tâm đi, ta bố trí trận pháp tại một đoạn thời gian rất dài cũng sẽ không xảy ra chuyện, nếu như các ngươi lo lắng, ta mỗi cách một đoạn thời gian liền có thể trở về trợ giúp.” Gạo màu vẫn là một bộ ngốc manh bộ dáng, nàng đối Thiên Tiên Phái vẫn là có được cảm tình sâu đậm, bất quá đối với nàng mà nói, càng thú vị trận pháp lộ ra càng trọng yếu hơn một chút.
+
+
+===== Chương 2080: Chương 2080: thích hợp điều kiện (6 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+Tại Âm Dương Tông trong tháp cao, Diệp Tiên đem Âm Dương Tông truyền thừa đều dạy cho Lăng Thiên, ngay cả Âm Dương hồ đều cho Lăng Thiên sử dụng, tương đương coi Lăng Thiên là Thành Âm Dương Tông là quan trọng nhất đệ tử tại bồi dưỡng, thế nhưng là Lăng Thiên quay người thì trở thành Âm Dương Tông địch nhân, cái này khiến hắn có chút khó mà tiếp nhận.
+
+MỚI
+Tại Âm Dương Tông trong tháp cao, Diệp Tiên đem Âm Dương Tông truyền thừa đều dạy cho Lăng Thiên, ngay cả Âm Dương hồ đều cho Lăng Thiên sử dụng, tương đương coi Lăng Thiên là thành Âm Dương Tông là quan trọng nhất đệ tử tại bồi dưỡng, thế nhưng là Lăng Thiên quay người thì trở thành Âm Dương Tông địch nhân, cái này khiến hắn có chút khó mà tiếp nhận.
+
+----- đoạn 7 -----
+CŨ
+“Chẳng lẽ ngươi sẽ còn cảm ân? Thật sự là trò cười, Âm Dương Thần Tổ hạ lệnh, nếu là Âm Dương Tông nhân gặp lại ngươi, bất kể như thế nào đều phải dùng hết phương pháp giết chết ngươi!” Diệp Tiên hỏi ngược lại, trong nội tâm nàng như là gương sáng, tại tầng trời thứ bốn đại chiến lúc, nếu không phải lời nói của Lăng Thiên, nói không chừng bọn ta đạt được sự tình.
+
+MỚI
+“Chẳng lẽ ngươi sẽ còn cảm ân? Thật sự là trò cười, Âm Dương Thần Tổ hạ lệnh, nếu là Âm Dương Tông nhân gặp lại ngươi, bất kể như thế nào đều phải dùng hết phương pháp giết chết ngươi!” Diệp Tiên hỏi ngược lại, trong nội tâm nàng như là gương sáng, tại tầng trời thứ bốn đại chiến lúc, nếu không phải Lăng Thiên thì, nói không chừng bọn ta đạt được sự tình.
+
+----- đoạn 13 -----
+CŨ
+“Tám thành là đàm trước kia ân ân oán oán, hi vọng Lăng Thiên có thể trấn an được Diệp Tiên, nếu không sợ là sẽ phải xảy ra chuyện lớn.” Sách suy đoán nói, nàng biết Diệp Tiên nếu là hướng mặt ngoài truyền Quy Nguyên Tông tông chủ là lời nói của Lăng Thiên, trên cơ bản Quy Nguyên Tông liền sẽ chơi xong.
+
+MỚI
+“Tám thành là đàm trước kia ân ân oán oán, hi vọng Lăng Thiên có thể trấn an được Diệp Tiên, nếu không sợ là sẽ phải xảy ra chuyện lớn.” Sách suy đoán nói, nàng biết Diệp Tiên nếu là hướng mặt ngoài truyền Quy Nguyên Tông tông chủ là Lăng Thiên thì, trên cơ bản Quy Nguyên Tông liền sẽ chơi xong.
+
+----- đoạn 17 -----
+CŨ
+“Diệp Tiên tỷ tỷ, ngươi nên biết ta không có có thể đồng ý điều kiện này, nếu không ngươi đổi một cái?” Lăng Thiên bất đắc dĩ nói, hắn rất mong cùng Diệp Tiên hoà giải, nhưng là Diệp Tiên nói lên điều kiện thực sự quá làm khó hắn.
+
+MỚI
+“Diệp Tiên tỷ tỷ, ngươi nên biết ta không có khả năng đồng ý điều kiện này, nếu không ngươi đổi một cái?” Lăng Thiên bất đắc dĩ nói, hắn rất mong cùng Diệp Tiên hoà giải, nhưng là Diệp Tiên nói lên điều kiện thực sự quá làm khó hắn.
+
+----- đoạn 22 -----
+CŨ
+“Một môn cao cấp công pháp, còn có phiên bản đơn giản hóa Âm Dương vòng xoáy, một gốc Thần Tôn cấp linh dược.” Suy nghĩ kỹ một hồi, Lăng Thiên mới cho ra bản thân điều kiện, nhìn hắn đến Diệp Tiên thần sắc không có một chút ba động, trong lòng cũng hơi sợ hãi.
+
+MỚI
+“Một môn cao cấp công pháp, còn có phiên bản đơn giản hóa Âm Dương vòng xoáy, một gốc Thần Tôn cấp linh dược.” Suy nghĩ kỹ một hồi, Lăng Thiên mới cho ra bản thân điều kiện, hắn nhìn thấy Diệp Tiên thần sắc không có một chút ba động, trong lòng cũng hơi sợ hãi.
+
+----- đoạn 30 -----
+CŨ
+Chỉ bất quá Luyện Kiếm Tông tương đối cường đại, có ở đây không ít người xem ra Tiêu Sơn xem như trung bộ bên trong các tông môn người dẫn đầu, Lăng Thiên đem Tiêu Sơn đưa ra Tịch Tĩnh Sơn Lĩnh Ngoại, để hắn và các tông môn người đi thương lượng một chút, bồi thường bao nhiêu đan dược mới có thể.
+
+MỚI
+Chỉ bất quá Luyện Kiếm Tông tương đối cường đại, tại không ít người xem ra Tiêu Sơn xem như trung bộ bên trong các tông môn người dẫn đầu, Lăng Thiên đem Tiêu Sơn đưa ra Tịch Tĩnh Sơn Lĩnh Ngoại, để hắn và các tông môn người đi thương lượng một chút, bồi thường bao nhiêu đan dược mới có thể.
+
+
+===== Chương 2081: Chương 2081: giải quyết tốt đẹp (1 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+Ở trên trời tiên phái bên trong, Lâm Hiểu nhu tu vi không có cầm kỳ thư họa cao, nhưng là địa vị cũng không thấp, thậm chí rất nhiều người đều cho rằng nàng là người nhậm chức môn chủ kế tiếp người thừa kế, bất quá Thiên Tiên Phái quy củ luôn luôn là có năng lực cư chi, ai có thể tới trước Thần Hoàng cảnh, người đó liền có thể đủ trở thành mới tông chủ.
+
+MỚI
+Tại Thiên Tiên Phái bên trong, Lâm Hiểu nhu tu vi không có cầm kỳ thư họa cao, nhưng là địa vị cũng không thấp, thậm chí rất nhiều người đều cho rằng nàng là người nhậm chức môn chủ kế tiếp người thừa kế, bất quá Thiên Tiên Phái quy củ luôn luôn là có năng lực cư chi, ai có thể tới trước Thần Hoàng cảnh, người đó liền có thể đủ trở thành mới tông chủ.
+
+
+===== Chương 2082: Chương 2082: kinh động lục trọng thiên (2 chỗ) =====
+
+----- đoạn 21 -----
+CŨ
+Thế nhưng là có một ít người luôn cảm giác mình hơn người một bậc, bọn hắn không khỏi oán trách thì Nguyên Tông giá đỡ quá lớn, liền xem như tông chủ có chuyện, cũng hẳn là đem bọn hắn đều mời vào lại nói.
+
+MỚI
+Thế nhưng là có một ít người luôn cảm giác mình hơn người một bậc, bọn hắn không khỏi phàn nàn Quy Nguyên Tông giá đỡ quá lớn, liền xem như tông chủ có chuyện, cũng hẳn là đem bọn hắn đều mời vào lại nói.
+
+----- đoạn 30 -----
+CŨ
+Không thể không nói, Quy Nguyên Tông đại bộ phận danh khí đều là tới từ Lăng Thiên, không ít người nghe tới Quy Nguyên Tông thời điểm, đều là nghĩ đến Quy Nguyên Tông Thiên Tông chủ, thực lực kinh người, biết luyện đan cùng bày trận, cái này khiến một bộ phận nữ tu người đều sinh lòng ngưỡng mộ, muốn quy thuận Nguyên Tông gặp một lần hắn.
+
+MỚI
+Không thể không nói, Quy Nguyên Tông đại bộ phận danh khí đều là tới từ Lăng Thiên, không ít người nghe tới Quy Nguyên Tông thời điểm, đều là nghĩ đến Quy Nguyên Tông Thiên Tông chủ, thực lực kinh người, biết luyện đan cùng bày trận, cái này khiến một bộ phận nữ tu người đều sinh lòng ngưỡng mộ, muốn đến Quy Nguyên Tông gặp một lần hắn.
+
+
+===== Chương 2084: Chương 2084: thiên tài cùng thiên tài khác nhau (3 chỗ) =====
+
+----- đoạn 11 -----
+CŨ
+“Chính là nghĩ như vậy.” Lăng Thiên mỉm cười, liền xem như năm cái tuyệt thế thiên tài cùng tiến lên, hắn cũng không sợ chút nào, làm đã từng thần giới thứ nhất Thần Tôn, nếu là điểm này tự tin đều không có, còn không bằng về nhà làm ruộng.
+
+MỚI
+“Chính là nghĩ như vậy.” Lăng Thiên mỉm cười, liền xem như năm cái tuyệt thế thiên tài cùng tiến lên, hắn cũng không sợ chút nào, làm đã từng thần giới đệ nhất Thần Tôn, nếu là điểm này tự tin đều không có, còn không bằng về nhà làm ruộng.
+
+----- đoạn 13 -----
+CŨ
+Thế mà để chúng ta năm người cùng tiến lên? Năm cái tuyệt thế thiên tài đều có chút tức giận, bọn hắn vốn chính là chỉ đùa một chút, không nghĩ tới Lăng Thiên sẽ như thế cuồng vọng, làm có thể tại nhập thánh cảnh liền phát vung ra tiếp cận thần Hoàng Cảnh lực lượng, tự nhiên là vô cùng người kiêu ngạo.
+
+MỚI
+Thế mà để chúng ta năm người cùng tiến lên? Năm cái tuyệt thế thiên tài đều có chút tức giận, bọn hắn vốn chính là chỉ đùa một chút, không nghĩ tới Lăng Thiên sẽ như thế cuồng vọng, làm có thể tại nhập thánh cảnh liền phát vung ra tiếp cận Thần Hoàng cảnh lực lượng, tự nhiên là vô cùng người kiêu ngạo.
+
+----- đoạn 16 -----
+CŨ
+“Mặc dù ta không có có thể thua, nhưng là ta thua thì, có thể miễn phí cho các ngươi mỗi người luyện chế một viên Thần Tôn cấp đan dược.”
+
+MỚI
+“Mặc dù ta không có khả năng thua, nhưng là ta thua thì, có thể miễn phí cho các ngươi mỗi người luyện chế một viên Thần Tôn cấp đan dược.”
+
+
+===== Chương 2086: Chương 2086: không cách nào tỉnh lại (1 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+“Nếu như các ngươi nói cho ta biết Man Hoang giới tin tức, ta không có khoảng chừng hai đại công hội trên danh nghĩa, đồng thời có cái gì luyện chế không ra Thần Tôn cấp sơ phẩm đan dược, ta đều có thể vì các ngươi luyện chế, thậm chí vì hai đại công hội giảng đạo!” Lăng Thiên cắn răng, đưa ra một cái vô pháp cự tuyệt điều kiện.
+
+MỚI
+“Nếu như các ngươi nói cho ta biết Man Hoang giới tin tức, ta không chỉ tại hai đại công hội trên danh nghĩa, đồng thời có cái gì luyện chế không ra Thần Tôn cấp sơ phẩm đan dược, ta đều có thể vì các ngươi luyện chế, thậm chí vì hai đại công hội giảng đạo!” Lăng Thiên cắn răng, đưa ra một cái vô pháp cự tuyệt điều kiện.
+
+
+===== Chương 2088: Chương 2088: không có tư cách (1 chỗ) =====
+
+----- đoạn 23 -----
+CŨ
+Làm tu giả, chỉ bất quá ngã tại trên mặt đất đã cảm thấy đau nhức, theo Lăng Thiên là một kiện rất không nhưng giải thích hợp lý chuyện, nhìn hắn đến ba cái thanh niên nổi giận đùng đùng hướng mình vây lại, liền biết phiền phức tránh không khỏi.
+
+MỚI
+Làm tu giả, chỉ bất quá ngã tại trên mặt đất đã cảm thấy đau nhức, theo Lăng Thiên là một kiện rất không thể nói lý chuyện, hắn nhìn thấy ba cái thanh niên nổi giận đùng đùng hướng mình vây lại, liền biết phiền phức tránh không khỏi.
+
+
+===== Chương 2090: Chương 2090: cách không dạy bảo (2 chỗ) =====
+
+----- đoạn 19 -----
+CŨ
+Ngay cả Trần Sâm đều trên mặt kích động, hắn đồng dạng sùng bái Sở Dương, hết thảy đều là Sở Dương chuyện dấu vết quá mức dọa người, tùy tiện xuất ra một kiện đến đây đủ để cho nhân vọng nó bóng lưng.
+
+MỚI
+Ngay cả Trần Sâm đều trên mặt kích động, hắn đồng dạng sùng bái Sở Dương, hết thảy đều là Sở Dương chuyện dấu vết quá mức dọa người, tùy tiện xuất ra một kiện đến đều đủ để khiến người ta nhìn theo bóng lưng.
+
+----- đoạn 30 -----
+CŨ
+Bất kể là Luyện Đan Sư vẫn là trận pháp sư, đạt tới công nhận đỉnh phong lúc, đều sẽ bị người xưng là Thánh Sư, chỉ bất quá Lăng Thiên vẫn là Thần Tôn thời điểm, càng nhiều cho người ấn tượng đều là thứ nhất Thần Tôn, luyện đan thuật ngược lại là bị người nhìn yếu một chút.
+
+MỚI
+Bất kể là Luyện Đan Sư vẫn là trận pháp sư, đạt tới công nhận đỉnh phong lúc, đều sẽ bị người xưng là Thánh Sư, chỉ bất quá Lăng Thiên vẫn là Thần Tôn thời điểm, càng nhiều cho người ấn tượng đều là đệ nhất Thần Tôn, luyện đan thuật ngược lại là bị người nhìn yếu một chút.
+
+
+===== Chương 2091: Chương 2091: Chu Mộc Linh (2 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+Nhân định thắng thiên, chỉ cần mình thực lực đầy đủ, Man Hoang giới đây tính toán là cái gì, đây chính là Lăng Thiên ý tưởng nội tâm, bỗng nhiên, nhìn hắn đến Chu du xuất hiện sau lưng một nữ tử, cô gái này gương mặt để hắn khá quen.
+
+MỚI
+Nhân định thắng thiên, chỉ cần mình thực lực đầy đủ, Man Hoang giới đây tính toán là cái gì, đây chính là Lăng Thiên ý tưởng nội tâm, bỗng nhiên, hắn nhìn thấy Chu du xuất hiện sau lưng một nữ tử, cô gái này gương mặt để hắn khá quen.
+
+----- đoạn 28 -----
+CŨ
+Tại chỗ các luyện đan sư đều an tĩnh lại, bọn hắn nghĩ là Lăng Thiên nói nửa đoạn trước lời nói, về phần câu nói sau cùng cũng không có người để ý, kỳ thật Lăng Thiên nói rất đúng lời nói thật, tại hắn là thần giới thứ nhất Thần Tôn thời điểm, hắn xưng thứ hai, cũng không có ai dám xưng thứ nhất!
+
+MỚI
+Tại chỗ các luyện đan sư đều an tĩnh lại, bọn hắn nghĩ là Lăng Thiên nói nửa đoạn trước lời nói, về phần câu nói sau cùng cũng không có người để ý, kỳ thật Lăng Thiên nói rất đúng lời nói thật, tại hắn là thần giới đệ nhất Thần Tôn thời điểm, hắn xưng thứ hai, cũng không có ai dám xưng thứ nhất!
+
+
+===== Chương 2092: Chương 2092: sắp lên đường (1 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+“Mộc Linh, ngươi muốn thật tốt nghe lời, mặc kệ gặp phải nguy hiểm gì, cũng không cần hoảng sợ loạn.” Truyền Tống Trận bên cạnh, Chu du đang căn dặn một ít chuyện, hắn len lén đút cho Chu Mộc Linh một chút bảo mệnh thần vật, dù sao cũng là nữ nhi của hắn, nhiều hơn nữa bảo mệnh thần vật cũng không ngại nhiều.
+
+MỚI
+“Mộc Linh, ngươi muốn thật tốt nghe lời, mặc kệ gặp phải nguy hiểm gì, cũng không cần hoảng sợ loạn.” Truyền Tống Trận bên cạnh, Chu du đang căn dặn một ít chuyện, hắn len lén đút cho Chu Mộc Linh một chút bảo mệnh thần vật, dù sao cũng là nữ nhi của hắn, nhiều hơn nữa bảo mệnh thần vật cũng không chê nhiều.
+
+
+===== Chương 2093: Chương 2093: Man Hoang thế giới (1 chỗ) =====
+
+----- đoạn 29 -----
+CŨ
+“Đây chính là dã man nhân?” Lăng Thiên đi theo đám người trốn ở trong bụi cỏ, dùng thần niệm hướng mặt trước dò xét đi, nhìn hắn đến từng cái cao lớn người khiêng rìu, đang khắp nơi tuần tra.
+
+MỚI
+“Đây chính là dã man nhân?” Lăng Thiên đi theo đám người trốn ở trong bụi cỏ, dùng thần niệm hướng mặt trước dò xét đi, hắn nhìn thấy từng cái cao lớn người khiêng rìu, đang khắp nơi tuần tra.
+
+
+===== Chương 2094: Chương 2094: Luyện Đan Sư nô lệ (1 chỗ) =====
+
+----- đoạn 36 -----
+CŨ
+“Xem ra vẫn phải là đem phù triện xé tan.” Lăng Thiên trong lòng thầm nghĩ, hắn đem màu đen phù triện cho xé xuống, bao phủ nhà quang mang nháy mắt biến mất, vội vàng mở ra cửa, nhìn hắn đến trong phòng nằm trên giường một cái Luyện Đan Sư.
+
+MỚI
+“Xem ra vẫn phải là đem phù triện xé tan.” Lăng Thiên trong lòng thầm nghĩ, hắn đem màu đen phù triện cho xé xuống, bao phủ nhà quang mang nháy mắt biến mất, vội vàng mở ra cửa, hắn nhìn thấy trong phòng nằm trên giường một cái Luyện Đan Sư.
+
+
+===== Chương 2095: Chương 2095: không có cách nào toàn cứu (2 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+Nói thật lưu cho thời gian của Lăng Thiên cũng không nhiều, hắn suy đoán mình có thể cứu ra Luyện Đan Sư số lượng, tối đa cũng liền mười mấy người, về phần đem năm mươi hai cái Luyện Đan Sư đều cho cứu viện ra, buổi tối hôm nay phải không quá có thể.
+
+MỚI
+Nói thật lưu cho thời gian của Lăng Thiên cũng không nhiều, hắn suy đoán mình có thể cứu ra Luyện Đan Sư số lượng, tối đa cũng liền mười mấy người, về phần đem năm mươi hai cái Luyện Đan Sư đều cho cứu viện ra, buổi tối hôm nay là rất không có khả năng.
+
+----- đoạn 28 -----
+CŨ
+“Nghe cứu ra Luyện Đan Sư nói, mỗi ngày dã man nhân đều sẽ để bọn hắn đi đào quáng, từ sớm đào đến muộn, xem ra ta có thể từ nơi này một phương diện vào tay.” Lăng Thiên lẩm bẩm nói, nhìn hắn không đến được thiếu phòng bên ngoài đều có bạch kim da dã man nhân tại ngồi chờ, liền biết giống chuyện tối ngày hôm qua là không có biện pháp lại đi làm.
+
+MỚI
+“Nghe cứu ra Luyện Đan Sư nói, mỗi ngày dã man nhân đều sẽ để bọn hắn đi đào quáng, từ sớm đào đến muộn, xem ra ta có thể từ nơi này một phương diện vào tay.” Lăng Thiên lẩm bẩm nói, hắn nhìn thấy không ít phòng bên ngoài đều có bạch kim da dã man nhân tại ngồi chờ, liền biết giống chuyện tối ngày hôm qua là không có biện pháp lại đi làm.
+
+
+===== Chương 2096: Chương 2096: khoáng mạch (1 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+Muốn hay không trở về gọi người? Lăng Thiên có chút chần chờ, hắn rất muốn đi vào trước trong động mỏ điều tra một chút tình huống, nhưng là muốn nếu không kinh động cửa động dã man nhân, lặng yên không tiếng động chui vào đi, cũng không quá có thể.
+
+MỚI
+Muốn hay không trở về gọi người? Lăng Thiên có chút chần chờ, hắn rất muốn đi vào trước trong động mỏ điều tra một chút tình huống, nhưng là muốn nếu không kinh động cửa động dã man nhân, lặng yên không tiếng động chui vào đi, lại rất không có khả năng.
+
+
+===== Chương 2097: Chương 2097: Kim Lân thạch (3 chỗ) =====
+
+----- đoạn 22 -----
+CŨ
+“Tuyệt đối đừng xúc động, nếu không ta cũng không nhất định sẽ lưu thủ.” Lăng Thiên lạnh lùng nói, hắn vung lên ống tay áo, trực tiếp hướng quặng mỏ đi ra ngoài.
+
+MỚI
+“Tuyệt đối đừng xúc động, nếu không ta nhưng không nhất định sẽ lưu thủ.” Lăng Thiên lạnh lùng nói, hắn vung lên ống tay áo, trực tiếp hướng quặng mỏ đi ra ngoài.
+
+----- đoạn 24 -----
+CŨ
+Nếu không phải lời nói của Lăng Thiên, một bộ phận này Luyện Đan Sư nói không chừng còn tại trong bộ lạc đợi, biết được là Lăng Thiên cứu được bọn hắn, các luyện đan sư cũng không dám ở trên trước, trên mặt của bọn hắn đều hiện lên ra một vệt xấu hổ.
+
+MỚI
+Nếu không phải Lăng Thiên thì, một bộ phận này Luyện Đan Sư nói không chừng còn tại trong bộ lạc đợi, biết được là Lăng Thiên cứu được bọn hắn, các luyện đan sư cũng không dám ở trên trước, trên mặt của bọn hắn đều hiện lên ra một vệt xấu hổ.
+
+----- đoạn 35 -----
+CŨ
+“Vương đô?” Lăng Thiên nghi ngờ nói, trước đó hắn nghe lén được dã man nhân nói qua vương đô, cũng không hiểu rõ đây là một cái địa phương nào.
+
+MỚI
+“Vương đô?” Lăng Thiên nghi ngờ nói, trước đó hắn nghe lén được dã man nhân nói qua vương đô, lại không hiểu rõ đây là một cái địa phương nào.
+
+
+===== Chương 2098: Chương 2098: vòng vây (2 chỗ) =====
+
+----- đoạn 19 -----
+CŨ
+Như vậy, muốn trà trộn vào vương đô thì đơn giản hơn nhiều, Lăng Thiên ở trong lòng thầm nghĩ, hắn vốn còn nghĩ sử dụng pháp thuật cải biến dáng người hình thể, khiến cho mình xem giống một cái dã man nhân, hiện tại xem ra cũng không thế nào nhu yếu.
+
+MỚI
+Như vậy, muốn trà trộn vào vương đô thì đơn giản hơn nhiều, Lăng Thiên ở trong lòng thầm nghĩ, hắn vốn còn nghĩ sử dụng pháp thuật cải biến dáng người hình thể, khiến cho mình xem giống một cái dã man nhân, hiện tại xem ra lại không thế nào nhu yếu.
+
+----- đoạn 31 -----
+CŨ
+“Không có cách nào, ai kêu Hoang tộc cái vị kia trông lại xấu, lại cái gì cũng sẽ không, ngay cả thực lực đều yếu không đến được nhưng tư nghị.”
+
+MỚI
+“Không có cách nào, ai kêu Hoang tộc cái vị kia trông lại xấu, lại cái gì cũng sẽ không, ngay cả thực lực đều yếu đến không thể tưởng tượng nổi.”
+
+
+===== Chương 2099: Chương 2099: Lạc Thần (2 chỗ) =====
+
+----- đoạn 28 -----
+CŨ
+“Ta nghĩ ngươi đã hiểu lầm, chúng ta cùng người bên ngoài cũng không phải là một đám.” Làm thần giới thứ nhất Thần Tôn, Lăng Thiên thấy qua Tiên Nữ sắp so Tưởng Đại Vi cùng hồ thiên Utada đã, đối với Khương Lạc Thần khuôn mặt đẹp, mặc dù hắn cảm thấy kinh diễm, nhưng không có biểu hiện tại trên mặt.
+
+MỚI
+“Ta nghĩ ngươi đã hiểu lầm, chúng ta cùng người bên ngoài cũng không phải là một đám.” Làm thần giới đệ nhất Thần Tôn, Lăng Thiên thấy qua Tiên Nữ sắp so Tưởng Đại Vi cùng hồ thiên Utada đã, đối với Khương Lạc Thần khuôn mặt đẹp, mặc dù hắn cảm thấy kinh diễm, nhưng không có biểu hiện tại trên mặt.
+
+----- đoạn 33 -----
+CŨ
+“Thật xin lỗi, ta không có muốn giúp!”
+
+MỚI
+“Thật xin lỗi, ta không muốn giúp!”
+
+
+===== Chương 2111: Chương 2111: tin tức (1 chỗ) =====
+
+----- đoạn 19 -----
+CŨ
+Sẽ không phải là Lăng Tuyết hoặc là Tiểu Vân! Lăng Thiên trong lòng bỗng nhiên có một loại cảm giác cấp bách, nếu như có thể mà nói, hắn tính toán liền trực tiếp tiến về Dược Vương Sơn, đi tới Man Hoang giới không đến bao lâu, nhìn hắn không đến được thiếu hạ giới nô lệ sinh hoạt đều qua đến không phải rất tốt, vạn nhất Lăng Tuyết hoặc Tiểu Vân xảy ra chuyện, hắn hối hận cũng không kịp.
+
+MỚI
+Sẽ không phải là Lăng Tuyết hoặc là Tiểu Vân! Lăng Thiên trong lòng bỗng nhiên có một loại cảm giác cấp bách, nếu như có thể mà nói, hắn tính toán liền trực tiếp tiến về Dược Vương Sơn, đi tới Man Hoang giới không đến bao lâu, hắn nhìn thấy không ít hạ giới nô lệ sinh hoạt đều qua đến không phải rất tốt, vạn nhất Lăng Tuyết hoặc Tiểu Vân xảy ra chuyện, hắn hối hận cũng không kịp.
+
+
+===== Chương 2112: Chương 2112: Luyện Đan Sư nô lệ (1 chỗ) =====
+
+----- đoạn 27 -----
+CŨ
+Khi mọi người nhìn thấy Khương Lạc Thần thời điểm, đối với hoang sầm tự mình ra tiếp đãi sẽ không ngoài ý muốn, dù sao Khương Lạc Thần tu vi không coi là nhiều kém, trông lại thích nhìn, càng là Khương tộc đại tiểu thư.
+
+MỚI
+Khi mọi người nhìn thấy Khương Lạc Thần thời điểm, đối với hoang sầm tự mình ra tiếp đãi liền không ngoài ý muốn đã, dù sao Khương Lạc Thần tu vi không coi là nhiều kém, trông lại thích nhìn, càng là Khương tộc đại tiểu thư.
+
+
+===== Chương 2117: Chương 2117: thánh trì (2 chỗ) =====
+
+----- đoạn 4 -----
+CŨ
+Bất quá Khương tộc tài nguyên đều nghiêng ở trên người nàng, đợi một thời gian thì, nàng muốn trở thành Bạch kim cấp đỉnh phong, cũng chính là nhập thánh cảnh đỉnh phong cũng không khó, nhưng là muốn tiến hơn một bước lời nói, sẽ không quá khả năng.
+
+MỚI
+Bất quá Khương tộc tài nguyên đều nghiêng ở trên người nàng, đợi một thời gian thì, nàng muốn trở thành Bạch kim cấp đỉnh phong, cũng chính là nhập thánh cảnh đỉnh phong cũng không khó, nhưng là muốn tiến hơn một bước lời nói, liền không quá có thể.
+
+----- đoạn 32 -----
+CŨ
+“Thiếu gia, chú ý hình tượng!” Bên cạnh lão giả thấp giọng nói, nhìn hắn đến thiếu gia nhà mình trò hề, mặt đều có chút đỏ lên.
+
+MỚI
+“Thiếu gia, chú ý hình tượng!” Bên cạnh lão giả thấp giọng nói, hắn nhìn thấy thiếu gia nhà mình trò hề, mặt đều có chút đỏ lên.
+
+
+===== Chương 2126: Chương 2126: biểu diễn cá nhân (1 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+“Chưa từng đánh lại thế nào biết ta không có đủ thấy thế nào, chẳng lẽ ngươi không biết trên con đường tu luyện muốn khiêm tốn sao?” Tay của Lăng Thiên bên trên cầm kiếm rỉ, toàn bộ không gian trong nháy mắt bên trong tràn đầy Kiếm Ý, theo Lăng Thiên trên kiếm đạo càng chạy càng sâu, hắn lĩnh ngộ Kiếm Ý cũng càng ngày càng mạnh.
+
+MỚI
+“Chưa từng đánh lại thế nào biết ta không đáng chú ý, chẳng lẽ ngươi không biết trên con đường tu luyện muốn khiêm tốn sao?” Tay của Lăng Thiên bên trên cầm kiếm rỉ, toàn bộ không gian trong nháy mắt bên trong tràn đầy Kiếm Ý, theo Lăng Thiên trên kiếm đạo càng chạy càng sâu, hắn lĩnh ngộ Kiếm Ý cũng càng ngày càng mạnh.
+
+
+===== Chương 2137: Chương 2137: tiểu Phượng Hoàng (1 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+Nếu như là Thần Tổ tại Lăng Thiên trước mặt, cho ra vô cùng điều kiện phong phú, Lăng Thiên cũng không khả năng đồng ý, làm thần giới thứ nhất Thần Tôn, trong lòng có của hắn thuộc về mình ngạo khí, một cái Man Hoang giới vương liền muốn thu hắn làm thủ hạ, không khỏi quá xem thường hắn đã.
+
+MỚI
+Nếu như là Thần Tổ tại Lăng Thiên trước mặt, cho ra vô cùng điều kiện phong phú, Lăng Thiên cũng không khả năng đồng ý, làm thần giới đệ nhất Thần Tôn, trong lòng có của hắn thuộc về mình ngạo khí, một cái Man Hoang giới vương liền muốn thu hắn làm thủ hạ, không khỏi quá xem thường hắn đã.
+
+
+===== Chương 2140: Chương 2140: tạm thời rời đi (1 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+“Vậy được rồi, tại ta không có ở thời gian bên trong, ngươi muốn chiếu cố thật tốt mình.”
+
+MỚI
+“Vậy được rồi, tại ta không có ở đây thời gian bên trong, ngươi muốn chiếu cố thật tốt mình.”
+
+
+===== Chương 2143: Chương 2143: hai cái không khó vấn đề (3 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Yêu Tộc còn không có một cái đúng nghĩa Trận Pháp đại sư, loại này Trận Pháp đại sư là chỉ có thể bố trí xuất thần tôn đỉnh phong cấp bậc đại trận, cho dù là gạo màu cùng khuê hồ mấy người thiên tư đều rất không sai, Lăng Thiên cũng chỉ là cảm thấy bọn hắn có rất bàn nhỏ suất trở thành Trận Pháp đại sư mà thôi.
+
+MỚI
+Yêu Tộc còn không có một cái đúng nghĩa Trận Pháp đại sư, loại này Trận Pháp đại sư là chỉ có thể bố trí ra Thần Tôn đỉnh phong cấp bậc đại trận, cho dù là gạo màu cùng khuê hồ mấy người thiên tư đều rất không sai, Lăng Thiên cũng chỉ là cảm thấy bọn hắn có rất bàn nhỏ suất trở thành Trận Pháp đại sư mà thôi.
+
+----- đoạn 30 -----
+CŨ
+Lăng Thiên cho ra hai cái phương pháp, một bước này đối với trận pháp sư mà nói là cánh cửa, nếu như không bước qua được, mãi mãi cũng không có khả năng bố trí xuất thần tôn cấp khác đại trận, về phần hắn vẫn là Thần Tôn thời điểm, liền đã lĩnh hội thế nào đem thiên địa quy tắc vận dụng ở trên trận pháp, cho nên hắn trùng tu về sau vẫn có thể bố trí xuất thần tôn cấp đại trận.
+
+MỚI
+Lăng Thiên cho ra hai cái phương pháp, một bước này đối với trận pháp sư mà nói là cánh cửa, nếu như không bước qua được, mãi mãi cũng không có khả năng bố trí ra Thần Tôn cấp bậc đại trận, về phần hắn vẫn là Thần Tôn thời điểm, liền đã lĩnh hội thế nào đem thiên địa quy tắc vận dụng ở trên trận pháp, cho nên hắn trùng tu về sau vẫn có thể bố trí ra Thần Tôn cấp đại trận.
+
+----- đoạn 31 -----
+CŨ
+“A, vậy ta tiếp tục thử có thể hay không bố trí xuất thần tôn cấp khác đại trận.” Gạo màu trong mắt nhiều một chút thần thái, tự hồ chỉ có trận pháp mới có thể càng thêm hấp dẫn lực chú ý của nàng.
+
+MỚI
+“A, vậy ta tiếp tục thử có thể hay không bố trí ra Thần Tôn cấp bậc đại trận.” Gạo màu trong mắt nhiều một chút thần thái, tự hồ chỉ có trận pháp mới có thể càng thêm hấp dẫn lực chú ý của nàng.
+
+
+===== Chương 2144: Chương 2144: lần nữa tiến vào Man Hoang giới (1 chỗ) =====
+
+----- đoạn 22 -----
+CŨ
+“Nhanh nhất cũng phải hơn nửa năm, mà lại ta cuối cùng cảm giác Man Hoang giới có chút kỳ quái, cho nên ta không có vẻn vẹn muốn tại Man Hoang giới cứu người, còn muốn tra một chút Man Hoang giới đến cùng ẩn chứa như thế nào bí mật.”
+
+MỚI
+“Nhanh nhất cũng phải hơn nửa năm, mà lại ta cuối cùng cảm giác Man Hoang giới có chút kỳ quái, cho nên ta không chỉ muốn tại Man Hoang giới cứu người, còn muốn tra một chút Man Hoang giới đến cùng ẩn chứa như thế nào bí mật.”
+
+
+===== Chương 2148: Chương 2148: bí mật kinh thiên (2 chỗ) =====
+
+----- đoạn 31 -----
+CŨ
+Dư gia bộ lạc người đứng tại trên bình đài, trên tay cầm lấy một cái hộp ngọc tinh xảo, nhìn hắn đến người xung quanh chật ních lúc, mới đánh tính bắt đầu đem đỉnh cấp linh dược cầm ra đấu giá.
+
+MỚI
+Dư gia bộ lạc người đứng tại trên bình đài, trên tay cầm lấy một cái hộp ngọc tinh xảo, hắn nhìn thấy người xung quanh chật ních lúc, mới đánh tính bắt đầu đem đỉnh cấp linh dược cầm ra đấu giá.
+
+----- đoạn 38 -----
+CŨ
+“Hóa ra là Phượng Thường tiểu thư, vậy ta sẽ không cãi.”
+
+MỚI
+“Hóa ra là Phượng Thường tiểu thư, vậy ta liền không tranh giành nữa.”
+
+
+===== Chương 2150: Chương 2150: không tính nô lệ (2 chỗ) =====
+
+----- đoạn 4 -----
+CŨ
+Sắp tiến vào tháp cao thời điểm, Lăng Thiên thuận tiện nhìn bên ngoài tháp cao trận pháp, hắn ở đây trong lòng nói rằng:“Tháp cao cấm chế cũng không bình thường, nếu là đổi lại bình thường trận pháp sư, nói không chừng tiến vào tháp cao tựu ra đừng tới.”
+
+MỚI
+Sắp tiến vào tháp cao thời điểm, Lăng Thiên thuận tiện nhìn bên ngoài tháp cao trận pháp, hắn ở đây trong lòng nói rằng:“Tháp cao cấm chế đều không tầm thường, nếu là đổi lại bình thường trận pháp sư, nói không chừng tiến vào tháp cao tựu ra đừng tới.”
+
+----- đoạn 25 -----
+CŨ
+“Thời gian ba cái hô hấp đã đến, xem ra lựa chọn của ngươi phải đi chết, vậy ta liền thành toàn ngươi đi.” Lăng Thiên xuất hiện lần nữa tại Phượng Vương lâm vào trong ảo cảnh, nhìn hắn đến Phượng Vương do dự sắc mặt, thế là tiến một bước bức bách.
+
+MỚI
+“Thời gian ba cái hô hấp đã đến, xem ra lựa chọn của ngươi phải đi chết, vậy ta liền thành toàn ngươi đi.” Lăng Thiên xuất hiện lần nữa tại Phượng Vương lâm vào trong ảo cảnh, hắn nhìn thấy Phượng Vương do dự sắc mặt, thế là tiến một bước bức bách.
+
+
+===== Chương 2158: Chương 2158: vì cái gì động thủ với ta (1 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+Lại tới đây, Lăng Thiên biến cẩn thận, dù sao bị thủ vệ phát hiện ra thì, có thể nói thất bại trong gang tấc, muốn lại đến khu đông tìm kiếm Tô Tiêu Vân sẽ không quá khả năng.
+
+MỚI
+Lại tới đây, Lăng Thiên biến cẩn thận, dù sao bị thủ vệ phát hiện ra thì, có thể nói thất bại trong gang tấc, muốn lại đến khu đông tìm kiếm Tô Tiêu Vân liền không quá có thể.
+
+
+===== Chương 2159: Chương 2159: hồn tơ nhện (2 chỗ) =====
+
+----- đoạn 28 -----
+CŨ
+“Cũng dám trộm hôn ta, không được, ta không có tham ăn cái này thua thiệt, ngươi cũng phải cho ta hôn một chút!”
+
+MỚI
+“Cũng dám trộm hôn ta, không được, ta không thể ăn cái này thua thiệt, ngươi cũng phải cho ta hôn một chút!”
+
+----- đoạn 31 -----
+CŨ
+Lặng lẽ độn trở lại vương đô, Lăng Thiên mang lên tiểu Phượng Hoàng cùng Lôi Linh, thuận tiện cùng Hùng đại huynh đệ lên tiếng chào hỏi, liền đi về phía nam châu chạy trở về, hắn muốn dẫn mấy người trở về đến thần giới, sau đó lại quay lại tìm tỉnh lại mực sư phương pháp.
+
+MỚI
+Lặng lẽ độn trở lại vương đô, Lăng Thiên mang lên tiểu Phượng Hoàng cùng Lôi Linh, thuận tiện cùng Hùng đại huynh đệ lên tiếng chào hỏi, liền hướng Nam Châu chạy trở về, hắn muốn dẫn mấy người trở về đến thần giới, sau đó lại quay lại tìm tỉnh lại mực sư phương pháp.
+
+
+===== Chương 2188: Chương 2188: không muốn tiếp nhận (1 chỗ) =====
+
+----- đoạn 34 -----
+CŨ
+“Bởi vì ta muốn mau hơn đột phá đến Thần Tổ, đã quên nói cho ngươi biết, ta trước kia là thần giới thứ nhất Thần Tôn Lăng Thiên, hiện tại chỉ bất quá tại trùng tu mà thôi.”
+
+MỚI
+“Bởi vì ta muốn mau hơn đột phá đến Thần Tổ, đã quên nói cho ngươi biết, ta trước kia là thần giới đệ nhất Thần Tôn Lăng Thiên, hiện tại chỉ bất quá tại trùng tu mà thôi.”
+
+
+===== Chương 2189: Chương 2189: giải thoát (2 chỗ) =====
+
+----- đoạn 2 -----
+CŨ
+Xinh đẹp thiếu phụ rất rõ ràng mạnh nhất Thần Tôn đại biểu cho cái gì, nàng trầm mặc không nói hồi lâu, mới lên tiếng:“Hóa ra là thần giới thứ nhất Thần Tôn, trách không được ngươi xem không lên Dao Hoa Tông truyền thừa.”
+
+MỚI
+Xinh đẹp thiếu phụ rất rõ ràng mạnh nhất Thần Tôn đại biểu cho cái gì, nàng trầm mặc không nói hồi lâu, mới lên tiếng:“Hóa ra là thần giới đệ nhất Thần Tôn, trách không được ngươi xem không lên Dao Hoa Tông truyền thừa.”
+
+----- đoạn 18 -----
+CŨ
+Cứu một mạng người hơn xây bảy tầng tháp, Lăng Thiên cũng không phải nói tự có nhiều thiện lương, tâm tưởng của hắn nói mình là thần giới thứ nhất Thần Tôn, cho dù nhiễm phải Dao Hoa Tông nhân quả, đột phá đến Thần Tổ lại có khó khăn gì?
+
+MỚI
+Cứu một mạng người hơn xây bảy tầng tháp, Lăng Thiên cũng không phải nói tự có nhiều thiện lương, tâm tưởng của hắn nói mình là thần giới đệ nhất Thần Tôn, cho dù nhiễm phải Dao Hoa Tông nhân quả, đột phá đến Thần Tổ lại có khó khăn gì?
+
+
+===== Chương 2199: Chương 2199: cạm bẫy (3 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+“Thật là đáng sợ, xem ra sau này không thể đi gây Khương tộc, mà lại Khương tộc có được lời nói của Lăng Thiên, chỉ cần Lăng Thiên tại Man Hoang giới một ngày, xếp hạng thi đấu người thứ một không phải có được thuộc về Nam Châu sao?”
+
+MỚI
+“Thật là đáng sợ, xem ra sau này không thể đi gây Khương tộc, mà lại Khương tộc có được Lăng Thiên thì, chỉ cần Lăng Thiên tại Man Hoang giới một ngày, xếp hạng thi đấu người thứ một không phải có được thuộc về Nam Châu sao?”
+
+----- đoạn 16 -----
+CŨ
+Trong sân giao đấu rất là kịch liệt, Lăng Thiên nhìn thấy bọn họ chiến đấu đều là quyền quyền đến thịt, các loại huyết nhục bắn tung toé, thường thường một cái không dừng được dừng tay, chính là một cái mạng.
+
+MỚI
+Trong sân giao đấu rất là kịch liệt, Lăng Thiên nhìn thấy bọn họ chiến đấu đều là quyền quyền đến thịt, các loại huyết nhục bắn tung toé, thường thường một cái ngừng không dừng tay, chính là một cái mạng.
+
+----- đoạn 28 -----
+CŨ
+“Chờ một chút, ta có thể không thể chờ đến những người khác tới, lại đi tu luyện thánh địa?” Lăng Thiên tâm sinh cảnh giác nói, nhìn hắn đến Man Châu vương cười trên mặt, thế nào đều cảm thấy có chút kỳ quái.
+
+MỚI
+“Chờ một chút, ta có thể không thể chờ đến những người khác tới, lại đi tu luyện thánh địa?” Lăng Thiên tâm sinh cảnh giác nói, hắn nhìn thấy Man Châu vương cười trên mặt, thế nào đều cảm thấy có chút kỳ quái.
+
+
+===== Chương 2244: Chương 2244: Trảm Ma Thần Tổ (2 chỗ) =====
+
+----- đoạn 9 -----
+CŨ
+“Vì cái gì ngươi không thần phục ta, ta biết ngươi rất muốn khôi phục thực lực, nếu như thần phục lời nói, ta có thể giúp ngươi lần nữa trở thành thần giới thứ nhất Thần Tôn!” Thần dực nữ thần âm thanh vang lên, thế nhưng là liên động dao tâm thần của Lăng Thiên cũng không thể.
+
+MỚI
+“Vì cái gì ngươi không thần phục ta, ta biết ngươi rất muốn khôi phục thực lực, nếu như thần phục lời nói, ta có thể giúp ngươi lần nữa trở thành thần giới đệ nhất Thần Tôn!” Thần dực nữ thần âm thanh vang lên, thế nhưng là liên động dao tâm thần của Lăng Thiên cũng không thể.
+
+----- đoạn 15 -----
+CŨ
+Tại Lăng Thiên sắp phục diệt dực nhân nhất tộc thời điểm, Tiêu Diêu Thần tổ ngăn trở hắn, đồng thời nói với hắn lên Trảm Ma Thần Tổ cố sự, để hắn không nên đối với dực nhân nhất tộc đuổi tận giết tuyệt, mà chém Ma Thần tổ chính là dực nhân nhất tộc lão tổ.
+
+MỚI
+Tại Lăng Thiên sắp phục diệt dực nhân nhất tộc thời điểm, Tiêu Diêu Thần tổ ngăn trở hắn, đồng thời nói với hắn lên Trảm Ma Thần Tổ cố sự, để hắn không nên đối với dực nhân nhất tộc đuổi tận giết tuyệt, mà chém ma Thần Tổ chính là dực nhân nhất tộc lão tổ.
+
+
+===== Chương 2361: Chương 2361: hỗn độn Nhân Vương Thể (1 chỗ) =====
+
+----- đoạn 33 -----
+CŨ
+Cửa thứ mười là quy tắc rất đơn giản, đi ra mảnh này nóng bỏng đại địa, mà lại ở đây không cho phép sử dụng độn pháp, cũng không chuẩn phi hành, hết thảy đều chỉ có thể là dùng hành tẩu.
+
+MỚI
+Cửa thứ mười là quy tắc rất đơn giản, đi ra mảnh này nóng bỏng đại địa, mà lại ở đây không cho phép sử dụng độn pháp, cũng không được phép phi hành, hết thảy đều chỉ có thể là dùng hành tẩu.
+
+
+===== Chương 2426: Chương 2426: Kiếm Các cơ duyên (2 chỗ) =====
+
+----- đoạn 13 -----
+CŨ
+Tại Kiếm Các phía trên, một đóa không có người chú ý trên mây, tổ tháp tiểu đồng nhìn xem Lăng Thiên đang lật xem sách, trong lòng rất không là tư vị.
+
+MỚI
+Tại Kiếm Các phía trên, một đóa không có người chú ý trên mây, tổ tháp tiểu đồng nhìn xem Lăng Thiên đang lật xem sách, trong lòng rất cảm giác khó chịu.
+
+----- đoạn 21 -----
+CŨ
+Trong bóng tối khải Phúc trưởng lão đều đã chấn kinh đến không biết vì sao, nhìn hắn đến Lăng Thiên thân thể bên cạnh có một từng sợi Kiếm Khí vờn quanh, một cổ cường đại Kiếm Ý để hắn đều cảm giác được đáng sợ.
+
+MỚI
+Trong bóng tối khải Phúc trưởng lão đều đã chấn kinh đến không biết vì sao, hắn nhìn thấy Lăng Thiên thân thể bên cạnh có một từng sợi Kiếm Khí vờn quanh, một cổ cường đại Kiếm Ý để hắn đều cảm giác được đáng sợ.
+
+
+===== Chương 2530: Chương 2530: pháo đài băng cuộc chiến (1 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+“Làm sao có thể! Vì cái gì ta không có thấy rõ công kích của ngươi!” Trắng nhược mộng sắc mặt hoảng sợ, nàng ngay cả Lăng Thiên thế nào công kích cũng không rõ ràng, mình đã bị đánh trúng đã?
+
+MỚI
+“Làm sao có thể! Vì cái gì ta không có thấy rõ công kích của ngươi!” Trắng nhược mộng sắc mặt hoảng sợ, nàng ngay cả Lăng Thiên thế nào công kích đều không rõ ràng, mình đã bị đánh trúng đã?
+
+
+===== Chương 2565: Chương 2565: bước thứ một thu phục (5 chỗ) =====
+
+----- đoạn 7 -----
+CŨ
+Thần hồn tiến của Lăng Thiên vào đến ngô tử hân thức hải, nhìn hắn đến một cái màu sắc sặc sỡ thức hải, trước kia hắn ở đây thần giới thời điểm, gặp qua người khác thức hải đều là rất bình thường phổ thông, trong thức hải thứ gì đều không có.
+
+MỚI
+Thần hồn tiến của Lăng Thiên vào đến ngô tử hân thức hải, hắn nhìn thấy một cái màu sắc sặc sỡ thức hải, trước kia hắn ở đây thần giới thời điểm, gặp qua người khác thức hải đều là rất bình thường phổ thông, trong thức hải thứ gì đều không có.
+
+----- đoạn 8 -----
+CŨ
+Thế nhưng là ngô tử hân thức hải cũng không một dạng, từng cái sắc thái sặc sỡ bọt biển tại bên trong thức hải bay múa, những này bọt biển trên có rất nhiều hình ảnh, những hình ảnh này ghi chép ngô tử hân một đời.
+
+MỚI
+Thế nhưng là ngô tử hân thức hải lại không giống, từng cái sắc thái sặc sỡ bọt biển tại bên trong thức hải bay múa, những này bọt biển trên có rất nhiều hình ảnh, những hình ảnh này ghi chép ngô tử hân một đời.
+
+----- đoạn 18 -----
+CŨ
+“Hô ~ ngươi đã nhìn qua trí nhớ của ta đã?” Ngô tử hân tỉnh lại, nàng hít thở sâu một hơi, không dùng được tự nhiên ngữ khí hỏi.
+
+MỚI
+“Hô ~ ngươi đã nhìn qua trí nhớ của ta đã?” Ngô tử hân tỉnh lại, nàng hít thở sâu một hơi, dùng mất tự nhiên ngữ khí hỏi.
+
+----- đoạn 20 -----
+CŨ
+“Không cần ta đáng thương, ta không có cần đáng thương.”
+
+MỚI
+“Không cần ta đáng thương, ta không cần đáng thương.”
+
+----- đoạn 36 -----
+CŨ
+Về phần Mê Huyễn Thú là Mê Huyễn nhất tộc thiên kiêu, hắn am hiểu huyễn cảnh, đồng thời nắm giữ được lấy hư hóa thực ảo cảnh một chút da lông, bố trí ra huyễn cảnh có thể dễ dàng giết tử thần tôn cảnh sơ kỳ tu giả, thế nhưng là trong cơ thể hắn Yêu Đan nhưng không có bao lớn biến hóa.
+
+MỚI
+Về phần Mê Huyễn Thú là Mê Huyễn nhất tộc thiên kiêu, hắn am hiểu huyễn cảnh, đồng thời nắm giữ được lấy hư hóa thực ảo cảnh một chút da lông, bố trí ra huyễn cảnh có thể dễ dàng giết chết Thần Tôn Cảnh sơ kỳ tu giả, thế nhưng là trong cơ thể hắn Yêu Đan nhưng không có bao lớn biến hóa.
+
+
+===== Chương 2613: Chương 2613: lấy hồn là hỏa (1 chỗ) =====
+
+----- đoạn 22 -----
+CŨ
+Khi Lăng Thiên cả người đâm vào cự đỉnh phần đáy thời điểm, nhìn hắn đến từng đoàn từng đoàn sắc thái khác nhau hồn phách đang nhào tới, những hồn phách này một mạch tràn vào thức hải của hắn.
+
+MỚI
+Khi Lăng Thiên cả người đâm vào cự đỉnh phần đáy thời điểm, hắn nhìn thấy từng đoàn từng đoàn sắc thái khác nhau hồn phách đang nhào tới, những hồn phách này một mạch tràn vào thức hải của hắn.
+
+
+===== Chương 2707: Chương 2707: thời không vòng xoáy (2 chỗ) =====
+
+----- đoạn 27 -----
+CŨ
+Phương viên là hiếm có nữ thần tôn, làm một nữ nhân muốn trở thành Thần Tôn là phi thường khó khăn, đặc biệt là nàng không có bất kỳ cái gì bối cảnh, từ phàm nhân đi đến hôm nay, nàng trải qua vô số gặp trắc trở.
+
+MỚI
+Phương viên là hiếm có nữ Thần Tôn, làm một nữ nhân muốn trở thành Thần Tôn là phi thường khó khăn, đặc biệt là nàng không có bất kỳ cái gì bối cảnh, từ phàm nhân đi đến hôm nay, nàng trải qua vô số gặp trắc trở.
+
+----- đoạn 34 -----
+CŨ
+Nếu như đi theo bên người của Lăng Thiên, gặp phải cơ may lớn gì thì, Đường Phong cùng phương viên hiển nhiên muốn nuốt một mình phải không quá có thể, cho nên Đường Phong muốn có được cơ duyên tốt, tiến vào Bắc Cương Thành chỉ có thể là hành động một mình.
+
+MỚI
+Nếu như đi theo bên người của Lăng Thiên, gặp phải cơ may lớn gì thì, Đường Phong cùng phương viên hiển nhiên muốn nuốt một mình là rất không có khả năng, cho nên Đường Phong muốn có được cơ duyên tốt, tiến vào Bắc Cương Thành chỉ có thể là hành động một mình.
+
+
+===== Chương 2708: Chương 2708: từng đã là thời không (1 chỗ) =====
+
+----- đoạn 17 -----
+CŨ
+Đã đi chưa bao lâu, Lăng Thiên nhìn thấy bắc tổ Kazuichi quần thần đế, thì vẫn thế, cho dù là bắc tổ cũng không thể phát hiện hắn tồn tại, hiện tại hắn như là tồn tại ở hư vô ở giữa.
+
+MỚI
+Đã đi chưa bao lâu, Lăng Thiên nhìn thấy bắc tổ Kazuichi bầy Thần Đế, thì vẫn thế, cho dù là bắc tổ cũng không thể phát hiện hắn tồn tại, hiện tại hắn như là tồn tại ở hư vô ở giữa.
+
+
+===== Chương 2709: Chương 2709: nhận thức (1 chỗ) =====
+
+----- đoạn 3 -----
+CŨ
+Giữa trời du thành chủ giải được một ít chuyện của Lăng Thiên, hắn cũng bắt đầu trầm mặc, hiện tại Lăng Thiên có được Thời Không chi Tâm, càng là nắm giữ một tia Thời Không Đại Đạo lực lượng, theo lý thuyết có tư cách tiến về thời không Đế Quân đã từng bế quan động thiên phúc địa.
+
+MỚI
+Khi Không Du Thành chủ giải được một ít chuyện của Lăng Thiên, hắn cũng bắt đầu trầm mặc, hiện tại Lăng Thiên có được Thời Không chi Tâm, càng là nắm giữ một tia Thời Không Đại Đạo lực lượng, theo lý thuyết có tư cách tiến về thời không Đế Quân đã từng bế quan động thiên phúc địa.
+
+
+===== Chương 2711: Chương 2711: chỗ sơ suất (1 chỗ) =====
+
+----- đoạn 3 -----
+CŨ
+“Bắc tổ tính tình vẫn là rất bạo tạc, đã ngươi muốn bế quan, chúng ta đương nhiên sẽ không quấy rầy.” Một cái Thần Tổ ở chân trời truyền âm nói, mặc dù hắn nói không sẽ quấy rầy, thế nhưng là âm thầm vẫn như cũ có thần niệm dò xét qua đến.
+
+MỚI
+“Bắc tổ tính tình vẫn là rất bạo tạc, đã ngươi muốn bế quan, chúng ta đương nhiên sẽ không quấy rầy.” Một cái Thần Tổ ở chân trời truyền âm nói, mặc dù hắn nói sẽ không quấy rầy, thế nhưng là âm thầm vẫn như cũ có thần niệm dò xét qua đến.
+
+
+===== Chương 2712: Chương 2712: cái gì gọi là vận khí (1 chỗ) =====
+
+----- đoạn 39 -----
+CŨ
+“Tự sáng tạo pháp thuật không gian cùng công pháp? Ngươi là đang đùa ta! Nếu để cho ta sáng tạo ra pháp thuật thời gian còn có thể, không gian cũng đừng nghĩ.” Cho dù Lăng Thiên lại thế nào thiên tài, muốn tự sáng tạo pháp thuật không gian cùng công pháp cũng không quá có thể.
+
+MỚI
+“Tự sáng tạo pháp thuật không gian cùng công pháp? Ngươi là đang đùa ta! Nếu để cho ta sáng tạo ra pháp thuật thời gian còn có thể, không gian cũng đừng nghĩ.” Cho dù Lăng Thiên lại thế nào thiên tài, muốn tự sáng tạo pháp thuật không gian cùng công pháp cũng rất không có khả năng.
+
+
+===== Chương 2713: Chương 2713: chân chính không gian (1 chỗ) =====
+
+----- đoạn 6 -----
+CŨ
+Cũng may thần hồn đầy đủ của Lăng Thiên cường đại, ngạnh sinh sinh kháng trụ xung kích, nhìn hắn đến trang thứ một trên viết rậm rạp chằng chịt văn tự, mỗi một chữ đều gánh chịu lấy không gian đại đạo.
+
+MỚI
+Cũng may thần hồn đầy đủ của Lăng Thiên cường đại, ngạnh sinh sinh kháng trụ xung kích, hắn nhìn thấy trang thứ một trên viết rậm rạp chằng chịt văn tự, mỗi một chữ đều gánh chịu lấy không gian đại đạo.
+
+
+===== Chương 2714: Chương 2714: Bắc Cương Thành thay đổi (2 chỗ) =====
+
+----- đoạn 5 -----
+CŨ
+“Ai, tầng thứ bảy không gian đã xem không quá đã hiểu.” Không gian công pháp tầng thứ bảy đã dính đến hoàn chỉnh không gian đại đạo, Lăng Thiên thở dài một hơi, hắn bây giờ không có biện pháp xem hiểu.
+
+MỚI
+“Ai, tầng thứ bảy không gian đã nhìn không hiểu nhiều đã.” Không gian công pháp tầng thứ bảy đã dính đến hoàn chỉnh không gian đại đạo, Lăng Thiên thở dài một hơi, hắn bây giờ không có biện pháp xem hiểu.
+
+----- đoạn 31 -----
+CŨ
+Kịch liệt không gian ba động khiến mọi người cảm giác rất không dễ chịu, vẫn chưa tới mười hơi thời gian bên trong, cả tòa Bắc Cương Thành hóa thành phế tích, quang mang mãnh liệt phía bắc cương thành làm trung tâm thả ra.
+
+MỚI
+Kịch liệt không gian ba động khiến mọi người cảm giác rất không thoải mái, vẫn chưa tới mười hơi thời gian bên trong, cả tòa Bắc Cương Thành hóa thành phế tích, quang mang mãnh liệt lấy Bắc Cương Thành làm trung tâm thả ra.
+
+
+===== Chương 2716: Chương 2716: tế tự ngày (2 chỗ) =====
+
+----- đoạn 31 -----
+CŨ
+“Đây là lực lượng gì!” Lăng Thiên trừng to mắt, nhìn hắn không đến được nhưng tư nghị một màn!
+
+MỚI
+“Đây là lực lượng gì!” Lăng Thiên trừng to mắt, hắn nhìn thấy cảnh tượng khó tin!
+
+----- đoạn 43 -----
+CŨ
+“Khụ khụ, đợi thêm một trăm năm.” Ở cửa thôn tử vong Thần Tổ lắc đầu, nếu như hắn ngay từ đầu liền có thể trợ giúp lời nói của Lăng Thiên, Lăng Thiên liền có thể tại linh châu xuất hiện thời điểm liền bay lên không trung.
+
+MỚI
+“Khụ khụ, đợi thêm một trăm năm.” Ở cửa thôn tử vong Thần Tổ lắc đầu, nếu như hắn ngay từ đầu liền có thể trợ giúp Lăng Thiên thì, Lăng Thiên liền có thể tại linh châu xuất hiện thời điểm liền bay lên không trung.
+
+
+===== Chương 2717: Chương 2717: ăn hàng dẫn dắt (1 chỗ) =====
+
+----- đoạn 27 -----
+CŨ
+Khẳng định có cái gì không đúng chỗ! Tâm của Lăng Thiên bên trong cảm giác rất không dễ chịu, tại một đêm bên trên, hắn vụng trộm chạy đến cửa thôn, tìm tới tử vong Thần Tổ.
+
+MỚI
+Khẳng định có cái gì không đúng chỗ! Tâm của Lăng Thiên bên trong cảm giác rất không thoải mái, tại một đêm bên trên, hắn vụng trộm chạy đến cửa thôn, tìm tới tử vong Thần Tổ.
+
+
+===== Chương 2719: Chương 2719: vận dụng một chút thủ đoạn nhỏ (2 chỗ) =====
+
+----- đoạn 19 -----
+CŨ
+Liên tục nói chuyện bị đánh tính xong mấy lần, Lăng Thiên dứt khoát cũng sẽ không giải thích, dù sao hắn cũng sẽ không đối với mấy cái này thôn dân làm cái gì, khiến cái này thôn dân tại tiểu thế giới hảo hảo ở lại là được.
+
+MỚI
+Liên tục nói chuyện bị đánh tính xong mấy lần, Lăng Thiên dứt khoát cũng liền không giải thích, dù sao hắn cũng sẽ không đối với mấy cái này thôn dân làm cái gì, khiến cái này thôn dân tại tiểu thế giới hảo hảo ở lại là được.
+
+----- đoạn 24 -----
+CŨ
+Lăng Thiên nhíu mày, hồi đáp:“Ngươi nói có đạo lý, thế nhưng là vạn nhất không phải thật lời nói làm sao bây giờ, ta không có tin tưởng lạm sát kẻ vô tội.”
+
+MỚI
+Lăng Thiên nhíu mày, hồi đáp:“Ngươi nói có đạo lý, thế nhưng là vạn nhất không phải thật lời nói làm sao bây giờ, ta không tin lạm sát kẻ vô tội.”
+
+
+===== Chương 2720: Chương 2720: cấm đoạn không gian (2 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+“Ngươi quá coi thường ta.” Lăng Thiên lắc đầu, trở thành một khắc linh châu nô lệ? Đây là không có thể chuyện!
+
+MỚI
+“Ngươi quá coi thường ta.” Lăng Thiên lắc đầu, trở thành một khắc linh châu nô lệ? Đây là chuyện không thể nào!
+
+----- đoạn 25 -----
+CŨ
+Thời gian một tháng đi qua, Lăng Thiên tỉnh lại, nhìn hắn đến tay rốt cuộc lại xuất hiện một viên linh châu, chỉ bất quá lần này linh châu là lực lượng phóng xuất ra, cũng không phải là ghim hắn, mà là tràn vào trong cơ thể của hắn, để hắn không gian công pháp tiến thêm một bước.
+
+MỚI
+Thời gian một tháng đi qua, Lăng Thiên tỉnh lại, hắn nhìn thấy trên tay rốt cuộc lại xuất hiện một viên linh châu, chỉ bất quá lần này linh châu là lực lượng phóng xuất ra, cũng không phải là ghim hắn, mà là tràn vào trong cơ thể của hắn, để hắn không gian công pháp tiến thêm một bước.
+
+
+===== Chương 2721: Chương 2721: cái thứ ba khảo nghiệm (1 chỗ) =====
+
+----- đoạn 24 -----
+CŨ
+“Tử vong Thần Tổ chắc có lẽ không ra tay giúp đỡ, dù sao hắn biết rõ ra tay giúp lời nói của Lăng Thiên, Lăng Thiên nhất định sẽ bị chúng ta trực tiếp ném ra.”
+
+MỚI
+“Tử vong Thần Tổ chắc có lẽ không ra tay giúp đỡ, dù sao hắn biết rõ ra tay giúp Lăng Thiên thì, Lăng Thiên nhất định sẽ bị chúng ta trực tiếp ném ra.”
+
+
+===== Chương 2725: Chương 2725: Yêu điểu (1 chỗ) =====
+
+----- đoạn 36 -----
+CŨ
+“Oa, nơi này lại có chín khỏa Yêu điểu trứng!” Mê Huyễn Thú ghé vào bả vai của Lăng Thiên bên trên, nhìn hắn đến phía dưới Khô Thảo chồng lên mặt đặt vào chín khỏa Yêu điểu trứng, lập tức trở nên có chút hưng phấn lên.
+
+MỚI
+“Oa, nơi này lại có chín khỏa Yêu điểu trứng!” Mê Huyễn Thú ghé vào bả vai của Lăng Thiên bên trên, hắn nhìn thấy phía dưới Khô Thảo chồng lên mặt đặt vào chín khỏa Yêu điểu trứng, lập tức trở nên có chút hưng phấn lên.
+
+
+===== Chương 2728: Chương 2728: nơi trút giận (2 chỗ) =====
+
+----- đoạn 22 -----
+CŨ
+“Còn nửa tháng? Ẩn chi sâm khổng lồ như vậy lời nói, đến cùng tồn tại bao nhiêu yêu thú!” Lăng Thiên hoảng sợ nói, chẳng lẽ Ẩn chi sâm có hơn vạn Thần Đế yêu thú? Mười vạn lấy thượng thần tôn yêu thú?
+
+MỚI
+“Còn nửa tháng? Ẩn chi sâm khổng lồ như vậy lời nói, đến cùng tồn tại bao nhiêu yêu thú!” Lăng Thiên hoảng sợ nói, chẳng lẽ Ẩn chi sâm có hơn vạn Thần Đế yêu thú? Mười vạn trở lên Thần Tôn yêu thú?
+
+----- đoạn 27 -----
+CŨ
+Khi Lăng Thiên lần nữa xuyên qua một đạo ‘Màng nước’, bỗng nhiên nhìn hắn đi ra bên ngoài không gian có tử vong Thần Tổ thân ảnh, tử vong Thần Tổ đang tiến hành một trận đại chiến!
+
+MỚI
+Khi Lăng Thiên lần nữa xuyên qua một đạo ‘Màng nước’, bỗng nhiên hắn nhìn thấy phía ngoài không gian có tử vong Thần Tổ thân ảnh, tử vong Thần Tổ đang tiến hành một trận đại chiến!
+
+
+===== Chương 2729: Chương 2729: Thổ hành yêu thú (1 chỗ) =====
+
+----- đoạn 28 -----
+CŨ
+Thần Đế thực lực Thổ hành yêu thú cũng không một dạng, lực lượng của nó hoàn toàn có thể sử dụng, từng cái thổ linh khí ngưng tụ thổ khoan từ trên mặt đất bắn ra, đối mười cái tu giả không tạo được tiểu nhân tổn thương.
+
+MỚI
+Thần Đế thực lực Thổ hành yêu thú lại không giống, lực lượng của nó hoàn toàn có thể sử dụng, từng cái thổ linh khí ngưng tụ thổ khoan từ trên mặt đất bắn ra, đối mười cái tu giả tạo thành thương tổn không nhỏ.
+
+
+===== Chương 2731: Chương 2731: đỏ đế (2 chỗ) =====
+
+----- đoạn 11 -----
+CŨ
+Đối mặt đỏ đế nhiệt tình, Lăng Thiên không phản bác được, tử vong Thần Tổ hẳn không ở bên người, thế nhưng là hắn làm sao có thể đem loại chuyện này nói cho đỏ đế.
+
+MỚI
+Đối mặt đỏ đế nhiệt tình, Lăng Thiên không phản bác được, tử vong Thần Tổ hẳn là không ở bên người, thế nhưng là hắn làm sao có thể đem loại chuyện này nói cho đỏ đế.
+
+----- đoạn 32 -----
+CŨ
+“Thật sự là muốn chết! Ta không có đều muốn giết ngươi, ngươi cũng không cần lãng phí thời gian của ta!” Lăng Thiên nhíu mày, trực tiếp vung ra từng đạo Không Gian Trảm, toàn bộ không gian phảng phất đều bị mở ra.
+
+MỚI
+“Thật sự là muốn chết! Ta không muốn giết ngươi, ngươi cũng không cần lãng phí thời gian của ta!” Lăng Thiên nhíu mày, trực tiếp vung ra từng đạo Không Gian Trảm, toàn bộ không gian phảng phất đều bị mở ra.
+
+
+===== Chương 2732: Chương 2732: tức giận Lăng Thiên (3 chỗ) =====
+
+----- đoạn 4 -----
+CŨ
+Về phần Thổ hành chi tâm trực tiếp bị hắc bào người canh giữ ném ra, rơi vào mặt của Lăng Thiên trước.
+
+MỚI
+Về phần Thổ hành chi tâm trực tiếp bị Hắc Bào Trấn thủ giả ném ra, rơi vào mặt của Lăng Thiên trước.
+
+----- đoạn 11 -----
+CŨ
+“Chớ suy nghĩ quá nhiều, tranh thủ thời gian mang ta tới hố sâu, kỳ thật ta không có đề nghị các ngươi đi vào hố sâu thông hướng chỗ, bởi vì cơ duyên sẽ có, nhưng là có lẽ các ngươi ngay cả cơ duyên đều không thể được đến, liền sẽ ngay cả mạng đều vứt bỏ.” Nhớ tới người canh giữ nói qua địa quật chiến trường là một rất dễ dàng mất đi tính mạng chỗ, Lăng Thiên xem như hảo tâm nhắc nhở một câu.
+
+MỚI
+“Chớ suy nghĩ quá nhiều, tranh thủ thời gian mang ta tới hố sâu, kỳ thật ta không đề nghị các ngươi đi vào hố sâu thông hướng chỗ, bởi vì cơ duyên sẽ có, nhưng là có lẽ các ngươi ngay cả cơ duyên đều không thể được đến, liền sẽ ngay cả mạng đều vứt bỏ.” Nhớ tới người canh giữ nói qua địa quật chiến trường là một rất dễ dàng mất đi tính mạng chỗ, Lăng Thiên xem như hảo tâm nhắc nhở một câu.
+
+----- đoạn 26 -----
+CŨ
+Nếu như Lăng Thiên là một tu giả bình thường, hoặc là hắn sẽ còn sợ hãi trở lại chín khư tinh đụng phải trả thù, nhưng hắn là thần giới thứ nhất Thần Tôn, đã từng ngay cả Ngụy Thần tổ cũng dám giết chết ngoan nhân!
+
+MỚI
+Nếu như Lăng Thiên là một tu giả bình thường, hoặc là hắn sẽ còn sợ hãi trở lại chín khư tinh đụng phải trả thù, nhưng hắn là thần giới đệ nhất Thần Tôn, đã từng ngay cả Ngụy Thần tổ cũng dám giết chết ngoan nhân!
+
+
+===== Chương 2733: Chương 2733: dẫn người xung kích (1 chỗ) =====
+
+----- đoạn 38 -----
+CŨ
+Hai cái người canh giữ triệt để bối rối, bọn hắn nhìn xem từng đầu Thổ hành yêu thú đi vào không gian tường kép, nếu như Lăng Thiên sẽ giải quyết những này không gian tường kép cũng may một chút, mấu chốt Lăng Thiên đem Thổ hành yêu thú quăng ra đi vào sẽ không không quản chú ý.
+
+MỚI
+Hai cái người canh giữ triệt để bối rối, bọn hắn nhìn xem từng đầu Thổ hành yêu thú đi vào không gian tường kép, nếu như Lăng Thiên sẽ giải quyết những này không gian tường kép cũng may một chút, mấu chốt Lăng Thiên đem Thổ hành yêu thú quăng ra đi vào liền không quan tâm.
+
+
+===== Chương 2734: Chương 2734: đồ sát! (2 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+“Emmm, nhanh như vậy khiến cho ta đình chỉ sao?” Lăng Thiên thở dài một hơi, Hắc Bào Trấn thủ giả đều đã nói như vậy, nếu là hắn thật sự không dừng tay lời nói, thật sự biết bị hắc bào người canh giữ ném ra cái không gian này.
+
+MỚI
+“Emmm, nhanh như vậy khiến cho ta đình chỉ sao?” Lăng Thiên thở dài một hơi, Hắc Bào Trấn thủ giả đều đã nói như vậy, nếu là hắn thật sự không dừng tay lời nói, thật sự biết bị Hắc Bào Trấn thủ giả ném ra cái không gian này.
+
+----- đoạn 20 -----
+CŨ
+“Còn chưa đủ, điểm này năng lượng còn chưa đủ chèo chống ta tòng thần tôn cảnh hậu kỳ đột phá đến Thần Tôn Cảnh đỉnh phong.” Lăng Thiên đáng tiếc nói rằng, hắn cho là mình lại hấp thu càng nhiều Thổ hành chi tâm, cũng có thể dành dụm đến đầy đủ năng lượng.
+
+MỚI
+“Còn chưa đủ, điểm này năng lượng còn chưa đủ chèo chống ta từ Thần Tôn Cảnh hậu kỳ đột phá đến Thần Tôn Cảnh đỉnh phong.” Lăng Thiên đáng tiếc nói rằng, hắn cho là mình lại hấp thu càng nhiều Thổ hành chi tâm, cũng có thể dành dụm đến đầy đủ năng lượng.
+
+
+===== Chương 2866: Chương 2866: máu tanh chiến đấu (3 chỗ) =====
+
+----- đoạn 10 -----
+CŨ
+“Ngươi chẳng lẽ không biết ta đã từng ngay cả Thần Tổ đều có thể giết chết, cho nên ta không có có thể nhận thua, ngươi muốn thắng ta? Đợi kiếp sau!” Bất bại Thần Đế hồ cẩn cũng không phải cạn đèn dầu, ở phía sau hắn xuất hiện máu me đầy đầu Khí Ngưng tụ mà thành mãnh thú, mãnh thú hướng Dongen hung hăng đánh tới.
+
+MỚI
+“Ngươi chẳng lẽ không biết ta đã từng ngay cả Thần Tổ đều có thể giết chết, cho nên ta không có khả năng nhận thua, ngươi muốn thắng ta? Đợi kiếp sau!” Bất bại Thần Đế hồ cẩn cũng không phải cạn đèn dầu, ở phía sau hắn xuất hiện máu me đầy đầu Khí Ngưng tụ mà thành mãnh thú, mãnh thú hướng Dongen hung hăng đánh tới.
+
+----- đoạn 14 -----
+CŨ
+Loại này Thần Đế cường giả có thể nhẹ nhõm giết chết Ngụy Thần tổ, đối mặt Thần Tổ đều có sức đánh một trận, đương nhiên bọn hắn muốn đánh thắng Thần Tổ hẳn là còn không quá có thể.
+
+MỚI
+Loại này Thần Đế cường giả có thể nhẹ nhõm giết chết Ngụy Thần tổ, đối mặt Thần Tổ đều có sức đánh một trận, đương nhiên bọn hắn muốn đánh thắng Thần Tổ hẳn là còn rất không có khả năng.
+
+----- đoạn 28 -----
+CŨ
+Lăng Thiên im lặng không nói, ở trên thương Tiên Giới cũng có thiện ác chi phân, thậm chí so với vạn giới muốn càng rồi, tại vạn giới nếu như là hai cái Thần Đế cường giả đi giết hại vô tội tu giả, có lẽ cũng sẽ không có thần tổ xuất thủ.
+
+MỚI
+Lăng Thiên im lặng không nói, ở trên thương Tiên Giới cũng có thiện ác chi phân, thậm chí so với vạn giới muốn càng rồi, tại vạn giới nếu như là hai cái Thần Đế cường giả đi giết hại vô tội tu giả, có lẽ cũng sẽ không có Thần Tổ xuất thủ.
+
+
+===== Chương 2870: Chương 2870: nửa cây tục mệnh thần dược (2 chỗ) =====
+
+----- đoạn 8 -----
+CŨ
+Những này Thần Tổ căn bản không quan tâm cái khác Cự Nhân tu giả tính mạng, bọn hắn hoàn toàn là thả đánh, tại Thần Tổ uy lực pháp thuật hạ, làm sao có thể có thần tôn Cự Nhân trở xuống tu giả có thể ngăn cản.
+
+MỚI
+Những này Thần Tổ căn bản không quan tâm cái khác Cự Nhân tu giả tính mạng, bọn hắn hoàn toàn là thả đánh, tại Thần Tổ uy lực pháp thuật hạ, làm sao có thể có Thần Tôn Cự Nhân trở xuống tu giả có thể ngăn cản.
+
+----- đoạn 22 -----
+CŨ
+“Lăng Thiên, thần này tổ có chút lợi hại, có muốn ta giúp ngươi một tay hay không.” Mê Huyễn Thú cau mày, dò hỏi.
+
+MỚI
+“Lăng Thiên, cái này Thần Tổ có chút lợi hại, có muốn ta giúp ngươi một tay hay không.” Mê Huyễn Thú cau mày, dò hỏi.
+
+
+===== Chương 3010: chương 3,010: tưởng niệm chi tình (1 chỗ) =====
+
+----- đoạn 15 -----
+CŨ
+“Không! Ta không có muốn đi đến trong chiến trường!” Ngao khóc không ra nước mắt, hắn là chân chính đưa tại tay của Lăng Thiên trong.
+
+MỚI
+“Không! Ta không muốn đi đến trong chiến trường!” Ngao khóc không ra nước mắt, hắn là chân chính đưa tại tay của Lăng Thiên trong.
+
+
+===== Chương 3015: Chương 3015: ba cái thủy tổ (4 chỗ) =====
+
+----- đoạn 10 -----
+CŨ
+Xâm lấn gia viên địch nhân, giết mấy trăm lần cũng không quá đáng.
+
+MỚI
+Xâm lấn gia viên địch nhân, giết mấy trăm lần đều không quá đáng.
+
+----- đoạn 29 -----
+CŨ
+“Bẩm báo thứ nhất thủy tổ, hắn là Thần Đế tu vi, thế nhưng là trên thực lực có thể vượt trên ta gấp mấy lần, ta hoàn toàn đánh không lại hắn.” Không xấu hổ nói rằng, hắn đã là thôn linh nhất tộc cường đại nhất nửa bước Đế Quân, tùy thời đều có thể bước vào Đế Quân cảnh giới, lại ngay cả một cái Thần Đế đều đánh không lại, nói ra thực sự làm cho người ta chế nhạo.
+
+MỚI
+“Bẩm báo đệ nhất thủy tổ, hắn là Thần Đế tu vi, thế nhưng là trên thực lực có thể vượt trên ta gấp mấy lần, ta hoàn toàn đánh không lại hắn.” Không xấu hổ nói rằng, hắn đã là thôn linh nhất tộc cường đại nhất nửa bước Đế Quân, tùy thời đều có thể bước vào Đế Quân cảnh giới, lại ngay cả một cái Thần Đế đều đánh không lại, nói ra thực sự làm cho người ta chế nhạo.
+
+----- đoạn 30 -----
+CŨ
+“Vẻn vẹn Thần Đế tu vi? Lại có thể tại Thần Đế cảnh giới liền nắm giữ hoàn chỉnh ngàn vạn đại đạo, rất có thể hắn căn bản cũng không cần tiến vào Thần Tổ, bước kế tiếp liền có thể bước vào Đế Quân cảnh giới. Đã vạn giới xuất hiện bực thiên tài này, chúng ta lẽ ra hi sinh một chút thời gian, trợ giúp tộc nhân diệt đi vạn giới thiên tài.” Ở bên cạnh một khối bia đá đồng dạng lay động, đây là thôn linh nhất tộc thứ hai thủy tổ.
+
+MỚI
+“Vẻn vẹn Thần Đế tu vi? Lại có thể tại Thần Đế cảnh giới liền nắm giữ hoàn chỉnh ngàn vạn đại đạo, rất có thể hắn căn bản cũng không cần tiến vào Thần Tổ, bước kế tiếp liền có thể bước vào Đế Quân cảnh giới. Đã vạn giới xuất hiện bực thiên tài này, chúng ta lẽ ra hi sinh một chút thời gian, trợ giúp tộc nhân diệt đi vạn giới thiên tài.” Ở bên cạnh một khối bia đá đồng dạng lay động, đây là thôn linh nhất tộc đệ nhị thủy tổ.
+
+----- đoạn 31 -----
+CŨ
+Hiện nay thôn linh nhất tộc có ba cái thủy tổ đang ngủ say, bọn hắn chính là thôn linh nhất tộc cường đại nhất ba cái thủy tổ, theo thứ tự là thứ nhất thủy tổ, thứ hai thủy tổ cùng thứ ba thủy tổ.
+
+MỚI
+Hiện nay thôn linh nhất tộc có ba cái thủy tổ đang ngủ say, bọn hắn chính là thôn linh nhất tộc cường đại nhất ba cái thủy tổ, theo thứ tự là đệ nhất thủy tổ, đệ nhị thủy tổ cùng đệ tam thủy tổ.
+

@@ -40,6 +40,20 @@ def test_clean_text_untouched():
     assert spans == []
 
 
+def test_html_ad_mojibake_dropped():
+    text = "銆愭帹鑽愪笅锛屽挭鍜槄璇昏拷涔︾湡鐨勫ソ鐢紝杩欓噷涓嬭浇澶у鍘诲揩鍙互璇曡瘯鍚с傘?/"
+    out, spans = sanitize_source(text)
+    assert out == ""
+    assert [s.reason for s in spans] == ["HTML_AD"]
+
+
+def test_html_p_tag_dropped():
+    text = "銆愭帹鑽愪笅锛屽挭鍜/p>"
+    out, spans = sanitize_source(text)
+    assert out == ""
+    assert spans[0].reason == "HTML_AD"
+
+
 def test_circled_digits_not_stripped():
     """So tron ①② co the xuat hien trong heading that -> KHONG bi rule watermark ban."""
     text = "第①章 開始"
