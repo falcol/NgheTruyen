@@ -3,7 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from zhvi.vietphrase.lattice import greedy_path
+from zhvi.config import Config
+from zhvi.pipeline import resolve_global_glossary
+from zhvi.vietphrase.lattice import greedy_path, vp_plan
 from zhvi.vietphrase.loader import load_dictionary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -71,3 +73,60 @@ def test_missing_global_file_is_noop(tmp_path):
     a = greedy_path(dic_none, "小胖")[0].target
     b = greedy_path(dic_missing, "小胖")[0].target
     assert a == b
+
+
+def test_default_global_glossary_resolves_in_repo():
+    """Default zhvi/glossary.manual.tsv + glossary.d/hoang-co.tsv nam trong repo."""
+    cfg = Config()
+    resolved = resolve_global_glossary(cfg)
+    assert resolved is not None
+    assert resolved.name == "glossary.manual.tsv"
+    assert resolved.is_file()
+    assert (resolved.parent / "glossary.d" / "hoang-co.tsv").is_file()
+    dic = load_dictionary(DICT_DIR, global_glossary=resolved)
+    assert greedy_path(dic, "小胖")[0].target == "Tiểu Bàn"
+    assert greedy_path(dic, "君逍遥")[0].target == "Quân Tiêu Dao"
+
+
+def test_resolve_global_glossary_dropin_without_main_file(tmp_path):
+    """Main glossary.manual.tsv thieu van nap glossary.d (SERIES)."""
+    g = tmp_path / "glossary.manual.tsv"
+    d = tmp_path / "glossary.d"
+    d.mkdir()
+    (d / "hoang-co.tsv").write_text("君逍遥=Quân Tiêu Dao\n", encoding="utf-8")
+    cfg = Config(global_glossary=str(g))
+    resolved = resolve_global_glossary(cfg)
+    assert resolved is not None
+    dic = load_dictionary(DICT_DIR, global_glossary=resolved)
+    assert greedy_path(dic, "君逍遥")[0].target == "Quân Tiêu Dao"
+
+
+def test_hoang_co_dropin_name_keys(tmp_path):
+    g = tmp_path / "glossary.manual.tsv"
+    g.write_text("小胖=Tiểu Bàn\n", encoding="utf-8")
+    d = tmp_path / "glossary.d"
+    d.mkdir()
+    src = REPO_ROOT / "zhvi" / "glossary.d" / "hoang-co.tsv"
+    (d / "hoang-co.tsv").write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    dic = load_dictionary(DICT_DIR, global_glossary=g)
+    assert greedy_path(dic, "药离")[0].target == "Dược Ly"
+    assert greedy_path(dic, "叫他逍遥")[0].target == "gọi hắn Tiêu Dao"
+    xiao = [e.target for e in greedy_path(dic, "日后逍遥一生") if "逍遥" in "日后逍遥一生"[e.start : e.end]]
+    assert xiao and xiao[0] == "tiêu dao"
+
+
+def test_series_junxiaoyao_capitalized_xiaoyao_stays_common(tmp_path):
+    """Drop-in glossary.d khoa 君逍遥; khong ep 逍遥 mu thanh ten."""
+    g = tmp_path / "glossary.manual.tsv"
+    g.write_text("小胖=Tiểu Bàn\n", encoding="utf-8")
+    d = tmp_path / "glossary.d"
+    d.mkdir()
+    (d / "hoang-co.tsv").write_text("君逍遥=Quân Tiêu Dao\n", encoding="utf-8")
+    dic = load_dictionary(DICT_DIR, global_glossary=g)
+    assert greedy_path(dic, "君逍遥")[0].target == "Quân Tiêu Dao"
+    assert "Quân Tiêu Dao" in vp_plan(dic, "君逍遥").text
+    for zh in ("成仙容易逍遥难", "日后逍遥一生"):
+        edges = greedy_path(dic, zh)
+        xiao = [e.target for e in edges if zh[e.start : e.end] == "逍遥"]
+        assert xiao, zh
+        assert xiao[0] == "tiêu dao", (zh, xiao)

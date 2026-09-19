@@ -6,7 +6,7 @@ output_policy = "strict-final"
 collapse_repetitions = true
 qa_strip_junk = true
 pattern_rules = true
-global_glossary = "~/.config/zhvi/glossary.manual.tsv"
+global_glossary = "zhvi/glossary.manual.tsv"
 
 [input]
 encoding = "utf-8"

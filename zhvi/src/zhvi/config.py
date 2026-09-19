@@ -10,16 +10,16 @@ from pathlib import Path
 
 PARSER_VERSION = "zhvi-parser-1"
 SEGMENTER_VERSION = "zhvi-segmenter-3"  # Custom name collision + ordinal title
-QA_VERSION = "zhvi-qa-1"
+QA_VERSION = "zhvi-qa-2"  # stutter skip interior Latin (Yamamoto)
 PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # Version cua logic nap tu dien / render target — tham gia canonical manifest
 # cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
-LOADER_VERSION = "zhvi-loader-6"  # {p} P_STOP + 上里后 (Adj+N neo)
-RENDERER_VERSION = "zhvi-renderer-8"  # sense lattice/commit 79ccba80
+LOADER_VERSION = "zhvi-loader-7"  # first-meaning cut at earliest / or |
+RENDERER_VERSION = "zhvi-renderer-9"  # locative 了 drop after 在/于
 # Version cua preprocessing view (junk strip + repetition collapse rules,
 # AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
 # collapse phai bump nay (run/cache cu tu invalid).
-PREPROCESS_VERSION = "zhvi-preprocess-2"
+PREPROCESS_VERSION = "zhvi-preprocess-3"  # strip bqkan8 /span
 # Route duy nhat cua duong dich VP-only (SPEC CAP-9: run moi chi ghi route nay).
 ROUTE_VIETPHRASE = "VIETPHRASE"
 
@@ -41,9 +41,8 @@ TRAD_SIMP_FILE = "trad-simp.txt"
 CUSTOM_FILE = "Custom.txt"
 
 DEFAULT_DICT_DIR = "crawler/vietphrase/dicts"
-# Glossary chuan toan cuc (moi truyen dung chung): ~/.config/zhvi/glossary.manual.tsv
-# Drop-in them: ~/.config/zhvi/glossary.d/*.tsv (SERIES_MANUAL, de sua tung file).
-DEFAULT_GLOBAL_GLOSSARY = "~/.config/zhvi/glossary.manual.tsv"
+# Glossary toan cuc trong repo. Drop-in: zhvi/glossary.d/*.tsv (SERIES_MANUAL).
+DEFAULT_GLOBAL_GLOSSARY = "zhvi/glossary.manual.tsv"
 
 
 @dataclass(frozen=True)
@@ -167,7 +166,7 @@ output_policy = "strict-final"
 collapse_repetitions = true  # loai lap artifact ('có chút có chút') giua 2 span khac nhau; giu reduplication goc (慢慢→chậm chậm)
 qa_strip_junk = true  # strip rac truyen web (watermark ⓣⓣⓚ, bookmark, anti-leech) tren source truoc khi dich
 pattern_rules = true  # luat nhan {s}/{n} (so/danh tu) trong LuatNhan.txt duoc match regex + dien capture
-global_glossary = "~/.config/zhvi/glossary.manual.tsv"  # term chuan moi truyen (Tieu Ban...); book manual van override duoc
+global_glossary = "zhvi/glossary.manual.tsv"  # repo: term chung + glossary.d/*.tsv; book manual van override
 
 [input]
 encoding = "utf-8"

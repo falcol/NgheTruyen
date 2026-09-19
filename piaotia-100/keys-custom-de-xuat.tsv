@@ -1,0 +1,52 @@
+# Key de xuat cap nhat vao Custom.txt (format: zh=vi) hoac logic code.
+# Nguon: duyet tay 246 cap ch001-ch100 (HAN doi chieu).
+# TRANG THAI: CHO DUYET - chua ghi vao dict. Chi them sau khi ban duyet.
+# Cot: zh | vi | loai | bang_chung | ghi_chu
+# Loai: FIX = engine dang sai, can sua | ON-DINH = engine dung roi, khoa chong regression | LOGIC = sua code, khong phai dict key
+暗暗松了一口气	âm thầm thở phào nhẹ nhõm	FIX	#60 #212	Cu "long tho ra", moi "tho dai" - ca hai sai. Ho 松口气.
+微松了一口气	hơi thở phào nhẹ nhõm một hơi	FIX	#55	Ho 松口气.
+微微松了一口气	hơi hơi thở phào nhẹ nhõm một hơi	FIX	#160	Ho 松口气.
+微微的松了一口气	hơi hơi thở phào nhẹ nhõm một hơi	FIX	(dict)	Ho 松口气 (chua gap trong 100 chuong nhung cung loi).
+大松了一口气	thở phào một hơi	FIX	(dict)	Ho 松口气 (chua gap trong 100 chuong nhung cung loi).
+微徼松了一口气	nhẹ nhàng thở phào nhẹ nhõm một hơi	FIX	(dict)	Ho 松口气 (chua gap trong 100 chuong nhung cung loi).
+重松了一口气=?	CAN-DUYET	(dict)	"nang ne tho dai" dang ngo - can nguoi duyet truoc khi them.
+# 2026-09-19: bo sung tu fix 13 chuong QA-fail (da verify explain + QA pass tren project work).
+会会吧	gặp mặt	FIX	full ch1070	Base co 会会吧=se se a (dai hon) nuot key ngan - bai hoc AD-9.
+太阳神山本身	Thái Dương Thần Sơn bản thân	FIX	full ch1345	Base match 山本=Yamamoto (sai).
+药灵山本身	Dược Linh Sơn bản thân	FIX	full ch1363	idem.
+七方山本身	Thất Phương Sơn bản thân	FIX	full ch2178	idem.
+药离	Dược Ly	FIX	full ch3504 ch3655 (54 chuong co 药离)	Ten rieng quan trong, cu/moi deu sai "thuoc".
+道道长虹	từng đạo cầu vồng	FIX	full ch3973	Base co 道道长=dao dao truong (dai hon) nuot key ngan.
+道道	từng đạo	FIX	(du phong)	Kem voi key dai ben tren.
+咻咻	vút vút (co space)	FIX	full ch4265	Base 咻咻=huu...huu... bi QA chan (lap lien nhau).
+松了一口气	thở phào một hơi	FIX	#10 #55 #95 #102 #110 #120 #149 #160 #212 #219 #235 #164	Nghiem trong nhat: engine moi ra "tho dai" (lech nghia), cu ra "long tho ra" (guong). 12 lan.
+血肉模糊	máu thịt be bét	FIX	#87	Moi dich chu "huyet nhuc mo ho" (sai ngu canh thit nat).
+起名字	đặt tên	FIX	#142	Moi ra "noi len mot cai ten" (sai).
+迸发	bùng phát	FIX	#100	Moi ra "toe ra" (la).
+探出	thò ra	FIX	#204	Moi ra "lo ra" (lech); cu "nho ra" dung.
+融入	dung nhập	FIX	#136	Moi ra "sap nhap vao" (lech).
+蒙上=bịt kín (DA CO trong Custom.txt)	CAN-KIEM-TRA	#165	Key da ton tai nhung engine moi van ra "mong thuong" - can dieu tra precedence/format.
+深吸了一口气	hít sâu một hơi	ON-DINH	#28 #45 #83 #127 #143 #148 #155 #222 #229	Engine moi dung toan bo, khoa lai.
+深深吸了一口气	hít một hơi thật sâu	ON-DINH	#70 #72	Engine moi dung, khoa lai.
+咽了一口唾沫	nuốt nước miếng một cái	ON-DINH	#8 #73 #104 #121 #135 #218	Engine moi dung, khoa lai.
+行了一礼	thi lễ một cái	ON-DINH	#14 #46 #51 #192	Cu sai "di mot le", moi dung.
+打破	phá vỡ	ON-DINH	#35 #36 #66 #67 #68	Cu "danh vo", moi dung.
+觉醒	thức tỉnh	ON-DINH	#16 #17 #20 #21 #57 #77 #106 #198	Moi dung khi co 了 nhung sai o 未觉醒 (#16 "giac tinh") - key khoa nghia goc.
+一枚龙元	một viên Long Nguyên	ON-DINH	#64 #84 #97 #114	Key hep, an toan hon 一枚 chung.
+一枚古符	một viên cổ phù	ON-DINH	#169	Key hep.
+白了一眼	liếc một cái	ON-DINH	#82	Cu sai "trang mot mat".
+一把古琴	một cây cổ cầm	ON-DINH	#244	Moi dung o #244 nhung sai "thanh" o #213 - key khoa nhat quan.
+一角未来	một góc tương lai	ON-DINH	#200	Key hep (khong tong quat 一角).
+扫了一眼	nhìn lướt qua	ON-DINH	#115 #118 #225 #231 #246	Cu rac "quet mot mat / mot duoi mat".
+看了一眼	liếc mắt nhìn	ON-DINH	#193 #230 #239	Cu "nhin mot mat".
+瞪了一眼	trừng mắt một cái	ON-DINH	#237	Cu "trung mot mat".
+吐出了一口鲜血	phun ra một ngụm máu tươi	ON-DINH	#58 #150 #175	Key hep theo cum mau.
+一头真龙	một con Chân Long	ON-DINH	#181	Cu "mot dau".
+一头神象	một con Thần Tượng	ON-DINH	#78	Cu "mot dau".
+一头青龙	một con Thanh Long	ON-DINH	#177	Cu "mot dau".
+一头朱雀	một con Chu Tước	ON-DINH	#210	Cu "mot dau".
+席卷	càn quét	TUY-CHON	#180	Cu hay hon moi ("vet sach"); muc do nhe.
+LOGIC: 了 render "đã" bua bai	LOGIC	#76 #123 #134 #153 #166 #232	"ap che o da", "dap o da", "quan quanh o da", "bien mat o da nguyen dia" - can rule: khong chen "da" sau gioi tu.
+LOGIC: 逍遥 ten rieng vs nghia thuong	LOGIC	#4 #7	TUYET DOI khong ep 逍遥=Tiêu Dao mu quang ("tieu dao ca doi" la nghia thuong). Can phan biet ngu canh.
+LOGIC: viet hoa danh tu rieng	LOGIC	#6 #116	"chan long/Chân Long", "hac vu/Hắc Vụ" chua nhat quan - can quy uoc + check.
+LOGIC: 一下 -> "mot chut"	LOGIC	#13 #22 #47 #81 #113 #131	"V roi mot lan" guong; da co rule merge, de xuat dua vao code.

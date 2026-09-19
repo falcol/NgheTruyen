@@ -25,10 +25,18 @@ REPEATED_RE = re.compile(r"(\S{2,})\1")
 
 def _is_letter_stutter(text: str) -> bool:
     # >=2 chu cai: bat "ababab"; bo "..T..T" / "=====".
-    return any(
-        sum(1 for ch in m.group(1) if ch.isalpha()) >= 2
-        for m in REPEATED_RE.finditer(text)
-    )
+    # Bo lap nam trong 1 tu Latin (Yamamoto "amam") — khong phai artifact.
+    for m in REPEATED_RE.finditer(text):
+        unit = m.group(1)
+        if sum(1 for ch in unit if ch.isalpha()) < 2:
+            continue
+        start, end = m.span()
+        left = text[start - 1] if start else ""
+        right = text[end] if end < len(text) else ""
+        if left.isalpha() and right.isalpha() and left.isascii() and right.isascii():
+            continue
+        return True
+    return False
 
 
 class QaFailure(RuntimeError):

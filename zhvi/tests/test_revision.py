@@ -214,7 +214,7 @@ def test_duplicate_auto_entries_deduped(tmp_path):
 
 
 def test_manual_global_glossary_layer(tmp_path):
-    """Global glossary (~/.config/zhvi/glossary.manual.tsv) la layer manual:global."""
+    """Global glossary (zhvi/glossary.manual.tsv) la layer manual:global."""
     dict_dir = _mini_dict_dir(tmp_path)
     project = create_project(tmp_path / "proj")
     global_gloss = tmp_path / "glossary.global.tsv"

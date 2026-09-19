@@ -139,16 +139,18 @@ def _span_is_protected(dic: Dictionary, text: str, start: int, end: int) -> bool
     )
 
 
-def _inner_name(dic: Dictionary, text: str, pos: int) -> tuple[int, bool] | None:
-    """Ten dai >= 2 bat dau tai pos. Tra (end, is_manual_glossary).
+def _inner_name(dic: Dictionary, text: str, pos: int) -> tuple[int, int, str] | None:
+    """Ten dai >= 2 bat dau tai pos. Tra (end, layer, target) cua match
+    name-prec dai nhat (entry manh nhat trong node thang).
 
-    is_manual: SERIES/BOOK_MANUAL — user khai bao, tin hon Names.txt (nhieu
-    2-chu common word). Names.txt chi khi dai >= 3 va tran khoi phrase.
+    is_manual cu (SERIES/BOOK_MANUAL) duoc thay bang layer + target cu the
+    de caller phan biet ten that voi glue word viet thuong (了一=mot,
+    在了=o) — xem _swallows_name.
     """
     node = dic.root
     j = pos
     n = len(text)
-    last: tuple[int, bool] | None = None
+    last: tuple[int, int, str] | None = None
     while j < n:
         node = node.children.get(text[j])
         if node is None:
@@ -156,10 +158,11 @@ def _inner_name(dic: Dictionary, text: str, pos: int) -> tuple[int, bool] | None
         j += 1
         if j - pos < 2:
             continue
-        name_precs = [p for _t, p, _pol in node.entries if _is_name_prec(p)]
-        if not name_precs:
+        name_entries = [(t, p) for t, p, _pol in node.entries if _is_name_prec(p)]
+        if not name_entries:
             continue
-        last = (j, any(p[0] >= int(Layer.SERIES_MANUAL) for p in name_precs))
+        target, prec = max(name_entries, key=lambda te: te[1])
+        last = (j, prec[0], target)
     return last
 
 
@@ -293,9 +296,16 @@ def _swallows_name(dic: Dictionary, text: str, edge: Edge) -> bool:
         hit = _inner_name(dic, text, i)
         if hit is None:
             continue
-        name_end, is_manual = hit
-        if is_manual:
-            return True
+        name_end, layer, target = hit
+        if layer >= int(Layer.BOOK_MANUAL):
+            return True  # book/user lock: van bao ve ke ca khi nam gon
+        if layer >= int(Layer.SERIES_MANUAL):
+            # Gloss series/global: chi bao ve khi la ten that (viet hoa).
+            # Glue word viet thuong (了一=mot, 在了=o) nam gon trong cum
+            # dai hon khong duoc cat cum (VD 贴在了=dinh vao).
+            if target and target[0].isupper():
+                return True
+            continue
         # Names.txt: chi khi ten dai >= 3 VA tran khoi span. 2-chu (汉语, 天神)
         # overlapping 1 ky tu la common-word rac, khong phai ten that.
         if name_end > edge.end and name_end - i >= 3:

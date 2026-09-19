@@ -44,7 +44,7 @@ Happy path 1 lệnh: `zhvi translate FILE -o OUT` chạy `snapshot → discover 
 .venv/bin/pip install -e zhvi/
 ```
 
-Sau khi cài đặt, binary `zhvi` nằm trong `.venv/bin/`. Chạy từ **repo root** để đường dẫn mặc định `crawler/vietphrase/dicts` và `~/.config/zhvi/glossary.manual.tsv` resolve đúng.
+Sau khi cài đặt, binary `zhvi` nằm trong `.venv/bin/`. Chạy từ **repo root** để đường dẫn mặc định `crawler/vietphrase/dicts` và `zhvi/glossary.manual.tsv` resolve đúng.
 
 > **Cần từ điển?** `zhvi doctor` sẽ báo thiếu. Đường dẫn mặc định:
 > `crawler/vietphrase/dicts/` (đã có sẵn trong repo, không cần copy).
@@ -256,14 +256,14 @@ Custom.txt           # thư viện term chuẩn, dùng chung mọi truyện
 | Tầng | Đường dẫn | Phạm vi |
 |---|---|---|
 | Cơ sở dict | `crawler/vietphrase/dicts/*.txt` | Toàn hệ thống |
-| Global | `~/.config/zhvi/glossary.manual.tsv` | Mọi project trên máy |
+| Global | `zhvi/glossary.manual.tsv` + `zhvi/glossary.d/*.tsv` | Mọi truyện trong repo |
 | Book | `zhvi/workspace/glossary.manual.tsv` (hoặc `<project>/`) | Workspace dùng chung / project `-p` |
 
 Định dạng glossary: `zh=Từ gốc<TAB>vi=Từ dịch`, mỗi dòng một mục.
 
 - **Book manual** override **global**, global override **dict cơ sở**.
 - Term chuẩn xuyên truyện (vd `小胖 → Tiểu Bàn`) nên đưa vào `Custom.txt` hoặc
-  `~/.config/zhvi/glossary.manual.tsv`, tránh lặp lại trong từng book.
+  `zhvi/glossary.manual.tsv` / `zhvi/glossary.d/*.tsv`, tránh lặp lại trong từng book.
 - Đổi glossary / dict → fingerprint đổi → chỉ block liên quan được dịch lại.
 
 > Env bổ trợ: `ZHVI_DICT_DIR`, `ZHVI_GLOBAL_GLOSSARY`.

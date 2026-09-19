@@ -28,6 +28,8 @@ INLINE_JUNK_RES = (
     re.compile(r"百萬\\?小!說"),
     re.compile(r"百万\\?小说"),
     re.compile(r"[每天]天看(?:小說|小说)解(?:書|书)荒[，,、]?"),
+    re.compile(r"bqkan8", re.IGNORECASE),
+    re.compile(r"</?span\b[^>]*>|/span"),
 )
 # HTML leak / GBK-mojibake ads (piaotia: 銆愭帹鑽…/p> , PUA).
 HTML_AD_RE = re.compile(r"</?p\b|/p>|銆|[\ue000-\uf8ff]")

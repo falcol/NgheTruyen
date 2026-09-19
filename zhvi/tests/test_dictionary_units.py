@@ -43,6 +43,11 @@ def test_parse_dict_line_valid_and_skip_junk():
     assert parse_dict_line("  青龙 = Thanh Long  ") == ("青龙", "Thanh Long")
     assert parse_dict_line("a=b/c") == ("a", "b")
     assert parse_dict_line("a=b|c") == ("a", "b")
+    assert parse_dict_line("a=b|c/d") == ("a", "b")
+    assert parse_dict_line("矗立在=đứng sừng sững ở|đứng sững ở/đứng sửng ở") == (
+        "矗立在",
+        "đứng sừng sững ở",
+    )
     assert parse_dict_line("a=b*") == ("a", "b")
     assert parse_dict_line("a=b//ghi chu") == ("a", "b")
     assert parse_dict_line("a=b\t3") == ("a", "b")

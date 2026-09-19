@@ -48,11 +48,9 @@ def _first_meaning(raw: str) -> str:
     cut = raw.find("//")
     if cut != -1:
         raw = raw[:cut]
-    for sep in ("/", "|"):
-        i = raw.find(sep)
-        if i != -1:
-            raw = raw[:i]
-            break
+    cuts = [i for i in (raw.find("/"), raw.find("|")) if i != -1]
+    if cuts:
+        raw = raw[: min(cuts)]
     raw = raw.rstrip("*").strip()
     return raw
 

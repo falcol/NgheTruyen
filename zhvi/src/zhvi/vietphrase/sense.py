@@ -32,6 +32,8 @@ _ASPECT = {
     "过": "rồi",
     "過": "rồi",
 }
+# 了 sau gioi tu noi cho (在了/于了): particle, khong aspect "đã".
+_LOCATIVE_BEFORE_LE = frozenset("在于於")
 # Dong tu menh de (rong hon VERBS {v} nam/nem).
 _CLAUSE_VERBS = VERBS | frozenset(
     "来去到说問问听想用做打开吃坐站被让讓逼叫走看"
@@ -294,6 +296,8 @@ def _sense_target(
             ):
                 return "đệ " + sino
     if src in _ASPECT:
+        if src == "了" and left[-1:] in _LOCATIVE_BEFORE_LE:
+            return ""
         return _ASPECT[src]
     # 怎么会 / 怎么可能会: giu span AD-9, rhetorical lai (khong se).
     if "怎么" in src and "会" in src:

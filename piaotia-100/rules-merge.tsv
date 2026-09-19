@@ -1,0 +1,59 @@
+# Rule merge tu dong: chi ap dung cum cai thien da verify qua Han goc
+# (rut ra tu 154 dong APPLY khi duyet tay ch001-ch100).
+# Dinh dang: han_required<TAB>cum_cu<TAB>cum_moi
+# Dieu kien ap dung: cau HAN chua han_required VA dong cu chua cum_cu.
+# Thu tu uu tien: cum dai truoc (script sap xep theo do dai giam dan).
+吸	hít sâu thở ra một hơi	hít sâu một hơi
+吸	hút thở ra một hơi	hít một hơi
+唾	nuốt một cái nước bọt	nuốt nước miếng một cái
+礼	có chút đi một lễ	hơi thi lễ một cái
+礼	đi một lễ đạo	thi lễ một cái nói
+礼	đi một lễ	thi lễ một cái
+枚	một mai	một viên
+破	đánh vỡ	phá vỡ
+觉	Giác tỉnh	Thức tỉnh
+觉	giác tỉnh	thức tỉnh
+颗	khỏa	viên
+碰撞	va chạm ở cùng một chỗ	đụng vào nhau
+轰	oanh kích ở	đánh vào
+砸	nện ở	đập vào
+打	đánh ở	đánh vào
+扫	quét một dưới mắt	nhìn lướt qua
+扫	quét một mắt	nhìn lướt qua
+散架	sắp tan ra thành từng mảnh một bàn	sắp tan rã
+般	một bàn	bình thường
+啜	xuyết	nhấp
+端	đầu một chén	bưng một chén
+祭	tế ra	sử dụng
+吐	phun ra một cái	phun ra một ngụm
+抿	nhấp một cái	nhấp một miếng
+挡	cản ở	chắn
+带	mang lên một	mang theo một
+抓	bắt trong tay	nắm ở trong tay
+白	trắng một mắt	liếc một cái
+看	nhìn một mắt	liếc mắt nhìn
+瞪	trừng một mắt	trừng mắt một cái
+番	giải thích một phiên	giải thích một phen
+存在	tồn ở.	tồn tại.
+角	một sừng	một góc
+一切	một cắt	hết thảy
+架	một đỡ	một khung
+把	một đem	một cây
+经历	kinh lịch	trải qua
+说	nói rồi một lần	nói một lần
+一下	rồi một lần	một chút
+最	nhất tột cùng	tột cùng nhất
+鞠躬	cúc một cung nói	bái nói
+放	thả ở	đặt ở
+# 2026-09-19: bo sung tu fix 13 chuong QA-fail (da verify explain + QA pass).
+药离	thuốc	Dược Ly
+太阳神山本身	Thái Dương Thần Yamamoto người	Thái Dương Thần Sơn bản thân
+药灵山本身	linh dược Yamamoto thân	Dược Linh Sơn bản thân
+七方山本身	bảy phương Yamamoto thân	Thất Phương Sơn bản thân
+会	đi sẽsẽ	đi gặp mặt
+道道长虹	đạođạo trưởng cầu vồng	từng đạo cầu vồng
+咻	Hưu...Hưu	Vút vút
+離	rờirời	rời
+离	rờirời	rời
+	/span>	
+	/span	

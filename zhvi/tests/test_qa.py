@@ -54,6 +54,22 @@ def test_html_p_tag_dropped():
     assert spans[0].reason == "HTML_AD"
 
 
+def test_bqkan8_stripped_sentence_kept():
+    text = "修士bqkan8继续前行。"
+    out, spans = sanitize_source(text)
+    assert "bqkan8" not in out.lower()
+    assert "修士" in out and "继续前行" in out
+    assert any(s.reason == "INLINE_JUNK" for s in spans)
+
+
+def test_broken_span_tag_stripped_sentence_kept():
+    text = "剑光一闪/span，敌人倒下。"
+    out, spans = sanitize_source(text)
+    assert "/span" not in out
+    assert "剑光一闪" in out and "敌人倒下" in out
+    assert any(s.reason == "INLINE_JUNK" for s in spans)
+
+
 def test_circled_digits_not_stripped():
     """So tron ①② co the xuat hien trong heading that -> KHONG bi rule watermark ban."""
     text = "第①章 開始"

@@ -620,6 +620,31 @@ def test_le_inside_phrase_keeps_span():
     assert "đã" not in vp_plan(dic, "看了起来").text.lower()
 
 
+def test_le_after_locative_zai_dropped():
+    """了 sau 在 (gioi tu noi cho) khong chen 'đã'."""
+    dic = mini(
+        [
+            ("压制在", "áp chế ở", Layer.BASE_MULTI),
+            ("踏在", "đạp ở", Layer.BASE_MULTI),
+            ("消失在", "biến mất ở", Layer.BASE_MULTI),
+            ("缠绕在", "quấn quanh ở", Layer.BASE_MULTI),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+            ("神宫", "thần cung", Layer.BASE_MULTI),
+        ]
+    )
+    for zh in ("压制在了神宫", "踏在了", "消失在了", "缠绕在了"):
+        low = vp_plan(dic, zh).text.lower()
+        assert "đã" not in low, zh
+        assert "ở" in low, zh
+    lai = mini(
+        [
+            ("来", "tới", Layer.BASE_SINGLE),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+        ]
+    )
+    assert "đã" in vp_plan(lai, "来了").text.lower()
+
+
 def test_de_particle_still_dropped():
     dic = mini(
         [

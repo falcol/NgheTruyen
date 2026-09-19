@@ -1,0 +1,52 @@
+KET QUA DICH LAI 100 CHUONG DAU BANG ZHVI (ch001-ch100)
+Truyen: Bat dau bang danh dau hoang co thanh the (piaotia)
+Thoi diem: 2026-09-19
+
+1. CACH LAM
+- Nguon Han: crawler/data/piaotia/...-(china)/ (4748 chuong)
+- Ban Viet cu (engine truoc): crawler/data/piaotia/...-the/
+- Trich ch001-ch100 ra TXT, dich lai bang zhvi tren project rieng
+  (glossary sach, khong anh huong data repo).
+- So sanh tung dong ban cu vs ban moi.
+
+2. DINH LUONG
+- Tong so dong: 9538 (cu) / 9538 (moi) - cau truc giu nguyen.
+- 92/100 file co thay doi, 246 dong doi ~ 2,6%.
+- Dong chua pipe "|" giu nguyen 16/16 (engine moi van giu kieu A|B).
+- Learner khong promote entry nao (63 candidate bi reject, 20 cho) -
+  moi thay doi den tu engine zhvi 3.0 + dict hien tai.
+
+3. NHOM CAI THIEN RO (ban moi dung hon goc Han)
+- 吸 (hit vao): "that sau hut tho ra mot hoi" -> "hit mot hoi that sau" (7+ lan)
+- 咽唾沫: "nuot mot cai nuoc bot" -> "nuot nuoc mieng mot cai" (5 lan)
+- 行礼: "di mot le" (sai) -> "thi le mot cai" (4 lan)
+- 一枚龙元: "mot mai" -> "mot vien" (5 lan)
+- 打破: "danh vo" -> "pha vo" (5 lan)
+- 觉醒 + 了: "Giac tinh" -> "Da thuc tinh" (6 lan)
+- 碰撞在一起: "va cham o cung mot cho" -> "dung vao nhau" (3 lan)
+- 扫了一眼: "quet mot mat" -> "nhin luot qua" (3 lan)
+- 一般 sau tinh tu: "mot ban" (rac) -> "binh thuong" (6 lan)
+- 白了一眼: "trang mot mat" (sai) -> "liec mot cai" (ch031)
+- 端茶: "dau mot chen" (sai) -> "bung mot chen" (ch012)
+- 啜: "xuyet" (sai) -> "nhap" (ch009)
+- 一筹: "kem mot tru" (sai) -> "kem mot bac" (ch048)
+
+4. REGRESSION CAN LUU Y (ban moi te hon - se GIU BAN CU)
+- 松了一口气 (tho phao) -> "tho dai mot hoi" (lech nghia, 8 lan)
+- 叫他逍遥 -> "keu han tieu dao" (mat viet hoa ten rieng, ch002)
+- 拉下脸面 -> "keo xuong mat mui doi tieu dao" (mat viet hoa, ch002)
+- 足足 (tron ven) -> "uoc chung" (sai nghia, ch011)
+- 血肉模糊 (mau thit be bet) -> "huyet nhuc mo ho" (dich chu, ch034)
+- 灭杀 -> "tan sat" (lech nghia, ch050)
+- 起名字 (dat ten) -> "noi len mot cai ten" (sai, ch057)
+- 开出一条大道 -> "khai ra mot dai dao" (ch059, ban cu dung hon)
+
+5. FILE TRONG THU MUC NAY
+- review-246-cap.txt: toan bo 246 cap khac biet, moi cap co cau Han goc
+  (HAN), dong ban cu (CU), dong ban moi (MOI). Dang: #id file dong.
+- bao-cao.txt: file nay.
+
+6. TRANG THAI TIEP THEO (DA XONG 2026-09-19)
+- Da duyet tay toan bo 246 cap: 154 dong LAY-MOI, 92 dong GIU-CU.
+- merged/ch001-ch100.txt: ban merged chon loc (79/100 file doi so voi ban cu).
+- so-sanh.txt: 246 muc HAN/CU/MOI kem quyet dinh tung dong.

@@ -114,7 +114,7 @@ def test_translate_startup_runs_reconciler(tmp_path, monkeypatch):
     toml = project.root / "zhvi.toml"
     toml.write_text(
         toml.read_text(encoding="utf-8").replace(
-            'global_glossary = "~/.config/zhvi/glossary.manual.tsv"',
+            'global_glossary = "zhvi/glossary.manual.tsv"',
             'global_glossary = ""',
         ),
         encoding="utf-8",

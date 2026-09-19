@@ -88,12 +88,24 @@ def resolve_dict_dir(cfg: Config) -> Path:
 
 
 def resolve_global_glossary(cfg: Config) -> Path | None:
-    """Glossary chuan toan cuc (~/.config/zhvi/), tuy chon. Rong -> bo qua."""
+    """Glossary toan cuc trong repo (`zhvi/glossary.manual.tsv`), tuy chon.
+
+    File chinh thieu van tra path neu `glossary.d/` ben canh ton tai — drop-in
+    SERIES van nap. Duong tuong doi: cwd roi repo root (nhu dict_dir).
+    """
     raw = cfg.global_glossary.strip()
     if not raw:
         return None
     p = Path(raw).expanduser()
-    return p if p.is_file() else None
+    if not p.is_absolute():
+        for base in (Path.cwd(), Path(__file__).resolve().parents[3]):
+            cand = base / raw
+            if cand.is_file() or (cand.parent / "glossary.d").is_dir():
+                p = cand
+                break
+    if p.is_file() or (p.parent / "glossary.d").is_dir():
+        return p
+    return None
 
 
 def ensure_book_dictionary(

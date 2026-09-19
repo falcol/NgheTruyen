@@ -1,2 +1,8 @@
-# Book glossary empty — terms moved to ~/.config/zhvi/glossary.d/hoang-co.tsv
+# Book glossary empty — terms moved to zhvi/glossary.d/hoang-co.tsv
 # (repo: zhvi/glossary.d/hoang-co.tsv). Book layer van override duoc neu can.
+# 2026-09-18: fix dich sai "Cẩn thận kỷ niệm Ninh Dao" (Chương 2073 iqiyi_fill):
+# 仔细回忆的 + tên riêng là định ngữ (động từ + 的), không phải danh từ "kỷ niệm".
+# Custom.txt cũng có entry giống hết; glossary giữ cùng mục tiêu để Publish
+# revision mới được kích hoạt (refresh-revision chỉ stale theo layer manual).
+仔细回忆的=hồi tưởng kỹ lại,
+

@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 from .config import BASE_DICT_FILES, Config
+from .pipeline import resolve_global_glossary
 from .projection import reconcile_project
 
 
@@ -58,13 +59,20 @@ def run_doctor(console, cfg: Config, project=None) -> bool:
         check("sqlite writable", False, str(e))
 
     # glossary toan cuc (informational — thieu khong phai loi)
-    gg_raw = cfg.global_glossary.strip()
-    gg = Path(gg_raw).expanduser() if gg_raw else None
-    if gg is not None and gg.is_file():
-        n = sum(1 for ln in gg.read_text(encoding="utf-8-sig").splitlines() if ln.strip() and not ln.startswith("#"))
+    gg = resolve_global_glossary(cfg)
+    if gg is not None and (gg.is_file() or (gg.parent / "glossary.d").is_dir()):
+        files = [gg] if gg.is_file() else []
+        dropin = gg.parent / "glossary.d"
+        if dropin.is_dir():
+            files.extend(sorted(dropin.glob("*.tsv")))
+        n = 0
+        for fp in files:
+            if not fp.is_file():
+                continue
+            n += sum(1 for ln in fp.read_text(encoding="utf-8-sig").splitlines() if ln.strip() and not ln.startswith("#"))
         check("global glossary", True, f"{gg} ({n} term)")
     else:
-        check("global glossary", True, f"khong co ({gg_raw or '—'}) — chi dung book manual")
+        check("global glossary", True, f"khong co ({cfg.global_glossary or '—'}) — chi dung book manual")
 
     # smoke test convert
     if dict_dir.is_dir() and not missing:

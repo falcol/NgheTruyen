@@ -85,6 +85,15 @@ def test_repeated_artifact_fails_qa():
     assert "repeated_artifact" in r.errors
 
 
+def test_yamamoto_amam_not_repeated_artifact():
+    """Lap 'am'+'am' trong mot tu Latin viet hoa — khong phai stutter."""
+    doc = parse_document("Hi.\n")
+    blocks = _blocks_for(doc, {})
+    assembled = build_output(doc, blocks)
+    r = run_export_qa(doc, assembled + "Yamamoto đứng đó.\n", blocks)
+    assert "repeated_artifact" not in r.errors
+
+
 def test_header_equals_and_ellipsis_not_repeated_artifact():
     doc = parse_document("Hi.\n")
     blocks = _blocks_for(doc, {})

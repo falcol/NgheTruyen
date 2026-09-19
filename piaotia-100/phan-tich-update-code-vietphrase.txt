@@ -1,0 +1,87 @@
+PHAN TICH UPDATE CODE + VIETPHRASE (tu 246 cap ch001-ch100)
+Ngay: 2026-09-19. Co so code: zhvi/src/zhvi/vietphrase/.
+
+A. GOC RE CUA REGRESSION "THO DAI" (quan trong nhat, gap 12 lan)
+- Dict goc co entry da nghia sai thu tu:
+    松了一口气=thở dài một hơi/thở phào nhẹ nhõm
+  Nghia dung ("tho phao") dung SAU, nghia sai ("tho dai") dung truoc.
+- Code loader.py:_first_meaning (dong 46-51) tach target theo "/" hoac "|"
+  va lay NGHIA DAU TIEN. Hanh vi code la dung theo thiet ke (AD-9) -
+  loi nam o DU LIEU, khong phai code.
+- Ca ho 松口气 deu sai tuong tu trong VietPhrase_*.txt:
+    暗暗松了一口气=âm thầm thở dài một hơi (sai)
+    微松了一口气=hơi thở dài nhẹ nhõm một hơi (sai)
+    微微松了一口气=hơi hơi thở dài nhẹ nhõm một hơi (sai)
+    微微的松了一口气=hơi hơi thở dài nhẹ nhõm một hơi (sai)
+    大松了一口气=thở dài một hơi (sai)
+    微徼松了一口气=nhẹ nhàng thở dài một hơi (sai)
+    重松了一口气=nặng nề thở dài một hơi (dang ngo - can duyet)
+  (松口气 luon la "tho phao", khong phai "tho dai". Ho 叹 thi dung, khong dung.)
+- Cach sua DUNG theo thiet ke du an (AGENTS.md):
+  TUYET DOI khong sua VietPhrase_*.txt (regenerable corpora).
+  Them override vao crawler/vietphrase/dicts/Custom.txt (highest-trust
+  manual layer, thang base theo layer precedence):
+    松了一口气=thở phào nhẹ nhõm
+    暗暗松了一口气=âm thầm thở phào nhẹ nhõm
+    微松了一口气=hơi thở phào nhẹ nhõm một hơi
+    微微松了一口气=hơi hơi thở phào nhẹ nhõm một hơi
+    微微的松了一口气=hơi hơi thở phào nhẹ nhõm một hơi
+    大松了一口气=thở phào một hơi
+    微徼松了一口气=nhẹ nhàng thở phào nhẹ nhõm một hơi
+  Luu y: Custom.txt hien tai da co "蒙上=bịt kín" nhung engine van render
+  "mong thuong" (#165) -> truoc khi them loat moi, CAN DIEU TRA tai sao
+  key nay khong an (nghi precedence parse hoac format tab+so "20").
+
+B. DE XUAT VIETPHRASE (Custom.txt) - chi tiet trong keys-custom-de-xuat.tsv
+- 6 FIX (sai nghia): + 7 override ho 松 o muc A.
+- 19 ON-DINH (khoa nghia dung, chong regression tuong lai).
+- Quy tac chung: moi entry moi phai co bang chung HAN doi chieu (#id),
+  uu tien cum hep (vd 一枚龙元 thay vi 一枚 chung).
+
+C. DE XUAT CODE (zhvi) - sua code, khong phai dict
+1. Render 了 chen "đã" bua bai ("ap che o da", "dap o da", "quan quanh
+   o da", "bien mat o da nguyen dia", "gian tiep da bi chet o tai").
+   File: vietphrase/sense.py (_ASPECT dong 28-34: 了->"đã") +
+   lattice.py dong 46 (comment "了/着/过 giu").
+   Huong sua: khong render "đã" khi dung sau gioi tu (在/到/给...:
+   在->o/tai, 到->den/vao), hoac drop 了 cuoi cum gioi tu.
+   Bang chung: #76 #123 #134 #153 #166 #232.
+2. 逍遥 ten rieng vs nghia thuong ("keu han tieu dao" mat viet hoa #4).
+   Huong sua: phan biet ngu canh (goi ten + noi dong tu) - KHONG ep key
+   mu quang vi "tieu dao ca doi" la nghia thuong dung.
+3. Viet hoa danh tu rieng chua nhat quan (#6 #116).
+4. Pipe "|" con sot 16 dong ca cu lan moi (vd "dung sung sung o|dung
+   sung o") - CHUA RO nguon (loader da split "|", kha nang tu path
+   khac) - can dieu tra them, chua de xuat sua.
+5. Hieu nang: 1 chuong ~17s (translate ~6s + overhead learn/freeze/QA).
+   Da toi uu van hanh bang gop 10 chuong/file + 2 workers (~3h full
+   truyen). Neu muon nhanh hon vinh vien: giam overhead learn moi
+   chuong (vi du warmup N chuong dau roi --no-learn) - can do cu the.
+
+D. QUY TRINH AP DUNG AN TOAN (khi ban duyet key)
+1. Them entry vao Custom.txt (format: 中文=Nghia Viet, 1 dong/entry).
+2. Dieu tra xong vu 蒙上 truoc (neu la loi parse/precedence thi sua
+   code truoc, khong them key vo ich).
+3. Chay lai: revision moi (fingerprint doi) -> chi affected blocks dich
+   lai -> QA -> so sanh voi ban merged hien tai.
+4. Nghiem thu bang expect: 松了一口气 phai ra "tho phao", khong con
+   "tho dai".
+
+E. PHAT HIEN MOI TU FIX 13 CHUONG QA-FAIL (2026-09-19, uu tien cao)
+1. Bundle revision ACTIVE THIEU SERIES_MANUAL (nguyen nhan 58.877 cho
+   lowercase): entries.tsv cua rev active proj-a khong co dong SERIES nao
+   (grep SERIES = 0), du global glossary day du (hoang-co.tsv co
+   君逍遥=Quân Tiêu Dao). Ket qua: ten series rot ve dict base viet
+   thuong. CAN DIEU TRA: tai sao iter_global_glossary_files / publish bo
+   qua SERIES layer (code: loader.py 239-253, revision.py 238-245).
+2. AD-9 longest-match-first nuot key ngan: key BOOK dung van thua edge
+   base DAI HON (会会 thua 会会吧; 道道 thua 道道长). Quy tac them key:
+   key fix phai DAI HON hoac BANG edge base sai (xac dinh bang explain).
+3. QA repeated_artifact FALSE POSITIVE: regex (\S{2,})\1 bat lap trong 1
+   tu ("amam" trong "Yamamoto" - 3 chuong fail oan). De xuat: chi bat lap
+   khi span dai hon 1 tu, hoac mien tru target viet hoa lien (ten rieng).
+4. leftover_cjk hop le: chu thich chu Han co chu y "(火)" (ch3202), ky tu
+   loi nguon (谷伓/谷娋). De xuat: whitelist chu thich don ky tu trong
+   ngoac; ky tu khong co trong bat ky dict nao -> bao review thay vi chan.
+5. Racket lan rong: watermark bqkan8 + tag vo /span (38+ cho). De xuat mo
+   rong qa_strip_junk (pattern tag vo, watermark bqkan8).

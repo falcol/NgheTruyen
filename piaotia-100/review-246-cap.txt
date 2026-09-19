@@ -1,0 +1,1230 @@
+#1 ch001.txt dong25
+HAN: 可以说，别人都是出生在起跑线上，而君逍遥却是直接出生在了终点。
+CU : Có thể nói, những người khác là sinh ra ở khởi điểm, mà Quân Tiêu Dao lại là trực tiếp sinh ra ở chung điểm.
+MOI: Có thể nói, những người khác là đã ra sinh ở khởi điểm, mà Quân Tiêu Dao lại là trực tiếp sinh ra ở chung điểm.
+
+#2 ch001.txt dong60
+HAN: 而此刻，在天帝宫内，一众见惯了沧海桑田的族老们，也是一脸懵逼的呆在了原地。
+CU : Mà giờ khắc này, tại Thiên Đế Cung nội, một đám thường thấy thương hải tang điền các tộc lão, cũng là một mặt mộng bức ngốc ngay tại chỗ.
+MOI: Mà giờ khắc này, tại Thiên Đế Cung nội, một đám thường thấy thương hải tang điền các tộc lão, cũng là một mặt mộng bức ngẩn người tại chỗ.
+
+#3 ch001.txt dong97
+HAN: 就在君逍遥觉得，自己日后是不是要低调一点时。
+CU : Ngay tại Quân Tiêu Dao cảm thấy, mình ngày sau có phải là muốn khiêm tốn một chút.
+MOI: Ngay tại Quân Tiêu Dao cảm thấy, mình ngày sau có phải là phải khiêm tốn một chút.
+
+#4 ch002.txt dong13
+HAN: 这时，一道有些虚弱的声音突然响起：“不如就叫他逍遥吧，夫君曾说过，成仙容易逍遥难，我只希望我的孩儿，日后逍遥一生。”
+CU : Lúc này, một đạo có chút hư nhược thanh âm bỗng nhiên vang lên:“Không bằng liền gọi hắn Tiêu Dao, phu quân từng nói qua, thành tiên dễ dàng tiêu dao khó, ta chỉ hi vọng hài nhi của ta, ngày sau tiêu dao cả đời.”
+MOI: Lúc này, một đạo có chút hư nhược thanh âm bỗng nhiên vang lên:“Không bằng liền kêu hắn tiêu dao, phu quân từng nói qua, thành tiên dễ dàng tiêu dao khó, ta chỉ hi vọng hài nhi của ta, ngày sau tiêu dao cả đời.”
+
+#5 ch002.txt dong42
+HAN: 天帝宫上方虚空，裂开了一道巨大的空间裂缝。
+CU : Thiên Đế Cung phía trên hư không, vỡ ra một đạo cự đại vết nứt không gian.
+MOI: Thiên Đế Cung phía trên hư không, đã nứt ra một đạo không gian thật lớn khe hở.
+
+#6 ch002.txt dong56
+HAN: 十八祖则是忍不住大笑起来道：“好……好，我君家又出了一头真龙，你们这些蠢东西，竟然还想掩盖这孩子的光芒。”
+CU : Thập Bát Tổ thì là nhịn không được cười ha hả nói “Tốt... Tốt, ta Quân Gia lại ra một con chân long, các ngươi những này xuẩn đồ vật, lại còn nghĩ che giấu của đứa nhỏ này quang mang.”
+MOI: Thập Bát Tổ thì là nhịn không được cười ha hả nói “Tốt... Tốt, ta Quân Gia lại ra một con Chân Long, các ngươi những này xuẩn đồ vật, lại còn nghĩ che giấu của đứa nhỏ này quang mang.”
+
+#7 ch002.txt dong59
+HAN: “哼，我看谁敢，那些老不死的若是敢拉下脸面对逍遥出手，老夫不介意掀起不朽战，杀他个天翻地覆，血流亿万里！”
+CU : “Hừ, ta xem ai dám, những lão bất tử kia nếu là dám không nể mặt đối diện Tiêu Dao xuất thủ, lão phu không ngại nhấc lên bất hủ chiến, giết hắn cái trời lật phục, máu chảy ức vạn dặm!”
+MOI: “Hừ, ta xem ai dám, những lão bất tử kia nếu là dám kéo xuống mặt mũi đối tiêu dao xuất thủ, lão phu không ngại nhấc lên bất hủ chiến, giết hắn cái trời lật phục, máu chảy ức vạn dặm!”
+
+#8 ch002.txt dong61
+HAN: 君战天等人都是暗暗咽了一口唾沫。
+CU : Quân Chiến Thiên bọn người là âm thầm nuốt một cái nước bọt.
+MOI: Quân Chiến Thiên bọn người là âm thầm nuốt nước miếng một cái.
+
+#9 ch003.txt dong48
+HAN: 在体内五大神藏打开的刹那，君逍遥感觉自己好似化为了一方战神，可镇压寰宇十方。
+CU : Tại thể nội ngũ đại thần tàng mở ra sát na, Quân Tiêu Dao cảm giác mình tựa như hóa thành một phương Chiến Thần, có thể trấn áp hoàn vũ thập phương.
+MOI: Tại thể nội ngũ đại thần tàng mở ra sát na, Quân Tiêu Dao cảm giác mình tựa như biến thành một phương Chiến Thần, có thể trấn áp hoàn vũ thập phương.
+
+#10 ch003.txt dong60
+HAN: 君战天急忙上前查探，最后松了一口气，目光复杂中带着艳羡之意。
+CU : Quân Chiến Thiên vội vàng tiến lên điều tra, cuối cùng lỏng thở ra một hơi, ánh mắt phức tạp bên trong mang theo ao ước chi ý.
+MOI: Quân Chiến Thiên vội vàng tiến lên điều tra, cuối cùng thở dài một hơi, ánh mắt phức tạp bên trong mang theo ao ước chi ý.
+
+#11 ch004.txt dong28
+HAN: 四面传来赞叹之声，还少不了一群舔狗炽热的目光。
+CU : Tứ phía truyền đến tiếng khen ngợi, còn thiếu không một bầy liếm cẩu ánh mắt nóng bỏng.
+MOI: Tứ phía truyền đến tiếng khen ngợi, còn thiếu không được một đám liếm cẩu ánh mắt nóng bỏng.
+
+#12 ch004.txt dong45
+HAN: 在那一角未来中，君玲珑看到了一道模糊的超然身影，一袭白衣，背对众生。
+CU : Ở đằng kia một góc trong tương lai, Quân Linh Lung nhìn thấy một đạo mơ hồ siêu nhiên thân ảnh, một bộ áo trắng, đưa lưng về phía chúng sinh.
+MOI: Ở đằng kia một góc trong tương lai, Quân Linh Lung thấy được một đạo mơ hồ siêu nhiên thân ảnh, một bộ áo trắng, đưa lưng về phía chúng sinh.
+
+#13 ch004.txt dong67
+HAN: 君玲珑美目落在那道年幼的身影上，体内七窍玲珑心忽然颤动了一下。
+CU : Quân Linh Lung đôi mắt đẹp rơi vào đạo kia còn tấm bé thân ảnh bên trên, thể nội Thất Khiếu Linh Lung Tâm bỗng nhiên rung động rồi một lần.
+MOI: Quân Linh Lung đôi mắt đẹp rơi vào đạo kia còn tấm bé thân ảnh bên trên, thể nội Thất Khiếu Linh Lung Tâm bỗng nhiên chấn động một cái.
+
+#14 ch004.txt dong91
+HAN: 君玲珑眼露异色，但也是对君逍遥行了一礼。
+CU : Quân Linh Lung mắt lộ dị sắc, nhưng cũng là đối Quân Tiêu Dao đi một lễ.
+MOI: Quân Linh Lung mắt lộ dị sắc, nhưng cũng là đối Quân Tiêu Dao thi lễ một cái.
+
+#15 ch005.txt dong21
+HAN: “对啊，为什么直接坐在了地上？”
+CU : “Đúng a, vì cái gì trực tiếp ngồi đã trên mặt đất?”
+MOI: “Đúng a, vì cái gì trực tiếp ngồi ở trên mặt đất?”
+
+#16 ch005.txt dong40
+HAN: 隐约间，他感应到了体内十万微粒，好似十万个胚胎，每个胚胎内都蕴藏着一头未觉醒的巨象。
+CU : Mơ hồ trong đó, hắn cảm ứng được thể nội mười vạn vi hạt, tựa như mười vạn cái phôi thai, mỗi cái trong phôi thai đều ẩn chứa một con chưa thức tỉnh Cự Tượng.
+MOI: Mơ hồ trong đó, hắn cảm ứng được thể nội mười vạn vi hạt, tựa như mười vạn cái phôi thai, mỗi cái trong phôi thai đều ẩn chứa một con chưa giác tỉnh Cự Tượng.
+
+#17 ch005.txt dong53
+HAN: “觉醒了一颗微粒，接下来就方便多了，我倒要看看，荒古圣体一次性能觉醒多少巨象微粒！”君逍遥暗道。
+CU : “Giác tỉnh một khỏa vi hạt, Sau đó liền dễ dàng hơn, ta lại muốn nhìn, Hoang Cổ Thánh Thể duy nhất một lần có thể giác tỉnh bao nhiêu Cự Tượng vi hạt!” Quân Tiêu Dao thầm nghĩ.
+MOI: “Đã thức tỉnh một viên vi hạt, Sau đó liền dễ dàng hơn, ta lại muốn nhìn, Hoang Cổ Thánh Thể duy nhất một lần có thể giác tỉnh bao nhiêu Cự Tượng vi hạt!” Quân Tiêu Dao thầm nghĩ.
+
+#18 ch005.txt dong54
+HAN: 他继续修炼，金色的气血腾空而起，好似在他背后，化为了一头镇压天地的金色神象！
+CU : Hắn tiếp tục tu luyện, màu vàng khí huyết đằng không mà lên, tựa như ở sau lưng hắn, hóa thành một đầu trấn áp thiên địa kim sắc Thần Tượng!
+MOI: Hắn tiếp tục tu luyện, màu vàng khí huyết đằng không mà lên, tựa như ở sau lưng hắn, biến thành một con trấn áp thiên địa kim sắc Thần Tượng!
+
+#19 ch005.txt dong63
+HAN: 他的境界，竟是在此刻再度突破，从神藏五境大圆满，到达了一个新的境界！
+CU : Cảnh giới của hắn, lại là tại lúc này lại đột phá tiếp, từ Thần Tàng ngũ cảnh Đại viên mãn, đến một cái cảnh giới mới!
+MOI: Cảnh giới của hắn, lại là tại lúc này lại đột phá tiếp, từ Thần Tàng ngũ cảnh Đại viên mãn, đạt tới một cái cảnh giới mới!
+
+#20 ch005.txt dong66
+HAN: “觉醒了一千巨象微粒，还顺带突破到了灵海境！”君逍遥眸光睥睨，气息强绝。
+CU : “Giác tỉnh một ngàn Cự Tượng vi hạt, còn tiện thể đột phá đến Linh Hải cảnh!” Quân Tiêu Dao ánh mắt bễ nghễ, khí tức cường tuyệt.
+MOI: “Đã thức tỉnh một ngàn Cự Tượng vi hạt, còn tiện thể đột phá đến Linh Hải cảnh!” Quân Tiêu Dao ánh mắt bễ nghễ, khí tức cường tuyệt.
+
+#21 ch005.txt dong78
+HAN: “觉醒了一千巨象微粒，倒是要试一试……”君逍遥看着面前的泰岳古碑，跃跃欲试。
+CU : “Giác tỉnh một ngàn Cự Tượng vi hạt, ngược lại là phải thử một lần...” Quân Tiêu Dao nhìn xem trước mặt Thái Nhạc Cổ Bi, kích động.
+MOI: “Đã thức tỉnh một ngàn Cự Tượng vi hạt, ngược lại là phải thử một lần...” Quân Tiêu Dao nhìn xem trước mặt Thái Nhạc Cổ Bi, kích động.
+
+#22 ch006.txt dong23
+HAN: 兰清雅瞪大了倩眸，娇躯都是打颤了一下，心灵受到了深深的震撼！
+CU : Lan Thanh Nhã trừng lớn thiến mắt, thân thể mềm mại đều là run lên rồi một lần, tâm linh nhận lấy sâu đậm rung động!
+MOI: Lan Thanh Nhã trừng lớn thiến mắt, thân thể mềm mại đều là run lên một chút, tâm linh nhận lấy sâu đậm rung động!
+
+#23 ch006.txt dong54
+HAN: “没事，碎了就碎了，你可是又给我君家带来了一个大大的惊喜啊！”君战天喜不自禁。
+CU : “Không có việc gì, nát liền nát, ngươi thế nhưng là lại cho ta Quân Gia mang đến một cái kinh ngạc vui mừng vô cùng!” Quân Chiến Thiên không kìm được vui mừng.
+MOI: “Không có việc gì, nát liền nát, ngươi thế nhưng là lại cho ta Quân Gia đã mang đến một cái to lớn kinh hỉ!” Quân Chiến Thiên không kìm được vui mừng.
+
+#24 ch006.txt dong56
+HAN: 这时，虚空之中，一团混沌光芒浮现而出，最后落在了君逍遥手中。
+CU : Lúc này, trong hư không, một đoàn hỗn độn quang mang nổi lên, cuối cùng rơi ở Quân Tiêu Dao trong tay.
+MOI: Lúc này, trong hư không, một đoàn hỗn độn quang mang nổi lên, cuối cùng đã rơi vào Quân Tiêu Dao trong tay.
+
+#25 ch006.txt dong90
+HAN: 君玲珑心里罕见的有些忐忑，她对着君逍遥道了一礼后，启唇说道。
+CU : Quân Linh Lung trong lòng hiếm thấy có chút thấp thỏm, nàng đối với Quân Tiêu Dao đạo một lễ sau, mở miệng nói rằng.
+MOI: Quân Linh Lung trong lòng hiếm thấy có chút thấp thỏm, nàng đối với Quân Tiêu Dao nói thi lễ sau, mở miệng nói rằng.
+
+#26 ch007.txt dong16
+HAN: 他也察觉到了，君玲珑恐怕知道了一些什么，却没有明说出来。
+CU : Hắn cũng đã nhận ra, Quân Linh Lung chỉ sợ biết một chút cái gì, nhưng không có nói rõ ra.
+MOI: Hắn cũng đã nhận ra, Quân Linh Lung chỉ sợ đã biết một ít gì, nhưng không có nói rõ ra.
+
+#27 ch007.txt dong59
+HAN: 君玲珑自己也是恍惚了一瞬，她堂堂天之骄女，还真成丫鬟了？
+CU : Chính Quân Linh Lung cũng là hoảng hốt một giây lát, nàng đường đường thiên chi kiêu nữ, còn thật thành nha hoàn?
+MOI: Chính Quân Linh Lung cũng là hoảng hốt một cái chớp mắt, nàng đường đường thiên chi kiêu nữ, còn thật thành nha hoàn?
+
+#28 ch007.txt dong70
+HAN: 君战天也是深吸了一口气，目光无比复杂。
+CU : Quân Chiến Thiên cũng là hít sâu thở ra một hơi, ánh mắt vô cùng phức tạp.
+MOI: Quân Chiến Thiên cũng là hít sâu một hơi, ánh mắt vô cùng phức tạp.
+
+#29 ch007.txt dong72
+HAN: 君战天知道，这一句话，代表了一个大因果，落在了君逍遥身上。
+CU : Quân Chiến Thiên biết, một câu nói kia, đại biểu một cái đại nhân quả, rơi ở Quân Tiêu Dao trên thân.
+MOI: Quân Chiến Thiên biết, một câu nói kia, đại biểu một cái đại nhân quả, đã rơi vào Quân Tiêu Dao trên thân.
+
+#30 ch009.txt dong12
+HAN: 但是现在，看着君仗剑那阴沉如水的脸色，兰清雅感觉他像是变成了一个陌生人。
+CU : Nhưng là bây giờ, nhìn xem Quân Trượng Kiếm gương mặt âm trầm như nước kia sắc, Lan Thanh Nhã cảm giác hắn giống như là biến thành một cái người xa lạ.
+MOI: Nhưng là bây giờ, nhìn xem Quân Trượng Kiếm gương mặt âm trầm như nước kia sắc, Lan Thanh Nhã cảm giác hắn giống như là biến thành một người xa lạ.
+
+#31 ch009.txt dong62
+HAN: 君逍遥接过茶杯，浅啜了一口，点头道：“你活不错啊……”
+CU : Quân Tiêu Dao tiếp nhận chén trà, cạn xuyết một cái, gật đầu nói:“Ngươi sống không tệ a...”
+MOI: Quân Tiêu Dao tiếp nhận chén trà, cạn nhấp một cái, gật đầu nói:“Ngươi sống không tệ a...”
+
+#32 ch009.txt dong101
+HAN: 君逍遥淡笑着，抬起手一招，那元天至尊令便是抓在了手中。
+CU : Quân Tiêu Dao cười nhạt, giơ tay lên một chiêu, kia Nguyên Thiên Chí Tôn Lệnh chính là bắt trong tay.
+MOI: Quân Tiêu Dao cười nhạt, giơ tay lên một chiêu, kia Nguyên Thiên Chí Tôn Lệnh chính là nắm ở trong tay.
+
+#33 ch010.txt dong18
+HAN: 被割了一大块肉，君仗剑已经不想在这待下去了。
+CU : Bị cắt một khối thịt lớn, Quân Trượng Kiếm đã không muốn tại đây ở lại.
+MOI: Bị cắt một tảng thịt lớn, Quân Trượng Kiếm đã không muốn tại đây ở lại.
+
+#34 ch010.txt dong85
+HAN: 一击巨响碰撞，君仗剑手中长剑都是被击飞，整个人被抛飞，轰然砸在了一侧墙壁之中。
+CU : Một kích tiếng vang va chạm, Quân Trượng Kiếm trường kiếm trong tay đều là bị đánh bay, cả người bị ném đi, ầm vang nện ở một bên trong vách tường.
+MOI: Một kích tiếng vang va chạm, Quân Trượng Kiếm trường kiếm trong tay đều là bị đánh bay, cả người bị ném đi, ầm vang đập vào một bên trong vách tường.
+
+#35 ch011.txt dong43
+HAN: “荒古圣体，难道是打破了一道枷锁的荒古圣体，若是把这个消息告诉那些君家的敌对势力，或是太古皇族……”
+CU : “Hoang Cổ Thánh Thể, chẳng lẽ là đánh vỡ một đạo gông xiềng Hoang Cổ Thánh Thể, nếu là đem cái này tin tức nói cho những cái kia Quân Gia thế lực đối địch, hoặc là Thái Cổ Hoàng Tộc...”
+MOI: “Hoang Cổ Thánh Thể, chẳng lẽ là phá vỡ một đạo gông xiềng Hoang Cổ Thánh Thể, nếu là đem cái này tin tức nói cho những cái kia Quân Gia thế lực đối địch, hoặc là Thái Cổ Hoàng Tộc...”
+
+#36 ch011.txt dong46
+HAN: 在她看来，打破了一道枷锁的荒古圣体，都非常少见。
+CU : Dưới cái nhìn của nàng, đánh vỡ một đạo gông xiềng Hoang Cổ Thánh Thể, đều vô cùng ít thấy.
+MOI: Dưới cái nhìn của nàng, phá vỡ một đạo gông xiềng Hoang Cổ Thánh Thể, đều vô cùng ít thấy.
+
+#37 ch011.txt dong65
+HAN: 君战天呵呵一笑，心里则是得意想道：“孙子，想跟爷爷斗还太嫩了点，这门神通，爷爷当年也是足足修炼了一年，才堪堪入门……”
+CU : Quân Chiến Thiên cười ha ha, trong lòng thì là đắc ý thầm nghĩ:“Cháu trai, muốn cùng gia gia đấu còn quá non nớt điểm, môn thần thông này, gia gia năm đó cũng là trọn vẹn tu luyện một năm, mới khó khăn lắm nhập môn...”
+MOI: Quân Chiến Thiên cười ha ha, trong lòng thì là đắc ý thầm nghĩ:“Cháu trai, muốn cùng gia gia đấu còn quá non nớt điểm, môn thần thông này, gia gia năm đó cũng là tu luyện ước chừng một năm, mới khó khăn lắm nhập môn...”
+
+#38 ch012.txt dong63
+HAN: 一旁，君玲珑进入，端了一杯悟道茶给君逍遥。
+CU : Một bên, Quân Linh Lung tiến vào, đầu một chén trà ngộ đạo cho Quân Tiêu Dao.
+MOI: Một bên, Quân Linh Lung tiến vào, bưng một chén trà ngộ đạo cho Quân Tiêu Dao.
+
+#39 ch012.txt dong65
+HAN: “怎么了，有事？”君逍遥抿了一口茶水，淡淡道。
+CU : “Làm sao vậy, có việc?” Quân Tiêu Dao nhấp một cái nước trà, thản nhiên nói.
+MOI: “Làm sao vậy, có việc?” Quân Tiêu Dao nhấp một miếng nước trà, thản nhiên nói.
+
+#40 ch013.txt dong22
+HAN: 他脑海之中，仿佛衍生出了一片混沌世界。
+CU : Trong óc hắn, phảng phất diễn sinh ra một phiến Hỗn Độn thế giới.
+MOI: Trong óc hắn, phảng phất diễn sinh ra được một mảnh Hỗn Độn thế giới.
+
+#41 ch013.txt dong32
+HAN: 他貌似又多了一手强悍底牌。
+CU : Hắn có vẻ như lại nhiều một tay cường hãn át chủ bài.
+MOI: Hắn có vẻ như lại thêm một tay cường hãn át chủ bài.
+
+#42 ch013.txt dong40
+HAN: 不过多时，车辇停在了君家驻地外。
+CU : Bất quá không lâu, xe kéo ngừng ở Quân Gia ngoài trụ sở.
+MOI: Bất quá không lâu, xe kéo đứng tại Quân Gia ngoài trụ sở.
+
+#43 ch013.txt dong47
+HAN: 但随即，拜玉儿嘴角便是挑起了一抹自信和淡淡的不屑。
+CU : Nhưng lập tức, Bái Ngọc Nhi khóe miệng chính là bốc lên lướt qua một cái tự tin và nhàn nhạt khinh thường.
+MOI: Nhưng lập tức, Bái Ngọc Nhi khóe miệng chính là nâng lên một vệt tự tin và nhàn nhạt khinh thường.
+
+#44 ch013.txt dong68
+HAN: 这边，拜玉儿走到了一处如仙境般的庭院内。
+CU : Bên này, Bái Ngọc Nhi đi đến một chỗ như tiên cảnh vậy trong đình viện.
+MOI: Bên này, Bái Ngọc Nhi đi tới một chỗ như tiên cảnh vậy trong đình viện.
+
+#45 ch013.txt dong78
+HAN: 拜玉儿看到这个细节，更是心底深吸了一口气。
+CU : Bái Ngọc Nhi nhìn thấy chi tiết này, càng là đáy lòng hít sâu thở ra một hơi.
+MOI: Bái Ngọc Nhi nhìn thấy chi tiết này, càng là đáy lòng hít sâu một hơi.
+
+#46 ch013.txt dong82
+HAN: “正是。”拜玉儿微微行了一礼，不过很是矜持。
+CU : “Chính là.” Bái Ngọc Nhi có chút đi một lễ, bất quá rất là thận trọng.
+MOI: “Chính là.” Bái Ngọc Nhi hơi thi lễ một cái, bất quá rất là thận trọng.
+
+#47 ch014.txt dong86
+HAN: “神子大人，真的有些坏呢。”君玲珑难得的白了他一眼，小小放肆了一下，娇嗔动人。
+CU : “Thần tử đại nhân, thật sự có vài cái xấu.” Quân Linh Lung khó được lườm hắn một cái, nho nhỏ làm càn rồi một lần, hờn dỗi động lòng người.
+MOI: “Thần tử đại nhân, thật sự có vài cái xấu.” Quân Linh Lung khó được lườm hắn một cái, nho nhỏ làm càn một chút, hờn dỗi động lòng người.
+
+#48 ch015.txt dong29
+HAN: 君逍遥手腕一翻，从虚空戒指中拿出了一株紫气腾腾，形似麒麟一般的珍贵药草。
+CU : Quân Tiêu Dao cổ tay khẽ đảo, từ hư không trong giới chỉ xuất ra một gốc tử khí bừng bừng, tương tự Kỳ Lân giống vậy dược thảo trân quý.
+MOI: Quân Tiêu Dao cổ tay khẽ đảo, từ hư không trong giới chỉ lấy ra một gốc tử khí bừng bừng, tương tự Kỳ Lân giống vậy dược thảo trân quý.
+
+#49 ch015.txt dong47
+HAN: 唯有武力与智谋并行的天骄，才有登临巅峰的资格。
+CU : Chỉ có vũ lực cùng mưu trí song hành thiên kiêu, mới có đăng lâm tột cùng tư cách.
+MOI: Chỉ có vũ lực cùng mưu trí song hành thiên kiêu, mới có bước lên đỉnh cao tư cách.
+
+#50 ch017.txt dong29
+HAN: 你不是魔鬼还让人家在那跪了一整年？
+CU : Ngươi không phải ma quỷ còn mời người ta ở đằng kia quỳ một cả năm?
+MOI: Ngươi không phải ma quỷ còn mời người ta ở đằng kia quỳ một năm tròn?
+
+#51 ch017.txt dong44
+HAN: 想到这里，拜玉儿深吸一口气，对君逍遥行了一礼道：“多谢神子大人宽恕，玉儿告退了。”
+CU : Nghĩ tới đây, Bái Ngọc Nhi hít sâu một hơi, đối Quân Tiêu Dao đi một lễ đạo:“Đa tạ thần tử đại nhân khoan thứ, Ngọc nhi cáo lui.”
+MOI: Nghĩ tới đây, Bái Ngọc Nhi hít sâu một hơi, đối Quân Tiêu Dao thi lễ một cái nói “Đa tạ thần tử đại nhân khoan thứ, Ngọc nhi cáo lui.”
+
+#52 ch018.txt dong15
+HAN: 在那盘龙戒指上，君逍遥感觉到了一种不同的气机和灵魂波动。
+CU : Ở đằng kia Bàn Long Giới Chỉ bên trên, Quân Tiêu Dao cảm giác được một loại bất đồng khí cơ cùng linh hồn ba động.
+MOI: Ở đằng kia Bàn Long Giới Chỉ bên trên, Quân Tiêu Dao cảm thấy một loại bất đồng khí cơ cùng linh hồn ba động.
+
+#53 ch020.txt dong34
+HAN: 哪怕是拜玉儿，心里都是微微震了一震。
+CU : Cho dù là Bái Ngọc Nhi, trong lòng đều là có chút chấn một chấn.
+MOI: Cho dù là Bái Ngọc Nhi, trong lòng đều là có chút rung mạnh một cái.
+
+#54 ch020.txt dong40
+HAN: 说了一句经典名言，留了一个骚气的背影，就想安然离去？
+CU : Nói một câu kinh điển danh ngôn, lưu một cái tao khí bóng lưng, đã nghĩ bình yên rời đi?
+MOI: Nói một câu kinh điển danh ngôn, lưu lại một cái tao khí bóng lưng, đã nghĩ bình yên rời đi?
+
+#55 ch020.txt dong49
+HAN: “那你要做什么？”听到这话，萧尘稍微松了一口气，眼中依然流露警惕。
+CU : “Vậy ngươi muốn làm gì?” Nghe nói như thế, Tiêu Trần hơi lỏng thở ra một hơi, trong mắt y nguyên bộc lộ cảnh giác.
+MOI: “Vậy ngươi muốn làm gì?” Nghe nói như thế, Tiêu Trần hơi thở dài một hơi, trong mắt y nguyên bộc lộ cảnh giác.
+
+#56 ch020.txt dong67
+HAN: 周围一众君家弟子，也是微微打了一个寒颤，心头发冷。
+CU : Chung quanh một đám Quân Gia đệ tử, cũng là có chút đánh một cái rùng mình, trong lòng rét run.
+MOI: Chung quanh một đám Quân Gia đệ tử, cũng là có chút rùng mình một cái, trong lòng rét run.
+
+#57 ch020.txt dong76
+HAN: 待得吸收完一大半龙气，君逍遥体内，又觉醒了一万巨象微粒。
+CU : Đợi đến hấp thu xong hơn phân nửa long khí, Quân Tiêu Dao thể nội, lại giác tỉnh một vạn Cự Tượng vi hạt.
+MOI: Đợi đến hấp thu xong hơn phân nửa long khí, Quân Tiêu Dao thể nội, lại đã thức tỉnh một vạn Cự Tượng vi hạt.
+
+#58 ch020.txt dong88
+HAN: 而见证这一幕的萧尘，却是忍不住吐出了一口心头之血！
+CU : Mà chứng kiến một màn này Tiêu Trần, lại là nhịn không được phun ra một cái Tâm Đầu Chi Huyết!
+MOI: Mà chứng kiến một màn này Tiêu Trần, lại là nhịn không được phun ra một ngụm Tâm Đầu Chi Huyết!
+
+#59 ch021.txt dong3
+HAN: 斗武场所有君家子弟都是打了一个寒颤。
+CU : Đấu Vũ Tràng tất cả Quân Gia tử đệ đều là đánh một cái rùng mình.
+MOI: Đấu Vũ Tràng tất cả Quân Gia tử đệ đều là rùng mình một cái.
+
+#60 ch021.txt dong64
+HAN: 不过下一刻，他的目光就落在了指间的盘龙戒指上。
+CU : Bất quá sau một khắc, ánh mắt của hắn liền rơi ở giữa ngón tay Bàn Long Giới Chỉ bên trên.
+MOI: Bất quá sau một khắc, ánh mắt của hắn liền đã rơi vào giữa ngón tay Bàn Long Giới Chỉ bên trên.
+
+#61 ch021.txt dong94
+HAN: 整个人，都好似复苏了一般，斗志昂扬！
+CU : Cả người, đều rất giống khôi phục một bàn, ý chí chiến đấu sục sôi!
+MOI: Cả người, đều rất giống hồi phục bình thường, ý chí chiến đấu sục sôi!
+
+#62 ch022.txt dong55
+HAN: 朱雀古国，只占据了一个道州。
+CU : Chu Tước cổ quốc, chỉ chiếm theo một cái Đạo Châu.
+MOI: Chu Tước cổ quốc, chỉ chiếm căn cứ một cái Đạo Châu.
+
+#63 ch023.txt dong3
+HAN: 祖上曾有太古祖龙，证得古皇之位，风头甚至盖过了一些人族大帝，威震仙域无数年。
+CU : Tổ tiên từng có thái cổ Tổ Long, chứng được Cổ Hoàng chi vị, danh tiếng thậm chí che lại một chút Nhân Tộc Đại Đế, uy chấn Tiên Vực vô số năm.
+MOI: Tổ tiên từng có thái cổ Tổ Long, chứng được Cổ Hoàng chi vị, danh tiếng thậm chí lấn át một số nhân tộc Đại Đế, uy chấn Tiên Vực vô số năm.
+
+#64 ch023.txt dong8
+HAN: “恭喜龙子大人，融合了一枚龙元，实力大涨！”
+CU : “Chúc mừng long tử đại nhân, dung hợp một mai Long Nguyên, thực lực đại trướng!”
+MOI: “Chúc mừng long tử đại nhân, dung hợp một viên Long Nguyên, thực lực đại trướng!”
+
+#65 ch023.txt dong53
+HAN: 接下来，兰清雅简单说了一下和君逍遥等人的恩怨。
+CU : Sau đó, Lan Thanh Nhã nói đơn giản rồi một lần cùng Quân Tiêu Dao đám người ân oán.
+MOI: Sau đó, Lan Thanh Nhã đơn giản nói một chút cùng Quân Tiêu Dao đám người ân oán.
+
+#66 ch023.txt dong62
+HAN: “此事千真万确，那君逍遥的确是荒古圣体，不过却是打破了一道枷锁的荒古圣体。”兰清雅继续告密。
+CU : “Việc này thiên chân vạn xác, kia Quân Tiêu Dao đích thật là Hoang Cổ Thánh Thể, bất quá lại là đánh vỡ một đạo gông xiềng Hoang Cổ Thánh Thể.” Lan Thanh Nhã tiếp tục cáo mật.
+MOI: “Việc này thiên chân vạn xác, kia Quân Tiêu Dao đích thật là Hoang Cổ Thánh Thể, bất quá lại là phá vỡ một đạo gông xiềng Hoang Cổ Thánh Thể.” Lan Thanh Nhã tiếp tục cáo mật.
+
+#67 ch023.txt dong63
+HAN: “什么，打破了一道枷锁？”
+CU : “Cái gì, đánh vỡ một đạo già tỏa?”
+MOI: “Cái gì, phá vỡ một đạo già tỏa?”
+
+#68 ch023.txt dong71
+HAN: 她只认为君逍遥打破了一道枷锁。
+CU : Nàng chỉ cho rằng Quân Tiêu Dao đánh vỡ một đạo già tỏa.
+MOI: Nàng chỉ cho rằng Quân Tiêu Dao phá vỡ một đạo già tỏa.
+
+#69 ch024.txt dong21
+HAN: 而这时，远处却传来了一阵若银铃般娇脆的声音。
+CU : Mà lúc này, nơi xa lại truyền đến một trận như chuông bạc mềm giòn dễ vỡ thanh âm.
+MOI: Mà lúc này, nơi xa lại truyền đến một hồi như chuông bạc mềm giòn dễ vỡ thanh âm.
+
+#70 ch025.txt dong69
+HAN: 叶星云深深吸了一口气，脸上还是带着从容的笑。
+CU : Diệp Tinh Vân thật sâu hút thở ra một hơi, trên mặt vẫn là mang theo ung dung cười.
+MOI: Diệp Tinh Vân hít một hơi thật sâu, trên mặt vẫn là mang theo ung dung cười.
+
+#71 ch026.txt dong14
+HAN: 直到他意外得到了一门至尊法，渡劫天功传承。
+CU : Cho đến hắn ngoài ý muốn được đến một cửa Chí Tôn pháp, Độ Kiếp Thiên Công truyền thừa.
+MOI: Cho đến hắn ngoài ý muốn đã nhận được một môn Chí Tôn pháp, Độ Kiếp Thiên Công truyền thừa.
+
+#72 ch026.txt dong45
+HAN: 大殿内众多势力强者，感应到那股气息波动，皆是目瞪口呆，深深吸了一口气。
+CU : Trong đại điện đông đảo thế lực cường giả, cảm ứng được cỗ khí tức kia ba động, đều là trợn mắt hốc mồm, thật sâu hút thở ra một hơi.
+MOI: Trong đại điện đông đảo thế lực cường giả, cảm ứng được cỗ khí tức kia ba động, đều là trợn mắt hốc mồm, hít một hơi thật sâu.
+
+#73 ch026.txt dong58
+HAN: 看到那随意抹去异象的巨手，在场众势力强者皆是暗暗咽了一口唾沫，心惊胆战。
+CU : Nhìn thấy kia tùy ý lau đi dị tượng cự thủ, ở đây chúng thế lực cường giả đều là âm thầm nuốt một cái nước bọt, kinh hồn táng đảm.
+MOI: Nhìn thấy kia tùy ý lau đi dị tượng cự thủ, ở đây chúng thế lực cường giả đều là âm thầm nuốt nước miếng một cái, kinh hồn táng đảm.
+
+#74 ch026.txt dong77
+HAN: 一位君家少女，如同痴了，傻了一般，喃喃说出这种话。
+CU : Một vị Quân Gia thiếu nữ, như là ngây dại, ngốc một bàn, nói lầm bầm ra loại lời này.
+MOI: Một vị Quân Gia thiếu nữ, như là ngây dại, choáng váng bình thường, nói lầm bầm ra loại lời này.
+
+#75 ch027.txt dong28
+HAN: 因为姜圣依在看到君逍遥的刹那间，心中涌现了一种说不清道不明的情绪。
+CU : Bởi vì Khương Thánh Y khi nhìn đến Quân Tiêu Dao trong chốc lát, trong lòng hiện lên một loại không nói rõ được cũng không tả rõ được cảm xúc.
+MOI: Bởi vì Khương Thánh Y khi nhìn đến Quân Tiêu Dao trong chốc lát, trong lòng xuất hiện một loại không nói rõ được cũng không tả rõ được cảm xúc.
+
+#76 ch028.txt dong73
+HAN: 他将自身修为，压制在了神宫境九重天。
+CU : Hắn đem tự thân tu vi, áp chế ở thần cung cảnh Cửu Trùng Thiên.
+MOI: Hắn đem tự thân tu vi, áp chế ở đã thần cung cảnh Cửu Trùng Thiên.
+
+#77 ch028.txt dong80
+HAN: 在这一年闭关当中，君逍遥又再度觉醒了一万巨象微粒。
+CU : Tại đây một năm bế quan ở trong, Quân Tiêu Dao lại độ giác tỉnh một vạn Cự Tượng vi hạt.
+MOI: Tại đây một năm bế quan ở trong, Quân Tiêu Dao lại độ đã thức tỉnh một vạn Cự Tượng vi hạt.
+
+#78 ch028.txt dong86
+HAN: 汹涌的金色气血涌出体内，隐隐间仿佛形成了一头太古神象虚影，镇压诸天苍穹！
+CU : Mãnh liệt kim sắc khí huyết tuôn ra thể nội, trong lúc mơ hồ phảng phất hình thành một đầu thái cổ Thần Tượng hư ảnh, trấn áp chư thiên thương khung!
+MOI: Mãnh liệt kim sắc khí huyết tuôn ra thể nội, trong lúc mơ hồ phảng phất tạo thành một con thái cổ Thần Tượng hư ảnh, trấn áp chư thiên thương khung!
+
+#79 ch029.txt dong10
+HAN: 不仅是他，周围一众宾客，也是如同石化了一般。
+CU : Không chỉ có là hắn, chung quanh một đám tân khách, cũng là như là hóa đá một bàn.
+MOI: Không chỉ có là hắn, chung quanh một đám tân khách, cũng là như là hóa đá bình thường.
+
+#80 ch029.txt dong18
+HAN: 这只星辰巨手，同君逍遥的手掌碰撞在了一起。
+CU : Cái này sao trời cự thủ, cùng Quân Tiêu Dao tay chưởng va chạm ở cùng một chỗ.
+MOI: Cái này sao trời cự thủ, cùng Quân Tiêu Dao tay chưởng đụng vào nhau.
+
+#81 ch030.txt dong71
+HAN: 姜洛璃磨着晶莹的小虎牙，鼓起香腮，她黑漆漆的大眼珠转动了一下，露出些许狡黠。
+CU : Khương Lạc Ly cọ xát lấy trong suốt răng mèo, nâng lên cái má, nàng đen như mực con mắt to chuyển động rồi một lần, lộ ra một chút giảo hoạt.
+MOI: Khương Lạc Ly cọ xát lấy trong suốt răng mèo, nâng lên cái má, nàng đen như mực con mắt to chuyển động một chút, lộ ra một chút giảo hoạt.
+
+#82 ch031.txt dong9
+HAN: 被姜圣依白了一眼，倒是让君逍遥注意到了这位名义上的小姨。
+CU : Bị Khương Thánh Y trắng một mắt, ngược lại để Quân Tiêu Dao chú ý tới vị này trên danh nghĩa tiểu di.
+MOI: Bị Khương Thánh Y liếc một cái, ngược lại để Quân Tiêu Dao chú ý tới vị này trên danh nghĩa tiểu di.
+
+#83 ch031.txt dong37
+HAN: “逍遥族弟竟然已经是内定的零号序列了？”君仗剑深吸了一口气，压下心头震撼。
+CU : “Tiêu Dao tộc đệ thế mà đã là dự định số số không danh sách đã?” Quân Trượng Kiếm hít sâu thở ra một hơi, đè xuống trong lòng rung động.
+MOI: “Tiêu Dao tộc đệ thế mà đã là dự định số số không danh sách đã?” Quân Trượng Kiếm hít sâu một hơi, đè xuống trong lòng rung động.
+
+#84 ch033.txt dong13
+HAN: 他融合了一枚龙元，虽未完全炼化，却也足以站在年轻一代的巅峰。
+CU : Hắn dung hợp một mai Long Nguyên, dù chưa hoàn toàn luyện hóa, nhưng cũng đủ để đứng tại thế hệ trẻ đỉnh phong.
+MOI: Hắn dung hợp một viên Long Nguyên, dù chưa hoàn toàn luyện hóa, nhưng cũng đủ để đứng tại thế hệ trẻ đỉnh phong.
+
+#85 ch033.txt dong28
+HAN: 他见到了一个，自以为再也不会见到的身影。
+CU : Hắn nhìn thấy một cái, tự cho là sẽ không còn nhìn thấy thân ảnh.
+MOI: Hắn gặp được một cái, tự cho là sẽ không còn nhìn thấy thân ảnh.
+
+#86 ch034.txt dong12
+HAN: 虽然也有龙浩天猝不及防的因素在里面，但既然被一击震退，显然已经说明了一些问题。
+CU : Mặc dù cũng có Long Hạo Thiên bất ngờ không kịp đề phòng nhân tố ở bên trong, nhưng đã bị một kích đẩy lui, hiển nhiên đã nói rõ một chút vấn đề.
+MOI: Mặc dù cũng có Long Hạo Thiên bất ngờ không kịp đề phòng nhân tố ở bên trong, nhưng đã bị một kích đẩy lui, hiển nhiên đã nói rõ một vài vấn đề.
+
+#87 ch034.txt dong13
+HAN: 随着法力巨掌的消散，原地只剩下了一团血肉模糊的肉糜，令人望之作呕。
+CU : Theo pháp lực cự chưởng tiêu tán, nguyên địa chỉ còn lại một đoàn máu thịt be bét thịt băm, làm người ta nhìn tới buồn nôn.
+MOI: Theo pháp lực cự chưởng tiêu tán, nguyên địa chỉ còn lại có một đoàn huyết nhục mơ hồ thịt băm, làm người ta nhìn tới buồn nôn.
+
+#88 ch034.txt dong14
+HAN: 上一刻还是一位美人，下一刻就直接变成了一团肉糜。
+CU : Một khắc trước còn là một vị mỹ nhân, sau một khắc liền trực tiếp biến thành một đoàn thịt băm.
+MOI: Một khắc trước còn là một vị mỹ nhân, sau một khắc liền trực tiếp biến thành một đám thịt bằm.
+
+#89 ch034.txt dong16
+HAN: 许多人看向君逍遥的目光，也是带上了一种敬畏。
+CU : Rất nhiều người nhìn về phía Quân Tiêu Dao ánh mắt, cũng là mang lên một loại kính sợ.
+MOI: Rất nhiều người nhìn về phía Quân Tiêu Dao ánh mắt, cũng là mang theo một loại kính sợ.
+
+#90 ch034.txt dong22
+HAN: 方才君逍遥只是随意一招阻止他，但龙浩天却感觉到了一股几乎无法抵挡的神力。
+CU : Mới Quân Tiêu Dao chỉ là tùy ý một chiêu ngăn cản hắn, nhưng Long Hạo Thiên lại cảm giác được một cỗ cơ hồ không cách nào ngăn cản thần lực.
+MOI: Mới Quân Tiêu Dao chỉ là tùy ý một chiêu ngăn cản hắn, nhưng Long Hạo Thiên lại cảm thấy một cỗ cơ hồ không cách nào ngăn cản thần lực.
+
+#91 ch034.txt dong102
+HAN: 一道身影以极快的速度闪掠而出，挡在了君雪凰的身前。
+CU : Một thân ảnh lấy cực nhanh tốc độ lướt nhanh ra, cản ở Quân Tuyết Hoàng trước người.
+MOI: Một thân ảnh lấy cực nhanh tốc độ lướt nhanh ra, chắn Quân Tuyết Hoàng trước người.
+
+#92 ch034.txt dong103
+HAN: 金色龙爪，不偏不倚，直接是重重轰击在了那人的胸口之上。
+CU : Kim sắc Long trảo, công bằng, trực tiếp là nặng nề oanh kích ở ngực của người kia phía trên.
+MOI: Kim sắc Long trảo, công bằng, trực tiếp là nặng nề đánh vào ngực của người kia phía trên.
+
+#93 ch035.txt dong33
+HAN: 他一手轰击在君逍遥胸口，感觉像是打在了一块太古仙金上面。
+CU : Hắn một tay đánh vào Quân Tiêu Dao ngực, cảm giác giống như là đánh ở một khối thái cổ tiên kim phía trên.
+MOI: Hắn một tay đánh vào Quân Tiêu Dao ngực, cảm giác giống như là đánh vào một khối thái cổ tiên kim phía trên.
+
+#94 ch035.txt dong54
+HAN: 生生抗了一记龙浩天的截龙手，君逍遥不但没事，反而还以极为生猛的姿态，扯断了龙浩天的手臂。
+CU : Sinh sinh kháng một nhớ Long Hạo Thiên đoạn long thủ, Quân Tiêu Dao chẳng những không có việc gì, ngược lại còn lấy cực kì can đảm tư thái, xé đứt Long Hạo Thiên cánh tay.
+MOI: Sinh sinh bắt một cái Long Hạo Thiên đoạn long thủ, Quân Tiêu Dao chẳng những không có việc gì, ngược lại còn lấy cực kì can đảm tư thái, xé đứt Long Hạo Thiên cánh tay.
+
+#95 ch035.txt dong61
+HAN: “神子……”君雪凰也是松了一口气，看着君逍遥的目光，带着感激之意。
+CU : “Thần tử...” Quân Tuyết Hoàng cũng là lỏng thở ra một hơi, nhìn xem Quân Tiêu Dao ánh mắt, mang theo ý cảm kích.
+MOI: “Thần tử...” Quân Tuyết Hoàng cũng là thở dài một hơi, nhìn xem Quân Tiêu Dao ánh mắt, mang theo ý cảm kích.
+
+#96 ch035.txt dong77
+HAN: 他那断臂缺口处的血肉，竟是开始蠕动，然后缓缓生长出了一条新的手臂。
+CU : Cái kia tay cụt chỗ lỗ hổng huyết nhục, lại là bắt đầu nhúc nhích, sau đó chậm rãi sinh trưởng ra một đầu mới cánh tay.
+MOI: Cái kia tay cụt chỗ lỗ hổng huyết nhục, lại là bắt đầu nhúc nhích, sau đó chậm rãi sinh trưởng ra một mới cánh tay.
+
+#97 ch035.txt dong81
+HAN: “我明白了，传闻这龙浩天融合了一枚龙元，莫非是因为龙元的缘故……”
+CU : “Ta hiểu được, nghe đồn cái này Long Hạo Thiên dung hợp một mai Long Nguyên, không phải là bởi vì Long Nguyên nguyên nhân...”
+MOI: “Ta hiểu được, nghe đồn cái này Long Hạo Thiên dung hợp một viên Long Nguyên, không phải là bởi vì Long Nguyên nguyên nhân...”
+
+#98 ch035.txt dong90
+HAN: 众人仿佛听到了一声龙吟，一头巨龙虚影，缠绕着龙浩天的拳芒，碎灭虚空，对着君逍遥轰杀而来。
+CU : Đám người phảng phất nghe tới một tiếng long ngâm, một con Cự Long hư ảnh, quấn quanh lấy Long Hạo Thiên quyền mang, toái diệt hư không, đối với Quân Tiêu Dao oanh sát mà đến.
+MOI: Đám người phảng phất đã nghe được một tiếng long ngâm, một con Cự Long hư ảnh, quấn quanh lấy Long Hạo Thiên quyền mang, toái diệt hư không, đối với Quân Tiêu Dao oanh sát mà đến.
+
+#99 ch036.txt dong68
+HAN: 别说是年轻天骄，就连一些老一辈的人物，都是感觉到了一股寒意。
+CU : Đừng nói là tuổi trẻ thiên kiêu, đã liền một chút nhân vật đời trước, đều là cảm giác được một cỗ hàn ý.
+MOI: Đừng nói là tuổi trẻ thiên kiêu, đã liền một chút nhân vật đời trước, đều là cảm thấy thấy lạnh cả người.
+
+#100 ch036.txt dong97
+HAN: 随着系统话音落下，君逍遥的胸口猛然发光，迸发出了一股惊天动地的恐怖气息！
+CU : Theo hệ thống âm rơi xuống, Quân Tiêu Dao ngực đột nhiên phát sáng, bắn ra một cỗ kinh thiên động địa khí tức khủng bố!
+MOI: Theo hệ thống âm rơi xuống, Quân Tiêu Dao ngực đột nhiên phát sáng, tóe ra một cỗ kinh thiên động địa khí tức khủng bố!
+
+#101 ch037.txt dong60
+HAN: 极招相碰，真龙困天术与上苍劫光落在了一起。
+CU : Cực chiêu va nhau, Chân Long Khốn Thiên thuật cùng trời xanh kiếp quang rơi ở cùng một chỗ.
+MOI: Cực chiêu va nhau, Chân Long Khốn Thiên thuật cùng trời xanh kiếp quang đã rơi vào cùng một chỗ.
+
+#102 ch038.txt dong32
+HAN: 听到幽龙至尊的话，龙浩天心底终于是松了一口气。
+CU : Nghe tới U Long chí tôn lời nói, Long Hạo Thiên đáy lòng rốt cục lỏng thở ra một hơi.
+MOI: Nghe tới U Long chí tôn lời nói, Long Hạo Thiên đáy lòng rốt cục thở dài một hơi.
+
+#103 ch038.txt dong88
+HAN: 剑芒熠熠，仿佛倒映着群仙陨落的恐怖景象，虚空直接是裂开了一道黑漆漆的裂缝！
+CU : Kiếm mang rạng rỡ, phảng phất chiếu ngược quần tiên rơi xuống cảnh tượng khủng bố, hư không trực tiếp là vỡ ra một đạo hắc chăm chú khe hở!
+MOI: Kiếm mang rạng rỡ, phảng phất chiếu ngược quần tiên rơi xuống cảnh tượng khủng bố, hư không trực tiếp là đã nứt ra một đạo đen như mực khe hở!
+
+#104 ch039.txt dong11
+HAN: “君家十八祖，应该不是普通的至尊强者吧？”一位年轻天骄深深咽了一口唾沫道。
+CU : “Quân Gia Thập Bát Tổ, hẳn không phải là thông thường cường giả chí tôn?” Một vị tuổi trẻ thiên kiêu thật sâu nuốt một cái nước bọt nói.
+MOI: “Quân Gia Thập Bát Tổ, hẳn không phải là thông thường cường giả chí tôn?” Một vị tuổi trẻ thiên kiêu thật sâu nuốt nước miếng một cái nói.
+
+#105 ch039.txt dong30
+HAN: “哦，对了，还忘了一个……”君逍遥微挑眉梢，看向那瘫倒在地上瑟瑟发抖的羽人族骄女。
+CU : “A, đúng rồi, còn quên một cái...” Quân Tiêu Dao chau lên đuôi lông mày, nhìn về phía kia tê liệt ngã xuống Ngồi trên mặt đất run lẩy bẩy Vũ Nhân Tộc kiêu nữ.
+MOI: “A, đúng rồi, còn đã quên một cái...” Quân Tiêu Dao chau lên đuôi lông mày, nhìn về phía kia tê liệt ngã xuống Ngồi trên mặt đất run lẩy bẩy Vũ Nhân Tộc kiêu nữ.
+
+#106 ch040.txt dong67
+HAN: 除了境界之外，君逍遥借助雷劫之力和龙元能量，体内再度觉醒了一万巨象微粒。
+CU : Trừ ngoài cảnh giới, Quân Tiêu Dao mượn nhờ Lôi Kiếp Chi Lực cùng Long Nguyên năng lượng, thể nội lại lần nữa giác tỉnh một vạn Cự Tượng vi hạt.
+MOI: Trừ ngoài cảnh giới, Quân Tiêu Dao mượn nhờ Lôi Kiếp Chi Lực cùng Long Nguyên năng lượng, thể nội lại lần nữa đã thức tỉnh một vạn Cự Tượng vi hạt.
+
+#107 ch041.txt dong18
+HAN: 整个洪州的生灵，都是仿佛感觉到了一股灭世的浩瀚天威。
+CU : Toàn bộ Hồng Châu sinh linh, đều là phảng phất cảm giác được một cỗ diệt thế mênh mông thiên uy.
+MOI: Toàn bộ Hồng Châu sinh linh, đều là phảng phất cảm thấy một cỗ diệt thế mênh mông thiên uy.
+
+#108 ch041.txt dong36
+HAN: 叶星云身体一动，就感觉快要散架了一般，疼的面色发白。
+CU : Diệp Tinh Vân thân thể khẽ động, cũng cảm giác sắp tan ra thành từng mảnh một bàn, đau sắc mặt trắng bệch.
+MOI: Diệp Tinh Vân thân thể khẽ động, cũng cảm giác sắp tan rã, đau sắc mặt trắng bệch.
+
+#109 ch041.txt dong49
+HAN: 他仿佛看到了一座恢弘的星宫，还有一道身披日月星辰的宏伟人影，背对着他。
+CU : Hắn phảng phất nhìn thấy một tòa rộng lớn Tinh Cung, còn có một đạo người khoác trời trăng sao to lớn bóng người, đưa lưng về phía hắn.
+MOI: Hắn phảng phất thấy được một tòa rộng lớn Tinh Cung, còn có một đạo người khoác trời trăng sao to lớn bóng người, đưa lưng về phía hắn.
+
+#110 ch042.txt dong62
+HAN: 让他松了一口气的是，姜洛璃总算是离去了。
+CU : Để hắn lỏng thở ra một hơi chính là, Khương Lạc Ly cuối cùng là rời đi.
+MOI: Để hắn thở dài một hơi chính là, Khương Lạc Ly cuối cùng là rời đi.
+
+#111 ch043.txt dong43
+HAN: 但也是因为此州颇为凶险，环境险恶，所以反倒是成为了一处小有名气的历练之地。
+CU : Nhưng cũng là bởi vì này châu có chút hung hiểm, hoàn cảnh hiểm ác, cho nên ngược lại là trở thành một chỗ có chút danh tiếng Lịch Luyện Chi Địa.
+MOI: Nhưng cũng là bởi vì này châu có chút hung hiểm, hoàn cảnh hiểm ác, cho nên ngược lại là đã trở thành một chỗ có chút danh tiếng Lịch Luyện Chi Địa.
+
+#112 ch044.txt dong12
+HAN: 这让白纱蒙面女子心中，没来由地对萧尘多了一丝好感。
+CU : Cái này khiến lụa trắng nữ tử che mặt trong lòng, không khỏi vì đó đối Tiêu Trần nhiều một tia hảo cảm.
+MOI: Cái này khiến lụa trắng nữ tử che mặt trong lòng, không khỏi vì đó đối Tiêu Trần nhiều hơn một tia hảo cảm.
+
+#113 ch044.txt dong26
+HAN: 而萧尘，也是简单的将自己的情况说了一下。
+CU : Mà Tiêu Trần, cũng là đơn giản đem chính mình tình huống nói rồi một lần.
+MOI: Mà Tiêu Trần, cũng là đơn giản đem chính mình tình huống nói một lần.
+
+#114 ch045.txt dong77
+HAN: “龙浩天融合了一枚龙元，的确不弱，但碧池已经融合了两枚龙元，而且还是彻底炼化融合，论实力，那龙浩天绝对比不过碧池。”
+CU : “Long Hạo Thiên dung hợp một mai Long Nguyên, đích xác không kém, nhưng bitch đã dung hợp hai viên Long Nguyên, hơn nữa còn là triệt để luyện hóa dung hợp, luận thực lực, kia Long Hạo Thiên tuyệt đối so với bất quá bitch.”
+MOI: “Long Hạo Thiên dung hợp một viên Long Nguyên, đích xác không kém, nhưng bitch đã dung hợp hai viên Long Nguyên, hơn nữa còn là triệt để luyện hóa dung hợp, luận thực lực, kia Long Hạo Thiên tuyệt đối so với bất quá bitch.”
+
+#115 ch047.txt dong34
+HAN: 君逍遥淡淡扫了一眼下方。
+CU : Quân Tiêu Dao nhàn nhạt quét một dưới mắt phương.
+MOI: Quân Tiêu Dao nhàn nhạt nhìn lướt qua phía dưới.
+
+#116 ch048.txt dong28
+HAN: 他身形猛然气化，竟是化为了一团黑雾。
+CU : Thân hình hắn đột nhiên hoá khí, lại là hóa thành một đoàn hắc vụ.
+MOI: Thân hình hắn đột nhiên hoá khí, lại là biến thành một đoàn Hắc Vụ.
+
+#117 ch048.txt dong29
+HAN: 那道剑光洞穿了黑雾，轰然落在了后方地面上。
+CU : Đạo kiếm quang kia xuyên thủng Hắc Vụ, ầm vang rơi ở phía sau trên mặt.
+MOI: Đạo kiếm quang kia xuyên thủng Hắc Vụ, ầm vang đã rơi vào phía sau trên mặt.
+
+#118 ch048.txt dong80
+HAN: 君万劫扫了一眼，脸色淡漠道：“今日算是告诫，告诉那君逍遥，以后行事低调一些。”
+CU : Quân Vạn Kiếp quét một mắt, sắc mặt đạm mạc nói:“Hôm nay xem như khuyên bảo, nói cho kia Quân Tiêu Dao, về sau làm việc khiêm tốn một chút.”
+MOI: Quân Vạn Kiếp nhìn lướt qua, sắc mặt đạm mạc nói:“Hôm nay xem như khuyên bảo, nói cho kia Quân Tiêu Dao, về sau làm việc khiêm tốn một chút.”
+
+#119 ch048.txt dong90
+HAN: 比起君万劫，他的确差了一筹。
+CU : So với Quân Vạn Kiếp, thật sự là hắn kém một trù.
+MOI: So với Quân Vạn Kiếp, thật sự là hắn kém một bậc.
+
+#120 ch049.txt dong102
+HAN: 黑土身形再度汇聚，脸色苍白，心有余悸，不过心底却是松了一口气。
+CU : Đất đen thân hình lại lần nữa hội tụ, sắc mặt tái nhợt, lòng còn sợ hãi, không đa nghi ngọn nguồn lại là lỏng thở ra một hơi.
+MOI: Đất đen thân hình lại lần nữa hội tụ, sắc mặt tái nhợt, lòng còn sợ hãi, không đa nghi ngọn nguồn lại là thở dài một hơi.
+
+#121 ch050.txt dong3
+HAN: 看着那两招就被灭杀的黑土，整个南天城周围，所有修士都是暗暗咽了一口唾沫。
+CU : Nhìn xem kia hai chiêu đã bị giết chết đất đen, toàn bộ Nam Thiên thành chung quanh, tất cả tu sĩ đều là âm thầm nuốt một cái nước bọt.
+MOI: Nhìn xem kia hai chiêu đã bị giết chết đất đen, toàn bộ Nam Thiên thành chung quanh, tất cả tu sĩ đều là âm thầm nuốt nước miếng một cái.
+
+#122 ch050.txt dong7
+HAN: 而现在，君逍遥翻手之间，不费吹灰之力，便灭杀了一位天骄。
+CU : Mà bây giờ, Quân Tiêu Dao lật tay ở giữa, không cần tốn nhiều sức, liền diệt sát một vị thiên kiêu.
+MOI: Mà bây giờ, Quân Tiêu Dao lật tay ở giữa, không cần tốn nhiều sức, liền tàn sát một vị thiên kiêu.
+
+#123 ch050.txt dong80
+HAN: 他这一脚，直接踏在了君万劫胸膛上。
+CU : Hắn một cước này, trực tiếp đạp ở Quân Vạn Kiếp trên lồng ngực.
+MOI: Hắn một cước này, trực tiếp đạp ở đã Quân Vạn Kiếp trên lồng ngực.
+
+#124 ch050.txt dong83
+HAN: 君万劫身形重重撞击在了地上，而君逍遥的脚，依旧踏在君万劫胸膛，单手负在身后。
+CU : Quân Vạn Kiếp thân hình nặng nề va chạm trên mặt đất, mà Quân Tiêu Dao chân, vẫn như cũ đạp ở Quân Vạn Kiếp lồng ngực, một tay chắp sau lưng.
+MOI: Quân Vạn Kiếp thân hình nặng nề đụng vào trên mặt đất, mà Quân Tiêu Dao chân, vẫn như cũ đạp ở Quân Vạn Kiếp lồng ngực, một tay chắp sau lưng.
+
+#125 ch051.txt dong55
+HAN: 君万劫脸色露出一缕颓然，但终究还是一叹道：“回禀公子，我有一个亲妹妹，她在幼时被放在了下界，我发誓，一定要带她回仙域，所以，我不能死……”
+CU : Quân Vạn Kiếp sắc mặt lộ ra một sợi chán nản, nhưng cuối cùng vẫn là thở dài nói:“Hồi bẩm công tử, ta có một cái thân muội muội, nàng tại khi còn bé bị thả ở hạ giới, ta phát thệ, nhất định phải mang nàng về Tiên Vực, cho nên, ta không thể chết...”
+MOI: Quân Vạn Kiếp sắc mặt lộ ra một sợi chán nản, nhưng cuối cùng vẫn là thở dài nói:“Hồi bẩm công tử, ta có một cái thân muội muội, nàng tại khi còn bé bị đặt ở hạ giới, ta phát thệ, nhất định phải mang nàng về Tiên Vực, cho nên, ta không thể chết...”
+
+#126 ch051.txt dong73
+HAN: “多谢公子，之前是万劫有眼无珠，不自量力！”君万劫对着君逍遥重重地磕了一个响头。
+CU : “Đa tạ công tử, trước đó là vạn kiếp có mắt không tròng, không biết tự lượng sức mình!” Quân Vạn Kiếp đối với Quân Tiêu Dao nặng nề đập một cái khấu đầu.
+MOI: “Đa tạ công tử, trước đó là vạn kiếp có mắt không tròng, không biết tự lượng sức mình!” Quân Vạn Kiếp đối với Quân Tiêu Dao nặng nề dập đầu một cái khấu đầu.
+
+#127 ch051.txt dong76
+HAN: 看着这般场景，君仗剑和君雪凰两人，相视一眼，都是深深吸了一口气。
+CU : Nhìn xem cảnh tượng như vậy, Quân Trượng Kiếm cùng Quân Tuyết Hoàng hai người, nhìn nhau, đều là thật sâu hút thở ra một hơi.
+MOI: Nhìn xem cảnh tượng như vậy, Quân Trượng Kiếm cùng Quân Tuyết Hoàng hai người, nhìn nhau, đều là hít một hơi thật sâu.
+
+#128 ch052.txt dong61
+HAN: 那时他仗着境界稍高，占了一点便宜，才胜了君仗剑几招。
+CU : Khi đó hắn ỷ vào cảnh giới hơi cao, chiếm hơi có chút tiện nghi, mới thắng Quân Trượng Kiếm mấy chiêu.
+MOI: Khi đó hắn ỷ vào cảnh giới hơi cao, chiếm được một chút tiện nghi, mới thắng Quân Trượng Kiếm mấy chiêu.
+
+#129 ch052.txt dong66
+HAN: 因为他曾经偶然间，在圣灵书院藏经楼内，翻到了一卷古籍，里面不仅有一枚元天至尊令，还有一块古符。
+CU : Bởi vì hắn đã từng một lần tình cờ, tại Thánh Linh thư viện Tàng Kinh Lâu bên trong, lật đến một quyển cổ tịch, bên trong không chỉ có một viên Nguyên Thiên Chí Tôn Lệnh, còn có một khối cổ phù.
+MOI: Bởi vì hắn đã từng một lần tình cờ, tại Thánh Linh thư viện Tàng Kinh Lâu bên trong, lộn tới một quyển sách cổ, bên trong không chỉ có một viên Nguyên Thiên Chí Tôn Lệnh, còn có một khối cổ phù.
+
+#130 ch053.txt dong44
+HAN: 灰雾所过之处，各种妖兽，太古遗种，纯血生灵，皆是双目泛红，开始嘶吼，如同狂化了一般。
+CU : Sương mù xám những nơi đi qua, các loại yêu thú, Thái Cổ di chủng, thuần huyết sinh linh, đều là hai mắt phiếm hồng, bắt đầu gào thét, như là cuồng hóa một bàn.
+MOI: Sương mù xám những nơi đi qua, các loại yêu thú, Thái Cổ di chủng, thuần huyết sinh linh, đều là hai mắt phiếm hồng, bắt đầu gào thét, như là cuồng hóa bình thường.
+
+#131 ch053.txt dong55
+HAN: 几位大人物中，就有君战天，他思索了一下后，微微摇头。
+CU : Mấy vị đại nhân vật bên trong, thì có Quân Chiến Thiên, hắn suy tư rồi một lần sau, khẽ lắc đầu.
+MOI: Mấy vị đại nhân vật bên trong, thì có Quân Chiến Thiên, hắn sau khi suy nghĩ một chút, khẽ lắc đầu.
+
+#132 ch053.txt dong57
+HAN: 稍微沾染了一点，轻则让生灵陷入疯狂和异化，重则直接身死道消。
+CU : Hơi nhiễm hơi có chút, nhẹ thì để sinh linh lâm vào điên cuồng cùng dị hoá, nặng thì trực tiếp thân tử đạo tiêu.
+MOI: Hơi lây dính một chút, nhẹ thì để sinh linh lâm vào điên cuồng cùng dị hoá, nặng thì trực tiếp thân tử đạo tiêu.
+
+#133 ch054.txt dong31
+HAN: 姜圣依便轻轻哼了一声，像是提醒着什么。
+CU : Khương Thánh Y liền khẽ hừ nhẹ một tiếng, giống như là nhắc nhở lấy cái gì.
+MOI: Khương Thánh Y liền khe khẽ hừ một tiếng, giống như là nhắc nhở lấy cái gì.
+
+#134 ch054.txt dong56
+HAN: 君逍遥知晓，这是怕他们这些不朽道统的天骄直接陨落在了秘藏之内。
+CU : Quân Tiêu Dao biết được, đây là sợ bọn họ những này bất hủ đạo chính thống thiên kiêu trực tiếp vẫn lạc ở bí tàng bên trong.
+MOI: Quân Tiêu Dao biết được, đây là sợ bọn họ những này bất hủ đạo chính thống thiên kiêu trực tiếp vẫn lạc tại đã bí tàng bên trong.
+
+#135 ch055.txt dong28
+HAN: 而跟在后面的道极天宗首席弟子，却是暗暗咽了一口唾沫，眼中满是震动之色。
+CU : Mà theo ở phía sau đạo Cực Thiên Tông thủ tịch đệ tử, lại là âm thầm nuốt một cái nước bọt, trong mắt tràn đầy vẻ chấn động.
+MOI: Mà theo ở phía sau đạo Cực Thiên Tông thủ tịch đệ tử, lại là âm thầm nuốt nước miếng một cái, trong mắt tràn đầy vẻ chấn động.
+
+#136 ch055.txt dong35
+HAN: “那可不，姬玄右臂可是融入了一截圣人王手骨，都不用加持武学神通，随意一掌都有惊天大威势。”
+CU : “Vậy cũng không, Cơ Huyền cánh tay phải thế nhưng là dung nhập một đoạn Thánh Nhân Vương xương tay, đều không cần gia trì võ học thần thông, tùy ý một chưởng đều có kinh thiên đại uy thế.”
+MOI: “Vậy cũng không, Cơ Huyền cánh tay phải thế nhưng là sáp nhập vào một đoạn Thánh Nhân Vương xương tay, đều không cần gia trì võ học thần thông, tùy ý một chưởng đều có kinh thiên đại uy thế.”
+
+#137 ch055.txt dong71
+HAN: 而且在灰雾之中，他们也隐隐感觉到了一股压制。
+CU : Mà lại tại sương mù xám bên trong, bọn hắn cũng ẩn ẩn cảm giác được một cỗ áp chế.
+MOI: Mà lại tại sương mù xám bên trong, bọn hắn cũng ẩn ẩn cảm thấy một cỗ áp chế.
+
+#138 ch056.txt dong45
+HAN: 萧尘则是死死攥着拳头，眼中有着不甘，而且，多了一丝淡淡的惊惧！
+CU : Tiêu Trần là chết chết nắm chặt nắm đấm, trong mắt có không cam lòng, mà lại, nhiều một tia nhàn nhạt sợ hãi!
+MOI: Tiêu Trần là chết chết nắm chặt nắm đấm, trong mắt có không cam lòng, mà lại, nhiều hơn một tia nhàn nhạt sợ hãi!
+
+#139 ch057.txt dong33
+HAN: 吞天雀见状，再度震动翅翼，无数黑色的翎羽，铺天盖地飞射而出，宛如下了一场灭世的黑雨。
+CU : Thôn Thiên Tước thấy thế, lại lần nữa chấn động cánh, vô số màu đen lông vũ, phô thiên cái địa bắn ra, tựa như hạ một trận diệt thế Hắc Vũ.
+MOI: Thôn Thiên Tước thấy thế, lại lần nữa chấn động cánh, vô số màu đen lông vũ, phô thiên cái địa bắn ra, tựa như rơi xuống một trận diệt thế Hắc Vũ.
+
+#140 ch057.txt dong41
+HAN: 那是箭羽落在了君逍遥的身上。
+CU : Kia là Tiễn Vũ rơi ở Quân Tiêu Dao trên người.
+MOI: Kia là Tiễn Vũ đã rơi vào Quân Tiêu Dao trên người.
+
+#141 ch057.txt dong46
+HAN: 金色拳芒滔天，照亮了一片天宇。
+CU : Kim sắc quyền mang ngập trời, chiếu sáng một mảnh bầu trời.
+MOI: Kim sắc quyền mang ngập trời, chiếu sáng một vùng trời.
+
+#142 ch057.txt dong70
+HAN: 拿凶名赫赫的吞天雀做食材，而且还起了一个侮辱性的名字，手撕鸡？
+CU : Cầm hung danh hiển hách Thôn Thiên Tước làm nguyên liệu nấu ăn, hơn nữa còn lên một cái tính xúc phạm danh tự, gà xé?
+MOI: Cầm hung danh hiển hách Thôn Thiên Tước làm nguyên liệu nấu ăn, hơn nữa còn nổi lên một cái tính xúc phạm danh tự, gà xé?
+
+#143 ch058.txt dong49
+HAN: 龙碧池深深吸了一口气，胸脯起伏着。
+CU : Rồng bitch thật sâu hút thở ra một hơi, bộ ngực phập phồng.
+MOI: Rồng bitch hít một hơi thật sâu, bộ ngực phập phồng.
+
+#144 ch058.txt dong67
+HAN: 但现在，亲眼看到君逍遥的实力后，龙碧池很是自觉的把寻找远古龙骨放在了第一位。
+CU : Nhưng bây giờ, tận mắt thấy Quân Tiêu Dao thực lực sau, rồng bitch rất là tự giác đem tìm kiếm viễn cổ long xương thả ở người thứ một.
+MOI: Nhưng bây giờ, tận mắt thấy Quân Tiêu Dao thực lực sau, rồng bitch rất là tự giác đem tìm kiếm viễn cổ long xương đặt ở người thứ một.
+
+#145 ch058.txt dong79
+HAN: 君逍遥释放出魂力，大致用神念查探了一下。
+CU : Quân Tiêu Dao phóng xuất ra hồn lực, đại khái dùng thần niệm điều tra rồi một lần.
+MOI: Quân Tiêu Dao phóng xuất ra hồn lực, đại khái dùng thần niệm dò xét một chút.
+
+#146 ch059.txt dong20
+HAN: 君逍遥随手便开出了一条大道，没有任何魔尸能够让他停下脚步。
+CU : Quân Tiêu Dao tiện tay liền mở ra một con đường lớn, không có bất kỳ cái gì Ma Thi có thể làm cho hắn dừng bước lại.
+MOI: Quân Tiêu Dao tiện tay liền khai ra một đại đạo, không có bất kỳ cái gì Ma Thi có thể làm cho hắn dừng bước lại.
+
+#147 ch059.txt dong58
+HAN: 过了约莫半晌，萧尘在解决掉了一些魔尸和其他少数几位修士之后，进入了一处类似溶洞般的存在。
+CU : Qua ước chừng nửa ngày, Tiêu Trần tại giải quyết hết một chút Ma Thi cùng cái khác số ít mấy vị tu sĩ về sau, tiến vào một chỗ tương tự động đá vôi vậy tồn tại.
+MOI: Qua ước chừng nửa ngày, Tiêu Trần tại giải quyết hết một chút Ma Thi cùng cái khác số ít mấy vị tu sĩ về sau, tiến nhập một chỗ tương tự động đá vôi vậy tồn tại.
+
+#148 ch059.txt dong73
+HAN: 萧尘闻言，深深吸了一口气，眼中也是难掩震撼。
+CU : Tiêu Trần nghe vậy, thật sâu hút thở ra một hơi, trong mắt cũng là khó nén rung động.
+MOI: Tiêu Trần nghe vậy, hít một hơi thật sâu, trong mắt cũng là khó nén rung động.
+
+#149 ch060.txt dong13
+HAN: “太好了，这次任务可以完成了。”龙碧池心里松了一口气。
+CU : “Thật tốt quá, nhiệm vụ lần này có thể hoàn thành.” Rồng bitch trong lòng lỏng thở ra một hơi.
+MOI: “Thật tốt quá, nhiệm vụ lần này có thể hoàn thành.” Rồng bitch trong lòng thở dài một hơi.
+
+#150 ch060.txt dong55
+HAN: 感应到这股突如其来的招式，龙碧池心下一惊，急忙侧身闪避，却还是被擦中了身躯，吐出了一小口鲜血。
+CU : Cảm ứng được cỗ này xảy ra bất ngờ chiêu thức, rồng bitch trong lòng cả kinh, vội vàng nghiêng người né tránh, nhưng vẫn là bị quẹt vào đã thân thể, phun ra một cái miệng nhỏ máu tươi.
+MOI: Cảm ứng được cỗ này xảy ra bất ngờ chiêu thức, rồng bitch trong lòng cả kinh, vội vàng nghiêng người né tránh, nhưng vẫn là bị quẹt vào đã thân thể, phun ra một ngụm nhỏ máu tươi.
+
+#151 ch061.txt dong43
+HAN: 龙碧池则翻手祭出了一条龙鳞长鞭，一鞭子甩出，虚空震裂。
+CU : Rồng bitch thì lật tay tế ra một con rồng vảy trường tiên, một roi vung ra, hư không đánh rách tả tơi.
+MOI: Rồng bitch thì lật tay sử dụng một con rồng vảy trường tiên, một roi vung ra, hư không đánh rách tả tơi.
+
+#152 ch061.txt dong86
+HAN: 而就在这时，武明月身形一动，祭出了一条金色绳子。
+CU : Mà đúng lúc này, Vũ Minh Nguyệt thân hình khẽ động, tế ra một thỏi vàng sắc dây thừng.
+MOI: Mà đúng lúc này, Vũ Minh Nguyệt thân hình khẽ động, sử dụng một kim sắc dây thừng.
+
+#153 ch061.txt dong87
+HAN: 那绳子如同灵蛇一般扭曲，而后以极快的速度，直接缠绕在了君万劫身上，将其捆缚住。
+CU : Kia dây thừng như là linh xà bình thường vặn vẹo, sau đó lấy cực nhanh tốc độ, trực tiếp quấn quanh ở Quân Vạn Kiếp trên thân, đem trói lại.
+MOI: Kia dây thừng như là linh xà bình thường vặn vẹo, sau đó lấy cực nhanh tốc độ, trực tiếp quấn quanh ở đã Quân Vạn Kiếp trên thân, đem trói lại.
+
+#154 ch062.txt dong5
+HAN: 若是死了一位，整个荒天仙域都会发生大地震。
+CU : Nếu là chết một vị, toàn bộ Hoang Thiên Tiên Vực đều sẽ phát sinh động đất.
+MOI: Nếu là đã chết một vị, toàn bộ Hoang Thiên Tiên Vực đều sẽ phát sinh động đất.
+
+#155 ch062.txt dong19
+HAN: 武明月亦是深吸了一口气，没想到真的是君家神子驾临。
+CU : Vũ Minh Nguyệt cũng là hít sâu thở ra một hơi, không nghĩ tới thật là Quân Gia thần tử giá lâm.
+MOI: Vũ Minh Nguyệt cũng là hít sâu một hơi, không nghĩ tới thật là Quân Gia thần tử giá lâm.
+
+#156 ch062.txt dong47
+HAN: 君逍遥并不怎么在乎萧尘，而是将目光落在了那五具龙骨之上。
+CU : Quân Tiêu Dao cũng không thế nào quan tâm Tiêu Trần, mà là đem ánh mắt rơi ở kia năm cỗ Long cốt phía trên.
+MOI: Quân Tiêu Dao cũng không thế nào quan tâm Tiêu Trần, mà là đem ánh mắt đã rơi vào kia năm cỗ Long cốt phía trên.
+
+#157 ch062.txt dong48
+HAN: 四具远古龙骨，君逍遥只是淡淡扫过了一眼。
+CU : Bốn cỗ viễn cổ long xương, Quân Tiêu Dao chỉ là nhàn nhạt đảo qua một mắt.
+MOI: Bốn cỗ viễn cổ long xương, Quân Tiêu Dao chỉ là nhàn nhạt quét qua liếc mắt.
+
+#158 ch063.txt dong17
+HAN: 龙碧池脸色一白，吐出一大口鲜血，整个身躯直接是被震飞，轰然砸在了一侧山壁，周围蔓延龟裂的缝隙。
+CU : Rồng bitch sắc mặt trắng nhợt, phun ra búng máu tươi lớn, toàn bộ thân hình trực tiếp là bị đánh bay, ầm vang nện ở một bên vách núi, chung quanh lan tràn nứt nẻ khe hở.
+MOI: Rồng bitch sắc mặt trắng nhợt, phun ra búng máu tươi lớn, toàn bộ thân hình trực tiếp là bị đánh bay, ầm vang đập vào một bên vách núi, chung quanh lan tràn nứt nẻ khe hở.
+
+#159 ch063.txt dong34
+HAN: 这种感觉，就好像是凡尘俗女，看到了一位真仙一般。
+CU : Loại cảm giác này, giống như là Phàm Trần tục nữ, nhìn thấy một vị Chân Tiên bình thường.
+MOI: Loại cảm giác này, giống như là Phàm Trần tục nữ, thấy được một vị Chân Tiên bình thường.
+
+#160 ch063.txt dong92
+HAN: 发现他尚有生机后，心里微微松了一口气。
+CU : Phát hiện hắn còn có sinh cơ sau, trong lòng có chút lỏng thở ra một hơi.
+MOI: Phát hiện hắn còn có sinh cơ sau, trong lòng hơi hơi thở dài nhẹ nhõm một hơi.
+
+#161 ch063.txt dong108
+HAN: 堂堂不朽神朝的长公主，此刻竟是直接跪在了君逍遥身前！
+CU : Đường đường bất hủ thần triều trưởng công chúa, giờ phút này lại là trực tiếp quỳ ở Quân Tiêu Dao trước người!
+MOI: Đường đường bất hủ thần triều trưởng công chúa, giờ phút này lại là trực tiếp quỳ xuống Quân Tiêu Dao trước người!
+
+#162 ch064.txt dong44
+HAN: 君逍遥这般目光，令武明月雪白肌肤上起了一层小疙瘩，忍不住一双玉臂护在胸前，蹙眉道：“君逍遥，你可别提过分的条件，我是不可能答应的。”
+CU : Quân Tiêu Dao như vậy ánh mắt, khiến Vũ Minh Nguyệt da thịt trắng như tuyết bên trên lên một tầng mụn nhỏ, nhịn không được một đôi cánh tay ngọc che ở trước ngực, cau mày nói:“Quân Tiêu Dao, ngươi cũng đừng đề cập quá phận điều kiện, ta phải không có thể đáp ứng.”
+MOI: Quân Tiêu Dao như vậy ánh mắt, khiến Vũ Minh Nguyệt da thịt trắng như tuyết bên trên nổi lên một tầng mụn nhỏ, nhịn không được một đôi cánh tay ngọc che ở trước ngực, cau mày nói:“Quân Tiêu Dao, ngươi cũng đừng đề cập quá phận điều kiện, ta phải không có thể đáp ứng.”
+
+#163 ch064.txt dong93
+HAN: “为了一个注定要死的蝼蚁，甘愿被我奴役。”
+CU : “Vì một cái nhất định phải chết sâu kiến, cam nguyện bị ta nô dịch.”
+MOI: “Vì một người bị coi là phải chết sâu kiến, cam nguyện bị ta nô dịch.”
+
+#164 ch065.txt dong51
+HAN: “呼，那就好，那君逍遥不是天不怕地不怕吗，现在不还是忌惮我家明月。”萧尘长舒了一口气。
+CU : “Hô, vậy là tốt rồi, kia Quân Tiêu Dao không phải không sợ trời không sợ đất sao, hiện tại không phải là kiêng kị nhà ta Minh Nguyệt.” Tiêu Trần thở phào thở ra một hơi.
+MOI: “Hô, vậy là tốt rồi, kia Quân Tiêu Dao không phải không sợ trời không sợ đất sao, hiện tại không phải là kiêng kị nhà ta Minh Nguyệt.” Tiêu Trần thở dài nhẹ nhõm.
+
+#165 ch065.txt dong69
+HAN: 不过一想到被君逍遥种下了奴印，武明月心头便是蒙上了一层阴影。
+CU : Bất quá vừa nghĩ tới bị Quân Tiêu Dao gieo Nô Ấn, Vũ Minh Nguyệt trong lòng chính là bịt kín một tầng Âm Ảnh.
+MOI: Bất quá vừa nghĩ tới bị Quân Tiêu Dao gieo Nô Ấn, Vũ Minh Nguyệt trong lòng chính là mông thượng một tầng bóng ma.
+
+#166 ch065.txt dong82
+HAN: 下一刻，姬玄的身影，便是消失在了原地，传送进了秘藏深处。
+CU : Sau một khắc, Cơ Huyền thân ảnh, chính là biến mất ngay tại chỗ, truyền tống vào đã bí tàng chỗ sâu.
+MOI: Sau một khắc, Cơ Huyền thân ảnh, chính là biến mất ở đã nguyên địa, truyền tống vào đã bí tàng chỗ sâu.
+
+#167 ch065.txt dong88
+HAN: 她也是拿出了一块元天至尊令，虚空一阵波动，身形消失原地。
+CU : Nàng cũng là xuất ra một khối Nguyên Thiên Chí Tôn Lệnh, hư không một cơn chấn động, thân hình biến mất nguyên địa.
+MOI: Nàng cũng là lấy ra một khối Nguyên Thiên Chí Tôn Lệnh, hư không một cơn chấn động, thân hình biến mất nguyên địa.
+
+#168 ch065.txt dong89
+HAN: 君仗剑则是拿出了一块传讯玉简。
+CU : Quân Trượng Kiếm thì là xuất ra một khối ngọc giản đưa tin.
+MOI: Quân Trượng Kiếm thì là lấy ra một khối ngọc giản đưa tin.
+
+#169 ch066.txt dong8
+HAN: 更别说他还从圣灵书院的一座藏经阁内，意外发现了一枚古符，同这至尊秘藏有关。
+CU : Chớ nói chi là hắn còn từ Thánh Linh thư viện một tòa trong tàng kinh các, ngoài ý muốn phát hiện một mai cổ phù, cùng cái này Chí Tôn bí tàng có quan hệ.
+MOI: Chớ nói chi là hắn còn từ Thánh Linh thư viện một tòa trong tàng kinh các, ngoài ý muốn phát hiện một viên cổ phù, cùng cái này Chí Tôn bí tàng có quan hệ.
+
+#170 ch067.txt dong8
+HAN: 好似周围一切，都被污染魔化了一般。
+CU : Tựa như hết thảy xung quanh, đều bị ô nhiễm ma hóa một bàn.
+MOI: Tựa như hết thảy xung quanh, đều bị ô nhiễm ma hóa bình thường.
+
+#171 ch067.txt dong54
+HAN: 从方才开始，君逍遥就一直楞在原地，如同失神了一般。
+CU : Từ mới vừa bắt đầu, Quân Tiêu Dao vẫn lăng tại nguyên chỗ, như là thất thần một bàn.
+MOI: Từ mới vừa bắt đầu, Quân Tiêu Dao vẫn lăng tại nguyên chỗ, như là thất thần bình thường.
+
+#172 ch067.txt dong90
+HAN: 转过身去，便是看到了一道如白衣仙人一般的出尘身影，踏空而来。
+CU : Xoay người sang chỗ khác, chính là nhìn thấy một đạo như áo trắng Tiên Nhân giống vậy xuất trần thân ảnh, đạp không mà đến.
+MOI: Xoay người sang chỗ khác, chính là thấy được một đạo như áo trắng Tiên Nhân giống vậy xuất trần thân ảnh, đạp không mà đến.
+
+#173 ch069.txt dong49
+HAN: 就好像是一件神器，被新手村的玩家捡到，融合在了一起。
+CU : Giống như là một kiện Thần Khí, bị Tân Thủ thôn người chơi nhặt được, dung hợp ở cùng một chỗ.
+MOI: Giống như là một kiện Thần Khí, bị Tân Thủ thôn người chơi nhặt được, dung hợp lại với nhau.
+
+#174 ch069.txt dong72
+HAN: 至于君逍遥自己的至尊骨，那是系统签到得来的，同他的肉身完美融合在了一起，不会有这种瑕疵缺陷。
+CU : Về phần chính Quân Tiêu Dao Chí Tôn cốt, kia là hệ thống đánh dấu có được, cùng hắn nhục thân hoàn mỹ dung hợp ở cùng một chỗ, không có loại này tì vết thiếu hụt.
+MOI: Về phần chính Quân Tiêu Dao Chí Tôn cốt, kia là hệ thống đánh dấu có được, cùng hắn nhục thân hoàn mỹ dung hợp lại với nhau, không có loại này tì vết thiếu hụt.
+
+#175 ch069.txt dong87
+HAN: 这回，他终于忍不住，吐出了一口鲜血，脸色霎时泛白。
+CU : Lúc này, hắn rốt cục nhịn không được, phun ra một cái máu tươi, sắc mặt thoáng chốc trắng bệch.
+MOI: Lúc này, hắn rốt cục nhịn không được, phun ra một ngụm máu tươi, sắc mặt thoáng chốc trắng bệch.
+
+#176 ch070.txt dong4
+HAN: 哪怕君雪凰，君仗剑等人，亦是从这一拳中感觉到了一股极度的危险。
+CU : Dù là Quân Tuyết Hoàng, Quân Trượng Kiếm và những người khác, cũng là từ nơi này một quyền bên trong cảm giác được một cỗ cực độ nguy hiểm.
+MOI: Dù là Quân Tuyết Hoàng, Quân Trượng Kiếm và những người khác, cũng là từ nơi này một quyền bên trong cảm thấy một cỗ cực độ nguy hiểm.
+
+#177 ch070.txt dong18
+HAN: 体内龙气缠绕在手臂之上，仿佛化为了一头青龙之形，正是他从萧尘那里夺来的龙气。
+CU : Thể nội long khí quấn quanh ở trên cánh tay, phảng phất hóa thành một đầu Thanh Long chi hình, đúng là hắn từ Tiêu Trần nơi đó đoạt được long khí.
+MOI: Thể nội long khí quấn quanh ở trên cánh tay, phảng phất biến thành một con Thanh Long chi hình, đúng là hắn từ Tiêu Trần nơi đó đoạt được long khí.
+
+#178 ch070.txt dong34
+HAN: 君逍遥抬手一招，那金属就被他抓在了手中。
+CU : Quân Tiêu Dao đưa tay một chiêu, kia kim loại đã bị hắn bắt trong tay.
+MOI: Quân Tiêu Dao đưa tay một chiêu, kia kim loại đã bị hắn nắm ở trong tay.
+
+#179 ch071.txt dong105
+HAN: 全力以赴的君逍遥，同至尊魔尸轰然碰撞在了一起。
+CU : Toàn lực ứng phó Quân Tiêu Dao, cùng đến tôn Ma Thi ầm vang va chạm ở cùng một chỗ.
+MOI: Toàn lực ứng phó Quân Tiêu Dao, cùng đến tôn Ma Thi ầm vang đụng vào nhau.
+
+#180 ch072.txt dong2
+HAN: 这种碰撞，如同行星相碰，波动恐怖到极点，整个秘藏深处，仿佛都被气浪席卷了一遍。
+CU : Loại này va chạm, như đồng hành tinh tướng đụng, ba động khủng bố tới cực điểm, toàn bộ bí tàng chỗ sâu, phảng phất đều bị khí lãng càn quét qua một lần.
+MOI: Loại này va chạm, như đồng hành tinh tướng đụng, ba động khủng bố tới cực điểm, toàn bộ bí tàng chỗ sâu, phảng phất đều bị khí lãng vét sạch một lần.
+
+#181 ch072.txt dong62
+HAN: 君逍遥一手抬起，龙气爆发，仿佛凝结出了一头栩栩如生的真龙。
+CU : Quân Tiêu Dao một tay nâng lên, long khí bộc phát, phảng phất ngưng kết ra một đầu trông rất sống động Chân Long.
+MOI: Quân Tiêu Dao một tay nâng lên, long khí bộc phát, phảng phất ngưng kết ra một con trông rất sống động Chân Long.
+
+#182 ch072.txt dong65
+HAN: 君逍遥两式强招齐出，再度同至尊魔尸碰撞在了一起。
+CU : Quân Tiêu Dao hai thức cường chiêu tề xuất, lại lần nữa cùng đến tôn Ma Thi va chạm ở cùng một chỗ.
+MOI: Quân Tiêu Dao hai thức cường chiêu tề xuất, lại lần nữa cùng đến tôn Ma Thi đụng vào nhau.
+
+#183 ch073.txt dong38
+HAN: 两相碰撞，君逍遥身形直接被震退，却是撞到了一处柔软所在。
+CU : Hai tướng va chạm, Quân Tiêu Dao thân hình trực tiếp bị đẩy lui, lại là va vào một chỗ mềm mại chỗ.
+MOI: Hai tướng va chạm, Quân Tiêu Dao thân hình trực tiếp bị đẩy lui, lại là đập lấy một chỗ mềm mại chỗ.
+
+#184 ch073.txt dong97
+HAN: 但是那灰雾，竟是开始散去，而后至尊秘藏内的景象，也是透过观天镜，烙印在了天穹之上。
+CU : Nhưng là kia sương mù xám, lại là bắt đầu tán đi, sau đó Chí Tôn bí tàng bên trong cảnh tượng, cũng là xuyên thấu qua Quan Thiên kính, lạc ấn ở bên trên bầu trời.
+MOI: Nhưng là kia sương mù xám, lại là bắt đầu tán đi, sau đó Chí Tôn bí tàng bên trong cảnh tượng, cũng là xuyên thấu qua Quan Thiên kính, đóng dấu ở bên trên bầu trời.
+
+#185 ch074.txt dong41
+HAN: 夹带着荒古圣体气血之力，轰击在了至尊魔尸的胸膛之上。
+CU : Bí mật mang theo Hoang Cổ Thánh Thể khí huyết chi lực, oanh kích ở Chí Tôn Ma Thi trên lồng ngực.
+MOI: Bí mật mang theo Hoang Cổ Thánh Thể khí huyết chi lực, đánh vào Chí Tôn Ma Thi trên lồng ngực.
+
+#186 ch074.txt dong84
+HAN: 元天至尊尸身，没有任何抵挡，直接是化为了一抔尘土，随之散去。
+CU : Nguyên Thiên Chí Tôn thi thể, không có bất kỳ cái gì ngăn cản, trực tiếp là hóa thành một bồi bụi đất, theo đó tán đi.
+MOI: Nguyên Thiên Chí Tôn thi thể, không có bất kỳ cái gì ngăn cản, trực tiếp là biến thành một bồi bụi đất, theo đó tán đi.
+
+#187 ch075.txt dong39
+HAN: 不过短短瞬息间，姬玄便是感觉到了一种撕裂的痛楚。
+CU : Bất quá ngắn ngủi trong chớp mắt, Cơ Huyền chính là cảm giác được một loại tê liệt đau đớn.
+MOI: Bất quá ngắn ngủi trong chớp mắt, Cơ Huyền chính là cảm thấy một loại tê liệt đau đớn.
+
+#188 ch075.txt dong85
+HAN: 四具远古龙骨，一具至尊祖龙骨，木头盒子，圣人王手骨，还是顺带收服了一头坐骑。
+CU : Bốn cỗ viễn cổ long xương, một cỗ Chí Tôn Tổ Long xương, đầu gỗ hộp, Thánh Nhân Vương xương tay, vẫn là tiện thể thu phục một đầu tọa kỵ.
+MOI: Bốn cỗ viễn cổ long xương, một cỗ Chí Tôn Tổ Long xương, đầu gỗ hộp, Thánh Nhân Vương xương tay, vẫn là tiện thể đã thu phục được một con tọa kỵ.
+
+#189 ch076.txt dong85
+HAN: 已经有人传言，君逍遥将是这个时代，站在仙域最巅峰的几人之一。
+CU : Đã có người truyền ngôn, Quân Tiêu Dao chính là thời đại này, đứng tại Tiên Vực nhất tột cùng một trong mấy người.
+MOI: Đã có người truyền ngôn, Quân Tiêu Dao chính là thời đại này, đứng tại Tiên Vực tột cùng nhất một trong mấy người.
+
+#190 ch077.txt dong2
+HAN: “什么站在最巅峰的几人，那君逍遥心思如此恶毒，腹黑冷酷，他配吗？”
+CU : “Cái gì đứng tại nhất tột cùng mấy người, kia Quân Tiêu Dao tâm tư như thế ác độc, xấu bụng lãnh khốc, hắn xứng sao?”
+MOI: “Cái gì đứng tại tột cùng nhất mấy người, kia Quân Tiêu Dao tâm tư như thế ác độc, xấu bụng lãnh khốc, hắn xứng sao?”
+
+#191 ch077.txt dong6
+HAN: 萧尘对君万劫的狠辣出手，仿佛让她看到了一个陌生人。
+CU : Tiêu Trần đối Quân Vạn Kiếp tàn nhẫn xuất thủ, phảng phất làm cho nàng nhìn thấy một cái người xa lạ.
+MOI: Tiêu Trần đối Quân Vạn Kiếp tàn nhẫn xuất thủ, phảng phất làm cho nàng thấy được một người xa lạ.
+
+#192 ch077.txt dong15
+HAN: 宫袍老妪看到武明月，微微行了一礼道：“公主殿下，可让老身好找啊。”
+CU : Cung bào lão ẩu nhìn thấy Vũ Minh Nguyệt, có chút đi một lễ đạo:“Công Chúa Điện Hạ, có thể để lão thân dễ tìm.”
+MOI: Cung bào lão ẩu nhìn thấy Vũ Minh Nguyệt, hơi thi lễ một cái nói “Công Chúa Điện Hạ, có thể để lão thân dễ tìm.”
+
+#193 ch077.txt dong47
+HAN: 武明月回头看了一眼，微微启唇。
+CU : Vũ Minh Nguyệt quay đầu nhìn một mắt, có chút mở miệng.
+MOI: Vũ Minh Nguyệt quay đầu liếc mắt nhìn, có chút mở miệng.
+
+#194 ch077.txt dong62
+HAN: 给自己设想了一条可能成功的道路。
+CU : Cho mình tưởng tượng một đầu có thể thành công con đường.
+MOI: Cho mình tưởng tượng một có thể thành công con đường.
+
+#195 ch078.txt dong76
+HAN: 这其中，还发生了一个小插曲。
+CU : Ở trong đó, còn phát sinh một cái khúc nhạc dạo ngắn.
+MOI: Ở trong đó, còn đã xảy ra một cái khúc nhạc dạo ngắn.
+
+#196 ch079.txt dong18
+HAN: 从九天仙域存在初始，就已经有九大天书存在了。
+CU : Từ Cửu Thiên Tiên vực tồn tại ban đầu, liền đã có chín đại thiên thư tồn ở.
+MOI: Từ Cửu Thiên Tiên vực tồn tại ban đầu, liền đã có chín đại thiên thư tồn tại.
+
+#197 ch079.txt dong24
+HAN: 而九大天书最为珍贵之处，就在于每一本书，都代表了一个极致。
+CU : Mà chín đại thiên thư trân quý nhất chỗ, ngay tại ở mỗi một bản sách, đều đại biểu một cái cực hạn.
+MOI: Mà chín đại thiên thư trân quý nhất chỗ, ngay tại ở mỗi một bản sách, đều đại biểu mức cực hạn.
+
+#198 ch079.txt dong73
+HAN: 他体内，发出噼啪的爆豆声响，那是一颗又一颗巨象微粒在觉醒。
+CU : Trong cơ thể hắn, phát ra tí tách bạo đậu tiếng vang, kia là một khỏa lại một khỏa Cự Tượng vi hạt tại giác tỉnh.
+MOI: Trong cơ thể hắn, phát ra tí tách bạo đậu tiếng vang, kia là một khỏa lại một khỏa Cự Tượng vi hạt đang thức tỉnh.
+
+#199 ch080.txt dong13
+HAN: 过了一个月时间，君逍遥参悟体书，初有心得。
+CU : Rồi một cái tháng, Quân Tiêu Dao lĩnh hội thể sách, sơ có tâm đắc.
+MOI: Qua một tháng thời gian, Quân Tiêu Dao lĩnh hội thể sách, sơ có tâm đắc.
+
+#200 ch080.txt dong31
+HAN: 其族中老者，算出卦象，仿佛看到了一角未来，说出了一句预言。
+CU : Kỳ tộc bên trong lão giả, tính ra quẻ tượng, phảng phất nhìn thấy một sừng tương lai, nói ra một câu tiên đoán.
+MOI: Kỳ tộc bên trong lão giả, tính ra quẻ tượng, phảng phất thấy được một góc tương lai, nói ra một câu tiên đoán.
+
+#201 ch080.txt dong39
+HAN: 毕竟在元天秘藏时，祖龙巢吃了一个大亏，丢了一个大脸。
+CU : Dù sao tại Nguyên Thiên bí tàng lúc, Tổ Long Sào ăn một cái thiệt thòi lớn, ném một cái mặt to.
+MOI: Dù sao tại Nguyên Thiên bí tàng lúc, Tổ Long Sào bị thiệt lớn, ném đi một cái mặt to.
+
+#202 ch081.txt dong18
+HAN: 整个朱雀古国的国事，都压在了拜玉儿肩膀上。
+CU : Toàn bộ Chu Tước cổ quốc quốc sự, đều ép ở Bái Ngọc Nhi trên bờ vai.
+MOI: Toàn bộ Chu Tước cổ quốc quốc sự, đều đặt ở Bái Ngọc Nhi trên bờ vai.
+
+#203 ch081.txt dong27
+HAN: 但现在，拜玉儿不但和萧尘断绝了一切关系，更是反目成仇了。
+CU : Nhưng bây giờ, Bái Ngọc Nhi chẳng những cùng Tiêu Trần đoạn tuyệt một cắt quan hệ, càng là trở mặt thành thù đã.
+MOI: Nhưng bây giờ, Bái Ngọc Nhi chẳng những cùng Tiêu Trần đoạn tuyệt hết thảy quan hệ, càng là trở mặt thành thù đã.
+
+#204 ch081.txt dong93
+HAN: 从那纱账内，探出了一只孔武有力的手臂，五指探出一抓，便是将两块青龙罗盘部件抓到了手中。
+CU : Từ kia sa sổ sách bên trong, nhô ra một chỉ khổng vũ hữu lực cánh tay, năm ngón tay nhô ra một trảo, liền đem hai khối Thanh Long la bàn bộ kiện bắt được trong tay.
+MOI: Từ kia sa sổ sách bên trong, lộ ra một con khổng vũ hữu lực cánh tay, năm ngón tay nhô ra một trảo, liền đem hai khối Thanh Long la bàn bộ kiện bắt được trong tay.
+
+#205 ch082.txt dong14
+HAN: 那道声音，也是带上了一丝淡淡的迟疑和疑惑。
+CU : Âm thanh kia, cũng là mang lên một tia nhàn nhạt chần chờ cùng nghi hoặc.
+MOI: Âm thanh kia, cũng là mang theo một tia nhàn nhạt chần chờ cùng nghi hoặc.
+
+#206 ch082.txt dong76
+HAN: 朱雀古国的大部分兵力，也都是集中在了皇都。
+CU : Chu Tước cổ quốc đại bộ phận binh lực, cũng đều là tập trung ở hoàng đô.
+MOI: Chu Tước cổ quốc đại bộ phận binh lực, cũng đều là tập trung vào hoàng đô.
+
+#207 ch084.txt dong34
+HAN: 他稍微整理了一下，现在一共有三个签到地点。
+CU : Hắn hơi chỉnh lý rồi một lần, hiện tại tổng cộng có ba cái đánh dấu địa điểm.
+MOI: Hắn hơi chỉnh sửa một chút, hiện tại tổng cộng có ba cái đánh dấu địa điểm.
+
+#208 ch084.txt dong64
+HAN: 接下来，君逍遥站上了一架黄金战车。
+CU : Sau đó, Quân Tiêu Dao đứng lên một đỡ hoàng kim chiến xa.
+MOI: Sau đó, Quân Tiêu Dao đứng lên một khung hoàng kim chiến xa.
+
+#209 ch085.txt dong58
+HAN: 两国大军，如同洪流碰撞，霎时绞杀在了一起。
+CU : Hai nước đại quân, như là dòng lũ va chạm, thoáng chốc giảo sát ở cùng một chỗ.
+MOI: Hai nước đại quân, như là dòng lũ va chạm, thoáng chốc giảo sát lại với nhau.
+
+#210 ch085.txt dong87
+HAN: 恐怖的烈焰腾空而起，仿佛化为了一头朱雀。
+CU : Kinh khủng liệt diễm đằng không mà lên, phảng phất hóa thành một đầu Chu Tước.
+MOI: Kinh khủng liệt diễm đằng không mà lên, phảng phất biến thành một con Chu Tước.
+
+#211 ch086.txt dong55
+HAN: 而就在这时，天地好似忽然寂静了一瞬。
+CU : Mà đúng lúc này, Thiên Địa tựa như bỗng nhiên yên tĩnh một giây lát.
+MOI: Mà đúng lúc này, Thiên Địa tựa như bỗng nhiên yên tĩnh một cái chớp mắt.
+
+#212 ch087.txt dong17
+HAN: “神子终于来了。”天际，朱雀国主也是暗暗松了一口气。
+CU : “Thần tử rút cuộc đã tới.” Chân trời, Chu Tước quốc chủ cũng là âm thầm lỏng thở ra một hơi.
+MOI: “Thần tử rút cuộc đã tới.” Chân trời, Chu Tước quốc chủ cũng là âm thầm thở dài một hơi.
+
+#213 ch087.txt dong92
+HAN: 天际，朱雀国主深深对着君逍遥鞠了一躬道：“多谢神子相助，若无神子，今日朱雀古国危矣。”
+CU : Chân trời, Chu Tước quốc chủ thật sâu đối với Quân Tiêu Dao cúc một cung nói “Đa tạ thần tử tương trợ, như không có thần tử, hôm nay Chu Tước cổ quốc nguy rồi.”
+MOI: Chân trời, Chu Tước quốc chủ thật sâu đối với Quân Tiêu Dao bái nói “Đa tạ thần tử tương trợ, như không có thần tử, hôm nay Chu Tước cổ quốc nguy rồi.”
+
+#214 ch088.txt dong35
+HAN: 在自己的空间法器内，出现了一把赤色鎏金的古琴。
+CU : Tại chính mình Pháp Khí không gian bên trong, xuất hiện một đem màu đỏ mạ vàng cổ cầm.
+MOI: Tại chính mình Pháp Khí không gian bên trong, xuất hiện một thanh màu đỏ mạ vàng cổ cầm.
+
+#215 ch088.txt dong66
+HAN: 朱雀国主则是解释了一番。
+CU : Chu Tước quốc chủ thì là giải thích một phiên.
+MOI: Chu Tước quốc chủ thì là giải thích một phen.
+
+#216 ch089.txt dong33
+HAN: 在君逍遥抚琴时，他也隐约感觉到了一股淡淡的神魂波动。
+CU : Tại Quân Tiêu Dao đánh đàn lúc, hắn cũng mơ hồ cảm giác được một cỗ nhàn nhạt thần hồn ba động.
+MOI: Tại Quân Tiêu Dao đánh đàn lúc, hắn cũng mơ hồ cảm thấy một cỗ nhàn nhạt thần hồn ba động.
+
+#217 ch089.txt dong47
+HAN: 浅抿了一口。
+CU : Cạn nhấp một cái.
+MOI: Cạn nhấp một miếng.
+
+#218 ch089.txt dong64
+HAN: 拜玉儿狠狠咽了一口唾沫。
+CU : Bái Ngọc Nhi hung hăng nuốt một cái nước bọt.
+MOI: Bái Ngọc Nhi hung hăng nuốt nước miếng một cái.
+
+#219 ch089.txt dong66
+HAN: 君逍遥进入朱雀灵泉，长舒了一口气。
+CU : Quân Tiêu Dao tiến vào Chu Tước linh tuyền, thở phào thở ra một hơi.
+MOI: Quân Tiêu Dao tiến vào Chu Tước linh tuyền, thở dài nhẹ nhõm.
+
+#220 ch089.txt dong89
+HAN: 君逍遥忽略了一点，越是得不到的东西，才越发令人垂涎。
+CU : Quân Tiêu Dao xem nhẹ hơi có chút, càng là không có được đồ vật, mới càng phát lệnh người thèm nhỏ dãi.
+MOI: Quân Tiêu Dao không để ý đến một chút, càng là không có được đồ vật, mới càng phát lệnh người thèm nhỏ dãi.
+
+#221 ch090.txt dong62
+HAN: 他倒是有了一些猜测，若是没错的话，八九不离十。
+CU : Hắn ngược lại là có một chút suy đoán, nếu là không sai, tám chín phần mười.
+MOI: Hắn ngược lại là đã có một chút suy đoán, nếu là không sai, tám chín phần mười.
+
+#222 ch091.txt dong16
+HAN: “真的是他，冠军侯杨盘……”朱雀国主深深吸了一口气，心里极不平静。
+CU : “Thật là hắn, Vô Địch Hầu Dương Bàn...” Chu Tước quốc chủ thật sâu hút thở ra một hơi, trong lòng cực không bình tĩnh.
+MOI: “Thật là hắn, Vô Địch Hầu Dương Bàn...” Chu Tước quốc chủ hít một hơi thật sâu, trong lòng cực không bình tĩnh.
+
+#223 ch091.txt dong19
+HAN: 就好像是一个小市民，一下中了一亿大奖，心里绝对会膨胀。
+CU : Giống như là một cái tiểu thị dân, một chút bên trong một ức thưởng lớn, trong lòng tuyệt đối sẽ bành trướng.
+MOI: Giống như là một cái tiểu thị dân, một chút trong một trăm triệu thưởng lớn, trong lòng tuyệt đối sẽ bành trướng.
+
+#224 ch091.txt dong34
+HAN: “原来如此，他的气息……”君逍遥心底喃喃，明白了一些东西。
+CU : “Thì ra là thế, khí tức của hắn...” Quân Tiêu Dao đáy lòng thì thào, minh bạch một chút đồ vật.
+MOI: “Thì ra là thế, khí tức của hắn...” Quân Tiêu Dao đáy lòng thì thào, đã minh bạch một vài thứ.
+
+#225 ch091.txt dong41
+HAN: 君逍遥扫了一眼那黄金龙床上横七竖八的尸体，轻声冷笑道：“弄这么大的一张床，原来是在搞多人运动。”
+CU : Quân Tiêu Dao quét một mắt kia Hoàng Kim Long trên giường thi thể ngổn ngang, nhẹ giọng cười lạnh nói:“Làm lớn như vậy một cái giường, hóa ra là đang làm NP.”
+MOI: Quân Tiêu Dao nhìn lướt qua kia Hoàng Kim Long trên giường thi thể ngổn ngang, nhẹ giọng cười lạnh nói:“Làm lớn như vậy một cái giường, hóa ra là đang làm NP.”
+
+#226 ch091.txt dong71
+HAN: 杨盘身形如同断了线的风筝一般被轰飞，那冥神之矛直接落在了黄金龙床之上，将其击碎。
+CU : Dương Bàn thân hình như là như diều đứt dây bình thường bị oanh bay, kia Minh Thần Chi Mâu trực tiếp rơi ở Hoàng Kim Long trên giường, đem đánh nát.
+MOI: Dương Bàn thân hình như là như diều đứt dây bình thường bị oanh bay, kia Minh Thần Chi Mâu trực tiếp rơi vào Hoàng Kim Long trên giường, đem đánh nát.
+
+#227 ch091.txt dong76
+HAN: 所有朱雀古国之人，对君逍遥的崇拜，再度上升了一个阶层。
+CU : Tất cả Chu Tước cổ quốc người, đối Quân Tiêu Dao sùng bái, lại lần nữa lên cao một cái giai tầng.
+MOI: Tất cả Chu Tước cổ quốc người, đối Quân Tiêu Dao sùng bái, lại lần nữa tăng lên một cái giai tầng.
+
+#228 ch091.txt dong80
+HAN: 他曾经同冠军侯交过手，连他都是感觉到了一股极大的压力。
+CU : Hắn đã từng cùng Vô Địch Hầu giao thủ qua, ngay cả hắn đều là cảm giác được một cỗ áp lực thực lớn.
+MOI: Hắn đã từng cùng Vô Địch Hầu giao thủ qua, ngay cả hắn đều là cảm thấy một cỗ áp lực thực lớn.
+
+#229 ch092.txt dong18
+HAN: 杨盘深深吸了一口气，然后语气冷漠道：“君逍遥，你竟然知道本侯爷只是分身，那也应该知道，本尊究竟会有多么强大。”
+CU : Dương Bàn thật sâu hút thở ra một hơi, sau đó ngữ khí lạnh lùng nói:“Quân Tiêu Dao, ngươi thế mà biết Bản Hầu Gia chỉ là phân thân, cái kia cũng hẳn phải biết, bản tôn đến tột cùng sẽ có cỡ nào cường đại.”
+MOI: Dương Bàn hít một hơi thật sâu, sau đó ngữ khí lạnh lùng nói:“Quân Tiêu Dao, ngươi thế mà biết Bản Hầu Gia chỉ là phân thân, cái kia cũng hẳn phải biết, bản tôn đến tột cùng sẽ có cỡ nào cường đại.”
+
+#230 ch092.txt dong41
+HAN: 杨盘看了一眼拜玉儿，眼中闪过一缕火热邪异之色。
+CU : Dương Bàn nhìn một mắt Bái Ngọc Nhi, trong mắt lóe lên một sợi lửa nóng tà dị chi sắc.
+MOI: Dương Bàn liếc mắt nhìn Bái Ngọc Nhi, trong mắt lóe lên một sợi lửa nóng tà dị chi sắc.
+
+#231 ch093.txt dong81
+HAN: 君逍遥扫了一眼下方，青龙古国军队那边，每一个人的脸色都是煞白无比。
+CU : Quân Tiêu Dao quét một dưới mắt phương, Thanh Long cổ quốc quân đội bên kia, mỗi người sắc mặt đều là trắng bệch vô cùng.
+MOI: Quân Tiêu Dao nhìn lướt qua phía dưới, Thanh Long cổ quốc quân đội bên kia, mỗi người sắc mặt đều là trắng bệch vô cùng.
+
+#232 ch093.txt dong83
+HAN: 毕竟他们的国主，也算是间接死在了君逍遥手中。
+CU : Dù sao bọn họ Quốc Chủ, cũng coi là gián tiếp chết ở Quân Tiêu Dao trong tay.
+MOI: Dù sao bọn họ Quốc Chủ, cũng coi là gián tiếp đã bị chết ở tại Quân Tiêu Dao trong tay.
+
+#233 ch094.txt dong36
+HAN: 他已经将四块罗盘部件合在了一起，拼成了一块完整的罗盘。
+CU : Hắn đã đem bốn khối la bàn bộ kiện hợp ở cùng một chỗ, ghép thành một khối hoàn chỉnh la bàn.
+MOI: Hắn đã đem bốn khối la bàn bộ kiện hợp lại cùng nhau, ghép thành một khối hoàn chỉnh la bàn.
+
+#234 ch094.txt dong71
+HAN: 彻彻底底成为了一个没有背景的平民。
+CU : Triệt triệt để để trở thành một cái không có bối cảnh bình dân.
+MOI: Triệt triệt để để đã trở thành một cái không có bối cảnh bình dân.
+
+#235 ch095.txt dong43
+HAN: 萧尘也是松了一口气，看来那位祖龙巢的古代怪胎，应该有某种限制，暂时无法解封而出。
+CU : Tiêu Trần cũng là lỏng thở ra một hơi, xem ra vị kia Tổ Long Sào Cổ Đại quái thai, chắc có một loại hạn chế nào đó, tạm thời không cách nào giải phong mà ra.
+MOI: Tiêu Trần cũng là thở dài một hơi, xem ra vị kia Tổ Long Sào Cổ Đại quái thai, chắc có một loại hạn chế nào đó, tạm thời không cách nào giải phong mà ra.
+
+#236 ch097.txt dong26
+HAN: 而后，它身形骤然缩小，最后在君逍遥的注目中，变成了一只……
+CU : Sau đó, thân hình của nó bỗng nhiên thu nhỏ, cuối cùng tại Quân Tiêu Dao chú mục bên trong, biến thành một chỉ...
+MOI: Sau đó, thân hình của nó bỗng nhiên thu nhỏ, cuối cùng tại Quân Tiêu Dao chú mục bên trong, biến thành một con...
+
+#237 ch097.txt dong40
+HAN: “你这个愣头青，那种人物是能随便拦阻检查的吗，说不定就是某个不朽道统的骄子，身份都不比长公主低！”护卫长瞪了一眼道。
+CU : “Ngươi cái này lăng đầu thanh, này loại nhân vật là có thể tùy tiện cản trở kiểm tra sao, nói không chừng chính là cái nào đó bất hủ đạo chính thống kiêu tử, thân phận cũng không so trưởng công chúa thấp!” Hộ vệ trưởng trừng một mắt nói.
+MOI: “Ngươi cái này lăng đầu thanh, này loại nhân vật là có thể tùy tiện cản trở kiểm tra sao, nói không chừng chính là cái nào đó bất hủ đạo chính thống kiêu tử, thân phận cũng không so trưởng công chúa thấp!” Hộ vệ trưởng trừng mắt một cái nói.
+
+#238 ch098.txt dong2
+HAN: 在秦萱的介绍下，君逍遥对皇城也算是有了一个认知。
+CU : Tại Tần Huyên giới thiệu, Quân Tiêu Dao đối Hoàng Thành cũng coi là có một cái nhận biết.
+MOI: Tại Tần Huyên giới thiệu, Quân Tiêu Dao đối Hoàng Thành cũng coi là đã có một cái nhận biết.
+
+#239 ch098.txt dong80
+HAN: 天琴女看了一眼凤清灵，没说什么。
+CU : Thiên Cầm nữ nhìn một mắt phượng thanh linh, không nói gì.
+MOI: Thiên Cầm nữ liếc mắt nhìn phượng thanh linh, không nói gì.
+
+#240 ch099.txt dong6
+HAN: 他随手拿出一枚绝品神源，甩给了一旁仙琼楼的小厮。
+CU : Hắn tiện tay xuất ra một viên tuyệt phẩm thần nguyên, vứt cho một bên cạnh tiên quỳnh lâu gã sai vặt.
+MOI: Hắn tiện tay xuất ra một viên tuyệt phẩm thần nguyên, vứt cho một bên tiên quỳnh lâu gã sai vặt.
+
+#241 ch099.txt dong30
+HAN: 君逍遥并不在意全场目光，随意找了一个位置坐下。
+CU : Quân Tiêu Dao cũng không thèm để ý toàn trường ánh mắt, tùy ý tìm một cái chỗ ngồi xuống.
+MOI: Quân Tiêu Dao cũng không thèm để ý toàn trường ánh mắt, tùy ý tìm một vị trí tọa hạ.
+
+#242 ch099.txt dong57
+HAN: “听完天琴女的琴音，我感觉自己好似都要升华了一般。”许多俊杰都在感叹。
+CU : “Nghe xong Thiên Cầm nữ tiếng đàn, ta cảm thấy mình tựa như đều thăng hoa một bàn.” Rất nhiều tuấn kiệt đều tại cảm thán.
+MOI: “Nghe xong Thiên Cầm nữ tiếng đàn, ta cảm thấy mình tựa như đều thăng hoa bình thường.” Rất nhiều tuấn kiệt đều tại cảm thán.
+
+#243 ch099.txt dong74
+HAN: 她拿出了一把火红的古琴，琴弦如同缭绕着火焰一般。
+CU : Nàng xuất ra một cây đuốc đỏ cổ cầm, dây đàn như là lượn lờ hỏa diễm bình thường.
+MOI: Nàng lấy ra một mồi lửa đỏ cổ cầm, dây đàn như là lượn lờ hỏa diễm bình thường.
+
+#244 ch100.txt dong48
+HAN: 因为君逍遥，拿出了一把古琴。
+CU : Bởi vì Quân Tiêu Dao, xuất ra một đem cổ cầm.
+MOI: Bởi vì Quân Tiêu Dao, lấy ra một cây cổ cầm.
+
+#245 ch100.txt dong72
+HAN: 这是道的具象显化，令在场所有人，都仿佛经历了一次升华。
+CU : Đây là đạo cụ tượng hiển hóa, khiến tất cả mọi người tại chỗ, đều tựa như kinh lịch một lần thăng hoa.
+MOI: Đây là đạo cụ tượng hiển hóa, khiến tất cả mọi người tại chỗ, đều tựa như đã trải qua một lần thăng hoa.
+
+#246 ch100.txt dong88
+HAN: 他扫了一眼四周，所有人依旧陷在余音之中。
+CU : Hắn quét một mắt bốn phía, tất cả mọi người vẫn như cũ ngập tại dư âm bên trong.
+MOI: Hắn nhìn lướt qua bốn phía, tất cả mọi người vẫn như cũ ngập tại dư âm bên trong.
+

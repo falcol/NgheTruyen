@@ -1,6 +1,6 @@
 # Global drop-in — Hoàng Cổ Thánh Thể (piaotia).
-# Nap qua ~/.config/zhvi/glossary.d/*.tsv (SERIES_MANUAL).
-# Sua/xoa FILE NAY neu term lam hong truyen khac; khong sua glossary.manual.tsv (Tieu Ban).
+# Nap qua zhvi/glossary.d/*.tsv (SERIES_MANUAL, canh glossary.manual.tsv).
+# Sua/xoa FILE NAY neu term lam hong truyen khac; term chung de glossary.manual.tsv.
 签到=đánh dấu
 荒古圣体=Hoang Cổ Thánh Thể
 荒古世家=Hoang Cổ thế gia
@@ -153,3 +153,11 @@
 焚天子=Phần Thiên Tử
 冥天子=Minh Thiên Tử
 五行子=Ngũ Hành Tử
+药离=Dược Ly
+叫他逍遥=gọi hắn Tiêu Dao
+就叫他逍遥=liền gọi hắn Tiêu Dao
+面对逍遥=đối diện Tiêu Dao
+对逍遥=đối Tiêu Dao
+太阳神山本身=Thái Dương Thần Sơn bản thân
+药灵山本身=Dược Linh Sơn bản thân
+七方山本身=Thất Phương Sơn bản thân
