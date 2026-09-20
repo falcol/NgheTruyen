@@ -141,7 +141,7 @@
 問道=hỏi
 遇到=gặp phải
 罷了=mà thôi
-說道=nói rằng
+說道=nói
 原來=hóa ra
 憑藉=nương tựa theo
 嫉妒=ghen ghét
@@ -181,7 +181,7 @@
 仙土之上=phía trên Tiên Thổ
 犯了什麼=phạm vào cái gì
 放逐到諸天萬界中=trục xuất tới trong Chư Thiên Vạn Giới
-擺了擺手說道=khoát tay áo nói rằng
+擺了擺手說道=khoát tay áo nói
 多少=bao nhiêu
 星辰=sao trời
 叱吒風雲=sất trá phong vân
@@ -314,7 +314,7 @@
 神乐宗=Thần Nhạc Tông
 落花宗=Lạc Hoa Tông
 圣月宗=Thánh Nguyệt Tông
-逍遥神宗=Tiêu Diêu Thần Tông
+逍遥神宗=Tiêu Dao Thần Tông
 天龙帮=Thiên Long Bang
 蛮洲=Man Châu
 北疆城=Bắc Cương Thành
@@ -435,4 +435,35 @@
 一头青龙=một con Thanh Long
 一头朱雀=một con Chu Tước
 药离=Dược Ly
+# 2026-09-20: manh-nhat draft — speech 道, locative 了, 大道, 开出 (not 蜕变)
+说道=nói
+摆了摆手说道=khoát tay áo nói
+到了=đến
+给了=cho
+給了=cho
+入住了=vào ở
+开出=mở ra
+能开出=có thể mở ra
+咬出=cắn ra
+咬出一个=cắn ra một
+大道=Đại Đạo
+条大道=Đại Đạo
+哪条大道=cỡ nào Đại Đạo
+每一条大道=mỗi một Đại Đạo
+几条大道=mấy Đại Đạo
+大道气息=Đại Đạo khí tức
+察觉到了=nhận ra
+已经察觉到了=đã nhận ra
+已经有了=đã có
+已经有奖励了=đã có thưởng
+已经说过=đã nói
+已经写了=đã viết
+已经死了=đã chết
+已经到了=đã đến
+已经看出来了=đã nhìn ra
+冷声道=lạnh giọng nói
+开口道=mở miệng nói
+笑道=cười nói
+喊道=hô
+平淡道=bình thản nói
 

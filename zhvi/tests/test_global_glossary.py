@@ -83,9 +83,14 @@ def test_default_global_glossary_resolves_in_repo():
     assert resolved.name == "glossary.manual.tsv"
     assert resolved.is_file()
     assert (resolved.parent / "glossary.d" / "hoang-co.tsv").is_file()
+    assert (resolved.parent / "glossary.d" / "manh-nhat-tu-tien.tsv").is_file()
     dic = load_dictionary(DICT_DIR, global_glossary=resolved)
     assert greedy_path(dic, "小胖")[0].target == "Tiểu Bàn"
     assert greedy_path(dic, "君逍遥")[0].target == "Quân Tiêu Dao"
+    assert greedy_path(dic, "凌天")[0].target == "Lăng Thiên"
+    assert greedy_path(dic, "天水云庄")[0].target == "Thiên Thủy Vân Trang"
+    assert greedy_path(dic, "逍遥神宗")[0].target == "Tiêu Dao Thần Tông"
+
 
 
 def test_resolve_global_glossary_dropin_without_main_file(tmp_path):

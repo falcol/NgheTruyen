@@ -1,0 +1,7 @@
+# IsolateSOCKSAuth: different SOCKS username => different circuit.
+# Parallel crawler workers send socks5h://w{thread}-{gen}:x@127.0.0.1:9050
+HardwareAccel 1
+Log notice stdout
+DNSPort 0.0.0.0:8853
+SocksPort 0.0.0.0:9150 IsolateSOCKSAuth
+DataDirectory /var/lib/tor

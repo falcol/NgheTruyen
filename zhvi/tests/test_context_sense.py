@@ -645,6 +645,74 @@ def test_le_after_locative_zai_dropped():
     assert "đã" in vp_plan(lai, "来了").text.lower()
 
 
+def test_le_after_locative_dao_gei_dropped():
+    """了 sau 到/给 khong chen 'đã' — 来了 van giu aspect."""
+    dic = mini(
+        [
+            ("走", "đi", Layer.BASE_SINGLE),
+            ("到", "đến", Layer.BASE_SINGLE),
+            ("给", "cho", Layer.BASE_SINGLE),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+            ("他", "hắn", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "đã" not in vp_plan(dic, "走到了").text.lower()
+    assert "đến" in vp_plan(dic, "走到了").text.lower()
+    assert "đã" not in vp_plan(dic, "给了他").text.lower()
+    assert "cho" in vp_plan(dic, "给了他").text.lower()
+    lai = mini(
+        [
+            ("来", "tới", Layer.BASE_SINGLE),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+        ]
+    )
+    assert "đã" in vp_plan(lai, "来了").text.lower()
+
+
+def test_long_name_vs_animal():
+    """龙 1 chu: ho+ten -> Long; classifier con vat -> rồng. 青龙 2 chu khong doi."""
+    name = mini(
+        [
+            ("郑晓", "Trịnh Hiểu", Layer.BASE_MULTI),
+            ("龙", "rồng", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "Long" in vp_plan(name, "郑晓龙").text
+    assert "rồng" not in vp_plan(name, "郑晓龙").text.lower()
+    animal = mini(
+        [
+            ("一条", "một con", Layer.BASE_MULTI),
+            ("龙", "rồng", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "rồng" in vp_plan(animal, "一条龙").text.lower()
+    compound = mini(
+        [
+            ("青龙", "Thanh Long", Layer.BASE_MULTI),
+            ("龙", "rồng", Layer.BASE_SINGLE),
+            ("从", "từ", Layer.BASE_SINGLE),
+            ("天", "trời", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "Thanh Long" in vp_plan(compound, "青龙从天").text
+    assert "rồng" not in vp_plan(compound, "青龙从天").text.lower()
+
+
+def test_shuodao_strips_rang():
+    dic = mini(
+        [
+            ("说道", "nói rằng", Layer.BASE_MULTI),
+            ("知道", "biết", Layer.BASE_MULTI),
+        ]
+    )
+    said = vp_plan(dic, "说道").text.lower()
+    assert "nói" in said
+    assert "rằng" not in said
+    know = vp_plan(dic, "知道").text.lower()
+    assert "rằng" not in know
+    assert "biết" in know
+
+
 def test_de_particle_still_dropped():
     dic = mini(
         [

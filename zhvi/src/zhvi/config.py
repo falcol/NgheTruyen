@@ -15,7 +15,7 @@ PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # Version cua logic nap tu dien / render target — tham gia canonical manifest
 # cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
 LOADER_VERSION = "zhvi-loader-7"  # first-meaning cut at earliest / or |
-RENDERER_VERSION = "zhvi-renderer-9"  # locative 了 drop after 在/于
+RENDERER_VERSION = "zhvi-renderer-10"  # locative 了 also 到/给; 龙→Long in names
 # Version cua preprocessing view (junk strip + repetition collapse rules,
 # AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
 # collapse phai bump nay (run/cache cu tu invalid).

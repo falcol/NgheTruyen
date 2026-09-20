@@ -32,8 +32,13 @@ _ASPECT = {
     "过": "rồi",
     "過": "rồi",
 }
-# 了 sau gioi tu noi cho (在了/于了): particle, khong aspect "đã".
-_LOCATIVE_BEFORE_LE = frozenset("在于於")
+# 了 sau gioi tu noi cho (在了/到了/给了): particle, khong aspect "đã".
+_LOCATIVE_BEFORE_LE = frozenset("在于於到给給")
+# 龙 1 chu: Hán-Việt Long trong ho+ten; rồng khi classifier con vat.
+_DRAGON_ANIMAL_LEFT = frozenset("条頭头只隻條")
+_DRAGON_ANIMAL_TAIL = ("一条", "一頭", "一头", "一只", "一隻")
+# *道 thoai (说道/笑道): cat "rằng" — khong dung 知道.
+_SPEECH_DAO_SKIP = frozenset({"知道", "霸道", "王道", "正道", "大道", "人道", "天道"})
 # Dong tu menh de (rong hon VERBS {v} nam/nem).
 _CLAUSE_VERBS = VERBS | frozenset(
     "来去到说問问听想用做打开吃坐站被让讓逼叫走看"
@@ -299,6 +304,20 @@ def _sense_target(
         if src == "了" and left[-1:] in _LOCATIVE_BEFORE_LE:
             return ""
         return _ASPECT[src]
+    if src == "龙" or src == "龍":
+        low = cur.lower()
+        if low in ("rồng", "long"):
+            if left.endswith(_DRAGON_ANIMAL_TAIL) or left[-1:] in _DRAGON_ANIMAL_LEFT:
+                return "rồng"
+            if left:
+                return "Long"
+        return None
+    if (
+        src.endswith("道")
+        and src not in _SPEECH_DAO_SKIP
+        and "rằng" in cur
+    ):
+        return cur.replace(" nói rằng", " nói").replace("nói rằng", "nói")
     # 怎么会 / 怎么可能会: giu span AD-9, rhetorical lai (khong se).
     if "怎么" in src and "会" in src:
         if "sẽ" in cur:

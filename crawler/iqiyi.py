@@ -5,17 +5,14 @@ whose parsed title-number is absent locally are fetched.
 """
 
 import re
-import subprocess
 import time
 
 from bs4 import BeautifulSoup
-import requests
 
 from .base import BaseCrawler, logger, _HTML_PARSER
+from .tor_proxy import TorProxyMixin
 
 BASE_URL = "https://wenxue.iqiyi.com"
-TOR_SOCKS = "socks5h://127.0.0.1:9050"
-TOR_CONTAINER = "tor"
 
 # Known iQiyi bookId → existing local slug under --dest (xtruyen).
 SLUG_MAP = {
@@ -161,7 +158,7 @@ def parse_local_title_num(title: str) -> int | None:
     return _parse_viet_phrase(t)
 
 
-class IqiyiCrawler(BaseCrawler):
+class IqiyiCrawler(TorProxyMixin, BaseCrawler):
     """iQiyi wenxue crawler. Routes through Tor when SOCKS5 :9050 is up."""
 
     BASE_URL = BASE_URL
@@ -170,46 +167,12 @@ class IqiyiCrawler(BaseCrawler):
         super().__init__(site_name="iqiyi", dest_dir=dest_dir or "xtruyen")
         self.delay = (3.0, 5.0)
         self.parallel_delay = (2.5, 4.5)
-        self._tor_enabled: bool = False
         self._active_slug: str | None = None
-
-    def _check_tor(self) -> bool:
-        import socket
-        try:
-            with socket.create_connection(("127.0.0.1", 9050), timeout=3):
-                return True
-        except (OSError, ConnectionRefusedError):
-            return False
-
-    def _renew_ip(self) -> None:
-        try:
-            subprocess.run(
-                ["docker", "kill", "--signal=SIGHUP", TOR_CONTAINER],
-                capture_output=True, timeout=10,
-            )
-            logger.info("Tor: SIGHUP sent — new IP requested")
-            time.sleep(3)
-        except Exception as e:
-            logger.warning(f"Tor SIGHUP failed: {e}")
-            time.sleep(10)
-
-    def _build_session(self) -> requests.Session:
-        s = super()._build_session()
-        self._tor_enabled = self._check_tor()
-        if self._tor_enabled:
-            s.proxies = {"http": TOR_SOCKS, "https": TOR_SOCKS}
-            logger.info("Tor SOCKS5 proxy detected — routing through Tor")
-        return s
 
     def _pick_headers(self, referer: str | None = None) -> dict[str, str]:
         headers = super()._pick_headers(referer)
         headers["Accept-Language"] = "zh-CN,zh;q=0.9,en;q=0.8"
         return headers
-
-    def _on_rate_limited(self) -> None:
-        super()._on_rate_limited()
-        if self._tor_enabled:
-            self._renew_ip()
 
     def _book_id(self, url: str) -> str:
         for cre in (_CATALOG_RE, _READER_RE, _DETAIL_RE):
@@ -315,8 +278,7 @@ class IqiyiCrawler(BaseCrawler):
                 logger.warning(
                     f"Catalog page {page} empty (title={page_title!r}) — retry {attempt}/5"
                 )
-                if self._tor_enabled:
-                    self._renew_ip()
+                self._rotate_tor_circuit()
                 time.sleep(3)
             if not rows:
                 logger.error(f"Catalog page {page} still empty after retries")
@@ -388,8 +350,7 @@ class IqiyiCrawler(BaseCrawler):
                         break
                     except Exception as e:
                         logger.warning(f"  attempt {attempt}/3 failed: {e}")
-                        if self._tor_enabled:
-                            self._renew_ip()
+                        self._rotate_tor_circuit()
                 if chapter is None:
                     logger.error(f"Skipping {url}")
                     continue
