@@ -3,5 +3,6 @@ glossary.auto.tsv
 .zhvi/cache/
 .zhvi/locks/
 .zhvi/logs/
+.zhvi/*.sqlite3
 .zhvi/*.sqlite3-wal
 .zhvi/*.sqlite3-shm

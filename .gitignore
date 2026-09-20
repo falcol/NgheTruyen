@@ -23,13 +23,14 @@ skills-lock.json
 
 # zhvi auto-generated per-file workspaces (chap1_raw.zhvi/ ...)
 *.zhvi/
-# workspace dung chung: sqlite + sources track; bundle tu dien ~280MB khong
+# workspace dung chung: sources track; sqlite vuot GitHub 100MB
 !zhvi/workspace/.zhvi/
 !zhvi/workspace/.zhvi/**
 zhvi/workspace/.zhvi/revisions/
 zhvi/workspace/.zhvi/cache/
 zhvi/workspace/.zhvi/locks/
 zhvi/workspace/.zhvi/logs/
+zhvi/workspace/.zhvi/*.sqlite3
 zhvi/workspace/.zhvi/*.sqlite3-wal
 zhvi/workspace/.zhvi/*.sqlite3-shm
 zhvi/workspace/glossary.auto.tsv
