@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "data:copy": "rm -rf public/data && mkdir -p public && cp -r ../crawler/data public/data",
+    "data:copy": "rm -rf public/data && mkdir -p public/data && cp -r ../crawler/data/. public/data/ && rm -rf public/data/iqiyi",
     "epub:cache": "npx tsx scripts/warm-epub-cache.ts",
     "prebuild": "npm run data:copy && npm run epub:cache"
   },

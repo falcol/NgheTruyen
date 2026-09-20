@@ -6,6 +6,7 @@ atomic export -> bao cao. Khong goi model. Ctrl-C lan 1: checkpoint + PAUSED.
 """
 from __future__ import annotations
 
+import json
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -159,14 +160,35 @@ def resolve_dict_overrides(cfg: Config, request: TranslateRequest) -> Config:
     return replace(cfg, **overrides) if overrides else cfg
 
 
+def _old_run_segmenter(project: Project, old_run) -> str | None:
+    """schema_versions.segmenter tu manifest run cu; None neu chua export."""
+    path = project.runs_dir / old_run.id / "manifest.json"
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    sv = data.get("schema_versions") or {}
+    seg = sv.get("segmenter")
+    return seg if isinstance(seg, str) else None
+
+
 def _adopt_unaffected_blocks(
     st: State, project: Project, doc, run, revision_id: str, trad_simp: dict[str, str]
 ) -> None:
     """Story 2.5 correction: run moi fork vi revision moi — block KHONG chua
     key bi doi duoc adopt nguyen vao run moi (giu final_text); block affected
-    se duoc dich lai trong vong lap chinh."""
+    se duoc dich lai trong vong lap chinh.
+
+    Khong adopt khi segmenter doi (他在|乎): fingerprint da fork run nhung
+    adopt se copy final_text cu va bo qua lattice moi.
+    """
     old_run = st.latest_completed_run_for_source(run.source_revision_id, exclude_run_id=run.id)
     if old_run is None or old_run.dictionary_revision_id == revision_id:
+        return
+    old_seg = _old_run_segmenter(project, old_run)
+    if old_seg is not None and old_seg != SEGMENTER_VERSION:
         return
     diff = diff_revisions(project, old_run.dictionary_revision_id, revision_id)
     if not diff["affected_keys"]:

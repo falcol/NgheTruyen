@@ -21,7 +21,11 @@ export { chapterCacheUrlPath } from "./epub-cache";
 
 import type { EpubBookMeta } from "./epub-types";
 
-const META_CACHE_DIR = path.join(process.cwd(), "public", "epub-cache");
+const META_CACHE_DIR = path.join(
+  /* turbopackIgnore: true */ process.cwd(),
+  "public",
+  "epub-cache",
+);
 
 export function listEpubSummaries(): EpubListSummary[] {
   return readCacheIndex(META_CACHE_DIR)?.books ?? [];

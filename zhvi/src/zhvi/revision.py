@@ -401,9 +401,14 @@ def _manual_layer_digest(project: Project, layer_name: str, global_glossary: Pat
     return _layer_hash(entries)
 
 
-def _manual_layers_stale(project: Project, active_id: str, global_glossary: Path | None) -> bool:
-    """True neu glossary manual hien tai khac hash trong manifest active —
-    correction flow (story 2.5): sua glossary -> can revision moi."""
+def _manual_layers_stale(
+    project: Project,
+    active_id: str,
+    global_glossary: Path | None,
+    dict_dir: Path | None = None,
+) -> bool:
+    """True neu glossary/Custom/ContextPatterns khac hash trong manifest active —
+    correction flow (story 2.5): sua dict -> can revision moi."""
     manifest = json.loads(
         (project.revisions_dir / active_id / "manifest.json").read_text(encoding="utf-8")
     )
@@ -418,6 +423,17 @@ def _manual_layers_stale(project: Project, active_id: str, global_glossary: Path
         digest, _count = current
         if digest != recorded["sha256"]:
             return True
+    if dict_dir is not None:
+        for name in LOAD_ORDER:
+            path = dict_dir / name
+            recorded = layers.get(name)
+            if not path.is_file():
+                if recorded is not None:
+                    return True
+                continue
+            digest, _count = _layer_hash(_parse_file_entries(path))
+            if recorded is None or digest != recorded["sha256"]:
+                return True
     return False
 
 
@@ -451,7 +467,10 @@ def ensure_active_revision(
         st.close()
     if active is not None:
         complete = _bundle_complete(project, active)
-        if complete and (not refresh or not _manual_layers_stale(project, active, global_glossary)):
+        if complete and (
+            not refresh
+            or not _manual_layers_stale(project, active, global_glossary, dict_dir)
+        ):
             return active
         result = publish_revision(
             dict_dir, project, global_glossary=global_glossary, patterns=patterns,

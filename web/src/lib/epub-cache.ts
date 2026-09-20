@@ -39,7 +39,12 @@ function chapterCacheFsPath(
   chapterIdx: number,
 ): string {
   const idx = String(chapterIdx).padStart(5, "0");
-  return path.join(cacheDir, bookCacheKey(filename), "ch", `${idx}.json.gz`);
+  return path.join(
+    /* turbopackIgnore: true */ cacheDir,
+    bookCacheKey(filename),
+    "ch",
+    `${idx}.json.gz`,
+  );
 }
 
 export function chapterCacheUrlPath(filename: string, chapterIdx: number): string {
@@ -48,7 +53,11 @@ export function chapterCacheUrlPath(filename: string, chapterIdx: number): strin
 }
 
 export function clearBookChapterCache(cacheDir: string, filename: string): void {
-  const dir = path.join(cacheDir, bookCacheKey(filename), "ch");
+  const dir = path.join(
+    /* turbopackIgnore: true */ cacheDir,
+    bookCacheKey(filename),
+    "ch",
+  );
   if (fs.existsSync(dir)) {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -113,7 +122,8 @@ export function hasChapterCache(
   filename: string,
   chapterIdx: number,
 ): boolean {
-  return fs.existsSync(chapterCacheFsPath(cacheDir, filename, chapterIdx));
+  const p = chapterCacheFsPath(cacheDir, filename, chapterIdx);
+  return fs.existsSync(/* turbopackIgnore: true */ p);
 }
 
 export function writeChapterCache(

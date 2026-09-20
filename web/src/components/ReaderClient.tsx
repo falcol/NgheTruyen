@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { adjacentChapterContentUrls, crawlChapterApiPath } from "@/lib/chapter-nav";
+import { filterChapters } from "@/lib/chapter-list";
 import { epubFilenameFromReaderSlug, chapterCacheUrlPath } from "@/lib/epub-urls";
 import {
   getCachedChapter,
@@ -167,14 +168,7 @@ function ReaderClientInner({
   const [pickerExtraAfter, setPickerExtraAfter] = useState(0);
 
   const pickerList = useMemo(() => {
-    const q = filter.trim().toLowerCase();
-    const list = q
-      ? chapters.filter(
-          (ch) =>
-            ch.title.toLowerCase().includes(q) ||
-            String(ch.index + 1).includes(q),
-        )
-      : chapters;
+    const list = filterChapters(chapters, filter);
 
     if (list.length === 0) {
       return {
@@ -188,7 +182,7 @@ function ReaderClientInner({
     }
 
     const foundPos = list.findIndex((c) => c.index === activeChapterIdx);
-    const anchorPos = q ? 0 : foundPos === -1 ? 0 : foundPos;
+    const anchorPos = filter.trim() ? 0 : foundPos === -1 ? 0 : foundPos;
     const startIdx = Math.max(0, anchorPos - (PICKER_WINDOW_HALF + pickerExtraBefore));
     const endIdx = Math.min(
       list.length,

@@ -39,3 +39,4 @@ zhvi/.pytest_cache/
 
 # raw crawler output (regenerable, too large for repo)
 raw_china/
+.next/

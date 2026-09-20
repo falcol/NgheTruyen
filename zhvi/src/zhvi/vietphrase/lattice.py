@@ -240,6 +240,41 @@ def _longest_word_len(dic: Dictionary, text: str, pos: int) -> int:
     return best
 
 
+# Duoi tu ghep 2-4 chu: leftover 1 chu nay hiem khi dung le (脉/力/云/乎/意),
+# khac 人/子/的 (一个+人, 个人). Dung de drop edge cuop chu dau 血脉/之力/在乎.
+_BOUND_COMPOUND_TAILS = frozenset("脉力气云术丹阵魄灵光魂界门乎意")
+
+
+def _stolen_compound(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Edge generic cuop chu dau cua tu ghep tran khoi (这么多血|脉, 多少血|脉).
+
+    Giong _stolen_bu nhung hinh hoc nguoc: tu tran (血脉 2) NGAN hon edge
+    (这么多血 4). Chi khi tu tran ket thuc bang bound tail — tranh 一个+人.
+    Ten rieng (name-prec) khong drop; phrase Custom (多少血) van drop.
+
+    Xet MOI word 2-4 chu tran khoi, khong chi longest: 在乎的 (3, duoi 的)
+    che 在乎 (2, duoi 乎) neu chi nhin longest.
+    """
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    if _is_name_prec(edge.precedence):
+        return False
+    n = len(text)
+    for i in range(edge.start + 1, edge.end):
+        node = dic.root
+        for j in range(i, min(i + 4, n)):
+            node = node.children.get(text[j])
+            if node is None:
+                break
+            wlen = j - i + 1
+            word_end = j + 1
+            if not node.entries or wlen < 2 or word_end <= edge.end:
+                continue
+            if text[word_end - 1] in _BOUND_COMPOUND_TAILS:
+                return True
+    return False
+
+
 def _stolen_bu(dic: Dictionary, text: str, edge: Edge) -> bool:
     """Edge generic ket thuc bang 不 (VD 到不) cuop 不 cua tu dai hon
     bat dau tai do (VD 不可思议). Drop de longest-match thang.
@@ -325,6 +360,7 @@ def _candidates_at(dic: Dictionary, text: str, pos: int, *, patterns: bool) -> l
         candidates = [e for e in candidates if not _swallows_name(dic, text, e)]
         candidates = [e for e in candidates if not _idiom_overflow(dic, text, e)]
         candidates = [e for e in candidates if not _stolen_bu(dic, text, e)]
+        candidates = [e for e in candidates if not _stolen_compound(dic, text, e)]
         if not candidates:
             candidates = [
                 Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)

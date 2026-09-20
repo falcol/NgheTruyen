@@ -9,7 +9,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 PARSER_VERSION = "zhvi-parser-1"
-SEGMENTER_VERSION = "zhvi-segmenter-3"  # Custom name collision + ordinal title
+SEGMENTER_VERSION = "zhvi-segmenter-7"  # 了 particle before 出去/起来; after 可能
 QA_VERSION = "zhvi-qa-2"  # stutter skip interior Latin (Yamamoto)
 PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # Version cua logic nap tu dien / render target — tham gia canonical manifest

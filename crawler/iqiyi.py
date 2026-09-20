@@ -307,12 +307,16 @@ class IqiyiCrawler(TorProxyMixin, BaseCrawler):
                 nums.add(n)
         return nums
 
-    def _missing_jobs(self, start_url: str) -> list[tuple[int, str]]:
+    def _missing_jobs(self, start_url: str, min_num: int = 0) -> list[tuple[int, str]]:
         slug = self._extract_slug(start_url)
         book_id = self._book_id(start_url)
         catalog = self._fetch_catalog(book_id)
         local_nums = self._local_chapter_nums(slug)
         missing = [item for item in catalog if item["num"] not in local_nums]
+        if min_num:
+            before = len(missing)
+            missing = [item for item in missing if item["num"] >= min_num]
+            logger.info(f"Filter num>={min_num}: {before} -> {len(missing)}")
         logger.info(
             f"Local unique nums={len(local_nums)}  iQiyi={len(catalog)}  missing={len(missing)}"
         )
@@ -326,7 +330,7 @@ class IqiyiCrawler(TorProxyMixin, BaseCrawler):
     def crawl(self, start_url: str, start_index: int = 0, max_chapters: int = 0) -> list[dict]:
         self.warmup()
         slug = self._extract_slug(start_url)
-        jobs = self._missing_jobs(start_url)
+        jobs = self._missing_jobs(start_url, min_num=start_index)
         if max_chapters:
             jobs = jobs[:max_chapters]
         if not jobs:
@@ -383,7 +387,7 @@ class IqiyiCrawler(TorProxyMixin, BaseCrawler):
     ) -> list[dict]:
         self.warmup()
         slug = self._extract_slug(start_url)
-        jobs = self._missing_jobs(start_url)
+        jobs = self._missing_jobs(start_url, min_num=start_index)
         if max_chapters:
             jobs = jobs[:max_chapters]
         if not jobs:

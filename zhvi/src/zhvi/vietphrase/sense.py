@@ -34,6 +34,13 @@ _ASPECT = {
 }
 # 了 sau gioi tu noi cho (在了/到了/给了): particle, khong aspect "đã".
 _LOCATIVE_BEFORE_LE = frozenset("在于於到给給")
+# 的了 cuoi cau: tieu tu (不可思议的了), khong "đã".
+_PARTICLE_BEFORE_LE = frozenset("的")
+# 了 truoc bo huong (飞了出去/收了起来): particle, khong "đã".
+_DIRECTIONAL_AFTER_LE = ("出去", "起来", "下來", "下来", "进来", "進來", "过来", "過來", "回去", "上来", "上來")
+# 不可能了 / 不行了: 了 ket thuc, khong aspect.
+_MODAL_BEFORE_LE = ("可能", "不行")
+_YIJING = ("已经", "已經")
 # 龙 1 chu: Hán-Việt Long trong ho+ten; rồng khi classifier con vat.
 _DRAGON_ANIMAL_LEFT = frozenset("条頭头只隻條")
 _DRAGON_ANIMAL_TAIL = ("一条", "一頭", "一头", "一只", "一隻")
@@ -200,6 +207,15 @@ def _is_cjk(ch: str) -> bool:
     return 0x3400 <= o <= 0x4DBF or 0x4E00 <= o <= 0x9FFF or 0xF900 <= o <= 0xFAFF
 
 
+def _clause_has(text: str, pos: int, needles: tuple[str, ...]) -> bool:
+    """Needle co trong menh de CJK ngay truoc `pos` (cat o _STOP_AFTER)."""
+    i = pos
+    while i > 0 and text[i - 1] not in _STOP_AFTER:
+        i -= 1
+    chunk = text[i:pos]
+    return any(n in chunk for n in needles)
+
+
 def _left_cjk(text: str, pos: int, n: int = 4) -> str:
     """N chu CJK ngay truoc `pos`, dung o hat/punct menh de."""
     chars: list[str] = []
@@ -302,6 +318,14 @@ def _sense_target(
                 return "đệ " + sino
     if src in _ASPECT:
         if src == "了" and left[-1:] in _LOCATIVE_BEFORE_LE:
+            return ""
+        if src == "了" and left[-1:] in _PARTICLE_BEFORE_LE:
+            return ""
+        if src == "了" and left.endswith(_MODAL_BEFORE_LE):
+            return ""
+        if src == "了" and rest.startswith(_DIRECTIONAL_AFTER_LE):
+            return ""
+        if src == "了" and _clause_has(text, clause_pos, _YIJING):
             return ""
         return _ASPECT[src]
     if src == "龙" or src == "龍":

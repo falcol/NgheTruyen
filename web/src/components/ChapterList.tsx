@@ -2,15 +2,21 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   adjacentChapterContentUrls,
   crawlChapterApiPath,
 } from "@/lib/chapter-nav";
+import {
+  CHAPTER_LIST_PAGE,
+  filterChapters,
+  visibleChapterWindow,
+  windowRangeForJump,
+} from "@/lib/chapter-list";
 import { prefetchChapterContent } from "@/lib/chapter-prefetch";
 import { chapterCacheUrlPath, epubFilenameFromReaderSlug } from "@/lib/epub-urls";
 import { useProgress } from "@/hooks/useProgress";
-import { MagnifyingGlass, CaretDown, PlayCircle, X } from "@/components/icons";
+import { MagnifyingGlass, CaretDown, CircleNotch, PlayCircle, X } from "@/components/icons";
 
 interface ChapterMeta {
   index: number;
@@ -35,12 +41,84 @@ export default function ChapterList({
   const router = useRouter();
   const { progress } = useProgress(slug);
   const [query, setQuery] = useState("");
+  const [rangeStart, setRangeStart] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(CHAPTER_LIST_PAGE);
+  const topSentinelRef = useRef<HTMLDivElement>(null);
+  const bottomSentinelRef = useRef<HTMLDivElement>(null);
+  const searchBoxRef = useRef<HTMLInputElement>(null);
+  const pendingJumpIdx = useRef<number | null>(null);
+  const pinSearchRef = useRef(false);
+  const loadMoreArmedRef = useRef(true);
+  const pendingPrepend = useRef<{ id: string; top: number } | null>(null);
+  const firstVisibleIdx = useRef<number | null>(null);
 
-  const filtered = chapters.filter(
-    (ch) =>
-      ch.title.toLowerCase().includes(query.toLowerCase()) ||
-      String(ch.index + 1).includes(query),
+  const filtered = useMemo(() => filterChapters(chapters, query), [chapters, query]);
+  const { items: visible, hasMoreBefore, hasMoreAfter } = useMemo(
+    () => visibleChapterWindow(filtered, rangeStart, visibleCount),
+    [filtered, rangeStart, visibleCount],
   );
+  firstVisibleIdx.current = visible[0]?.index ?? null;
+
+  function setSearchQuery(value: string) {
+    setQuery(value);
+    setRangeStart(0);
+    setVisibleCount(CHAPTER_LIST_PAGE);
+    pinSearchRef.current = true;
+    loadMoreArmedRef.current = false;
+  }
+
+  useLayoutEffect(() => {
+    const prepend = pendingPrepend.current;
+    if (prepend) {
+      pendingPrepend.current = null;
+      const el = document.getElementById(prepend.id);
+      if (el) window.scrollBy(0, el.getBoundingClientRect().top - prepend.top);
+    }
+    const jumpIdx = pendingJumpIdx.current;
+    if (jumpIdx != null) {
+      const el = document.getElementById(`ch-${jumpIdx}`);
+      if (el) {
+        pendingJumpIdx.current = null;
+        el.scrollIntoView({ behavior: "instant", block: "center" });
+        loadMoreArmedRef.current = true;
+      }
+    }
+    if (!pinSearchRef.current) return;
+    pinSearchRef.current = false;
+    searchBoxRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  });
+
+  useEffect(() => {
+    const top = topSentinelRef.current;
+    const bottom = bottomSentinelRef.current;
+    if (!top && !bottom) return;
+    const obs = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) {
+          loadMoreArmedRef.current = true;
+          continue;
+        }
+        if (!loadMoreArmedRef.current) continue;
+        if (entry.target === top) {
+          const idx = firstVisibleIdx.current;
+          const anchor = idx == null ? null : document.getElementById(`ch-${idx}`);
+          if (anchor) {
+            pendingPrepend.current = {
+              id: `ch-${idx}`,
+              top: anchor.getBoundingClientRect().top,
+            };
+          }
+          setRangeStart((s) => Math.max(0, s - CHAPTER_LIST_PAGE));
+          setVisibleCount((n) => n + CHAPTER_LIST_PAGE);
+        } else if (entry.target === bottom) {
+          setVisibleCount((n) => n + CHAPTER_LIST_PAGE);
+        }
+      }
+    });
+    if (top) obs.observe(top);
+    if (bottom) obs.observe(bottom);
+    return () => obs.disconnect();
+  }, [hasMoreBefore, hasMoreAfter, rangeStart, visibleCount, filtered.length]);
 
   const href = (idx: number) =>
     readHref ? `${readHref}/${idx}` : `/read/${slug}/${idx}`;
@@ -108,7 +186,11 @@ export default function ChapterList({
       {progress && !query && (
         <button
           onClick={() => {
-            document.getElementById(`ch-${progress.chapterIdx}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            pendingJumpIdx.current = progress.chapterIdx;
+            loadMoreArmedRef.current = false;
+            const range = windowRangeForJump(chapters, progress.chapterIdx);
+            setRangeStart(range.start);
+            setVisibleCount(range.count);
           }}
           className="text-xs text-[var(--color-accent)] hover:underline mb-3 flex items-center gap-1 transition-opacity"
         >
@@ -118,15 +200,16 @@ export default function ChapterList({
 
       <div className="relative mb-4">
         <input
+          ref={searchBoxRef}
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Tìm chương..."
-          className="w-full pl-9 pr-9 py-2.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]/50 transition-colors"
+          className="w-full pl-9 pr-9 py-2.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]/50 transition-colors scroll-mt-20"
         />
         <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
         {query && (
-          <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+          <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
             <X size={14} />
           </button>
         )}
@@ -136,8 +219,18 @@ export default function ChapterList({
         <p className="text-center text-[var(--color-text-muted)] py-8 text-sm">Không tìm thấy chương nào</p>
       )}
 
+      {hasMoreBefore && (
+        <div
+          ref={topSentinelRef}
+          className="py-4 flex items-center justify-center gap-1.5 text-xs text-[var(--color-text-muted)] italic"
+        >
+          <CircleNotch size={14} className="animate-spin" />
+          Đang tải thêm...
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 md:gap-x-5">
-        {filtered.map((ch) => {
+        {visible.map((ch) => {
           const isRead = progress && progress.chapterIdx >= ch.index;
           const isCurrent = progress && progress.chapterIdx === ch.index;
 
@@ -179,6 +272,15 @@ export default function ChapterList({
           );
         })}
       </div>
+      {hasMoreAfter && (
+        <div
+          ref={bottomSentinelRef}
+          className="py-4 flex items-center justify-center gap-1.5 text-xs text-[var(--color-text-muted)] italic"
+        >
+          <CircleNotch size={14} className="animate-spin" />
+          Đang tải thêm...
+        </div>
+      )}
     </div>
   );
 }
