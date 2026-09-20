@@ -43,6 +43,10 @@ PUNCT_RE = re.compile("[" + re.escape("".join(CN_PUNCT)) + "]")
 SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.!?;:”’…)%\]»])")
 SPACE_AFTER_OPEN_RE = re.compile(r"([“‘(\[«])\s+")
 MULTI_SPACE_RE = re.compile(r"[^\S\n]{2,}")
+# Convert artifact: 已经+了 / 被+被. Khong nuot "phòng bị bị đánh" (phòng bị + bị).
+DA_DA_RE = re.compile(r"\bđã đã\b", re.IGNORECASE)
+BI_BI_RE = re.compile(r"(?<![Pp]hòng )\bbị bị\b")
+DA_BI_DOAT_DA_RE = re.compile(r"đã bị đoạt đã")
 # QT boc hat 1 chu sau longest-match. 了/着/过 giu — sense map đã/đang/rồi.
 DROP_PARTICLES = set("的旳地嘛呢吧啊呀啦呐吶呗唄哩哟喲咯喽嘍")
 CAP_RE = re.compile(
@@ -576,12 +580,7 @@ def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int,
         j = i + 1
         while j < n and edges[j].target == "":
             j += 1
-        if (
-            j < n
-            and e.target
-            and e.entry_version_id is not None
-            and edges[j].entry_version_id is not None
-        ):
+        if j < n and e.target:
             t1, t2 = e.target, edges[j].target
             if (t1 == t2 or t2.startswith(t1 + " ")) and not _source_has_reduplication(
                 text, e.start, edges[j].end
@@ -604,6 +603,9 @@ def render(edges: list[Edge]) -> str:
     text = SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)
     text = SPACE_AFTER_OPEN_RE.sub(r"\1", text)
     text = MULTI_SPACE_RE.sub(" ", text)
+    text = DA_DA_RE.sub("đã", text)
+    text = BI_BI_RE.sub("bị", text)
+    text = DA_BI_DOAT_DA_RE.sub("đã bị đoạt", text)
     text = text.strip()
     text = CAP_RE.sub(lambda m: m.group(1) + m.group(2).upper(), text)
     return normalize_nfc(text)

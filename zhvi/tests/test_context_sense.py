@@ -698,6 +698,48 @@ def test_long_name_vs_animal():
     assert "rồng" not in vp_plan(compound, "青龙从天").text.lower()
 
 
+def test_collapse_da_da_and_bi_bi():
+    """đã đã / bị bị la artifact convert; phòng bị + bị đánh giu."""
+    da = mini(
+        [
+            ("已经", "đã", Layer.GLOBAL_MANUAL),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+            ("有", "có", Layer.BASE_SINGLE),
+        ]
+    )
+    out = vp_plan(da, "已经有了").text.lower()
+    assert "đã đã" not in out
+    assert "đã có" in out or "có" in out
+    bi = mini(
+        [
+            ("被", "bị", Layer.BASE_SINGLE),
+            ("吓", "hù", Layer.BASE_SINGLE),
+        ]
+    )
+    hout = vp_plan(bi, "被吓").text.lower()
+    assert "bị bị" not in hout
+    assert "bị hù" in hout or "hù" in hout
+    phong = mini(
+        [
+            ("防备", "phòng bị", Layer.BASE_MULTI),
+            ("被", "bị", Layer.BASE_SINGLE),
+            ("打", "đánh", Layer.BASE_SINGLE),
+        ]
+    )
+    pout = vp_plan(phong, "防备被打").text.lower()
+    assert "phòng bị bị đánh" in pout or "phòng bị" in pout
+    doat = mini(
+        [
+            ("已经", "đã", Layer.GLOBAL_MANUAL),
+            ("被", "bị", Layer.BASE_SINGLE),
+            ("抢走", "đoạt", Layer.BASE_MULTI),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+        ]
+    )
+    dout = vp_plan(doat, "已经被抢走了").text.lower()
+    assert "đã bị đoạt đã" not in dout
+
+
 def test_shuodao_strips_rang():
     dic = mini(
         [
