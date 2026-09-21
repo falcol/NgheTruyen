@@ -9,13 +9,13 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 PARSER_VERSION = "zhvi-parser-1"
-SEGMENTER_VERSION = "zhvi-segmenter-7"  # 了 particle before 出去/起来; after 可能
+SEGMENTER_VERSION = "zhvi-segmenter-23"  # drop 给她的 before noun; 就打 before 过来
 QA_VERSION = "zhvi-qa-2"  # stutter skip interior Latin (Yamamoto)
 PIPELINE_VERSION = "zhvi-m3-0.1.0"
 # Version cua logic nap tu dien / render target — tham gia canonical manifest
 # cua revision (SPEC AD-15 buoc 5): doi logic nap/render phai tao revision moi.
 LOADER_VERSION = "zhvi-loader-7"  # first-meaning cut at earliest / or |
-RENDERER_VERSION = "zhvi-renderer-11"  # collapse đã đã / bị bị (not phòng bị bị)
+RENDERER_VERSION = "zhvi-renderer-27"  # 道； nói; 电话打过来 gọi tới
 # Version cua preprocessing view (junk strip + repetition collapse rules,
 # AD-18/FR13) — tham gia run fingerprint + block cache key; doi rule strip/
 # collapse phai bump nay (run/cache cu tu invalid).

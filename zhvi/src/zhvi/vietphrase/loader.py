@@ -165,34 +165,43 @@ def dict_files_fingerprint(
     return h.hexdigest()
 
 
-def load_dictionary(
-    dict_dir: Path,
-    *,
-    manual_glossary: Path | None = None,
-    global_glossary: Path | None = None,
-    cache_path: Path | None = None,
-    patterns: bool = True,
-) -> Dictionary:
-    """Nap toan bo layer vao trie. Neu cache_path hop le (fingerprint khop) -> pickle.
+# Process-local: cung fingerprint -> cung Dictionary. Pytest nap dict nen
+# nhieu file; parse VietPhrase_* moi lan ~15-20s. Glossary overlay cow-insert
+# tren base da cache, khong parse lai file nen.
+_MEMO: dict[str, Dictionary] = {}
 
-    Pickle chi dung cho cache tu sinh trong .zhvi/cache/ cua chinh may (self-generated,
-    khong bao gio nap file tu nguon khong tin cay); fingerprint kiem tra tinh truc tiep.
-    patterns=False: bo qua luat nhan {s}/{n} (chi dung trie literal).
 
-    [Note] Story 2.3: runtime dich da nap qua bundle revision
-    (revision.load_revision_dictionary) — caller runtime duy nen con truyen
-    cache_path la doctor. Confirm giu hay xoa nhanh pkl cache nay?
-    """
-    fingerprint = dict_files_fingerprint(dict_dir, manual_glossary, global_glossary, patterns)
-    if cache_path is not None and cache_path.is_file():
-        try:
-            with cache_path.open("rb") as f:
-                meta, dic = pickle.load(f)
-            if meta == fingerprint:
-                return dic
-        except Exception:  # noqa: BLE001 — cache hong -> build lai
-            cache_path.unlink(missing_ok=True)
+def clear_dictionary_memo() -> None:
+    """Xoa cache in-process (test doi noi dung file dict cung path)."""
+    _MEMO.clear()
 
+
+def _cow_insert(root: TrieNode, key: str, target: str, precedence: tuple, policy: str) -> TrieNode:
+    """Insert tren ban copy path; subtree khong dung den van share."""
+    new_root = TrieNode()
+    new_root.entries = list(root.entries)
+    new_root.children = dict(root.children)
+    node = new_root
+    src: TrieNode | None = root
+    for ch in key:
+        src_child = src.children.get(ch) if src is not None else None
+        copied = TrieNode()
+        if src_child is not None:
+            copied.entries = list(src_child.entries)
+            copied.children = dict(src_child.children)
+        node.children[ch] = copied
+        node = copied
+        src = src_child
+    for i, (t, p, _pol) in enumerate(node.entries):
+        if t == target:
+            if precedence > p:
+                node.entries[i] = (target, precedence, policy)
+            return new_root
+    node.entries.append((target, precedence, policy))
+    return new_root
+
+
+def _build_base_dictionary(dict_dir: Path, patterns: bool, fingerprint: str) -> Dictionary:
     trad_simp = load_trad_simp(dict_dir)
     root = TrieNode()
     pattern_rules: list[PatternRule] = []
@@ -234,6 +243,25 @@ def load_dictionary(
                 if simp != zh:
                     _insert(root, simp, vi, prec, _policy_for(layer))
             count += 1
+    return Dictionary(
+        root=root,
+        trad_simp=trad_simp,
+        entry_count=count,
+        fingerprint=fingerprint,
+        patterns=build_pattern_index(pattern_rules),
+    )
+
+
+def _overlay_glossaries(
+    base: Dictionary,
+    fingerprint: str,
+    manual_glossary: Path | None,
+    global_glossary: Path | None,
+) -> Dictionary:
+    root = base.root
+    count = base.entry_count
+    load_index = count
+    trad_simp = base.trad_simp
     for gpath in iter_global_glossary_files(global_glossary):
         # term chuan toan cuc (Tieu Ban + glossary.d/*.tsv) — SERIES_MANUAL,
         # thang dict nen nhung BOOK_MANUAL cua truyen van override duoc.
@@ -244,10 +272,10 @@ def load_dictionary(
             zh, vi = parsed
             load_index += 1
             prec = (int(Layer.SERIES_MANUAL), MANUAL_TRUST, load_index)
-            _insert(root, zh, vi, prec, "PREFERRED")
+            root = _cow_insert(root, zh, vi, prec, "PREFERRED")
             simp = to_simplified(zh, trad_simp)
             if simp != zh:
-                _insert(root, simp, vi, prec, "PREFERRED")
+                root = _cow_insert(root, simp, vi, prec, "PREFERRED")
             count += 1
     if manual_glossary is not None and manual_glossary.is_file():
         for line in manual_glossary.read_text(encoding="utf-8-sig").splitlines():
@@ -257,19 +285,80 @@ def load_dictionary(
             zh, vi = parsed
             load_index += 1
             prec = (int(Layer.BOOK_MANUAL), MANUAL_TRUST, load_index)
-            _insert(root, zh, vi, prec, "PREFERRED")
+            root = _cow_insert(root, zh, vi, prec, "PREFERRED")
             simp = to_simplified(zh, trad_simp)
             if simp != zh:
-                _insert(root, simp, vi, prec, "PREFERRED")
+                root = _cow_insert(root, simp, vi, prec, "PREFERRED")
             count += 1
-
-    dic = Dictionary(
+    return Dictionary(
         root=root,
         trad_simp=trad_simp,
         entry_count=count,
         fingerprint=fingerprint,
-        patterns=build_pattern_index(pattern_rules),
+        patterns=base.patterns,
     )
+
+
+def load_dictionary(
+    dict_dir: Path,
+    *,
+    manual_glossary: Path | None = None,
+    global_glossary: Path | None = None,
+    cache_path: Path | None = None,
+    patterns: bool = True,
+) -> Dictionary:
+    """Nap toan bo layer vao trie. Neu cache_path hop le (fingerprint khop) -> pickle.
+
+    Pickle chi dung cho cache tu sinh trong .zhvi/cache/ cua chinh may (self-generated,
+    khong bao gio nap file tu nguon khong tin cay); fingerprint kiem tra tinh truc tiep.
+    patterns=False: bo qua luat nhan {s}/{n} (chi dung trie literal).
+
+    Cung fingerprint trong mot process tra ve cung instance (pytest nap lai
+    crawler/vietphrase/dicts nhieu file). Glossary/manual cow-insert len base
+    da cache — khong parse lai VietPhrase_*.
+
+    [Note] Story 2.3: runtime dich da nap qua bundle revision
+    (revision.load_revision_dictionary) — caller runtime duy nen con truyen
+    cache_path la doctor. Confirm giu hay xoa nhanh pkl cache nay?
+    """
+    fingerprint = dict_files_fingerprint(dict_dir, manual_glossary, global_glossary, patterns)
+    cached = _MEMO.get(fingerprint)
+    if cached is not None:
+        return cached
+    if cache_path is not None and cache_path.is_file():
+        try:
+            with cache_path.open("rb") as f:
+                meta, dic = pickle.load(f)
+            if meta == fingerprint:
+                _MEMO[fingerprint] = dic
+                return dic
+        except Exception:  # noqa: BLE001 — cache hong -> build lai
+            cache_path.unlink(missing_ok=True)
+
+    base_fp = dict_files_fingerprint(dict_dir, None, None, patterns)
+    base = _MEMO.get(base_fp)
+    if base is None and not patterns:
+        # Trie literal giong patterns=True; chi khac index luat nhan.
+        sib_fp = dict_files_fingerprint(dict_dir, None, None, True)
+        sib = _MEMO.get(sib_fp)
+        if sib is not None:
+            base = Dictionary(
+                root=sib.root,
+                trad_simp=sib.trad_simp,
+                entry_count=sib.entry_count,
+                fingerprint=base_fp,
+                patterns={},
+            )
+            _MEMO[base_fp] = base
+    if base is None:
+        base = _build_base_dictionary(dict_dir, patterns, base_fp)
+        _MEMO[base_fp] = base
+    dic = (
+        base
+        if fingerprint == base_fp
+        else _overlay_glossaries(base, fingerprint, manual_glossary, global_glossary)
+    )
+    _MEMO[fingerprint] = dic
     if cache_path is not None:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         tmp = cache_path.with_suffix(".tmp")

@@ -25,6 +25,8 @@ from .config import (
 )
 from .document import parse_document
 from .export import ExportResult, build_output, export_run
+from .fsutil import atomic_write
+from .progress import Progress
 from .fingerprint import block_source_hash, build_run_fingerprint
 from .project import (
     Project,
@@ -42,6 +44,7 @@ from .quality.invariants import run_invariants
 from .snapshot import SourceRevision, import_snapshot
 from .state import State
 from .vietphrase.lattice import vp_plan
+from .vietphrase.loader import load_dictionary
 
 if TYPE_CHECKING:  # annotation-only — engine type, khong keo them import-time
     from .vietphrase.loader import Dictionary
@@ -107,6 +110,79 @@ def resolve_global_glossary(cfg: Config) -> Path | None:
     if p.is_file() or (p.parent / "glossary.d").is_dir():
         return p
     return None
+
+
+def translate_plain(
+    source: Path,
+    output: Path,
+    *,
+    cfg: Config,
+    book_glossary: Path | None = None,
+) -> PipelineResult:
+    """Dich TXT bang VietPhrase, ghi file. Khong SQLite / revision / resume."""
+    t0 = time.monotonic()
+    dict_dir = resolve_dict_dir(cfg)
+    manual = book_glossary if book_glossary is not None and book_glossary.is_file() else None
+    dic = load_dictionary(
+        dict_dir,
+        manual_glossary=manual,
+        global_glossary=resolve_global_glossary(cfg),
+        patterns=cfg.pattern_rules,
+    )
+    text = source.read_text(encoding=cfg.encoding)
+    doc = parse_document(
+        text,
+        chapter_detection=cfg.chapter_detection,
+        chapter_regex=cfg.chapter_regex,
+    )
+    trans = doc.translatable_nodes()
+    prog = Progress(len(trans))
+    parts: list[str] = []
+    n_warn = 0
+    done = 0
+    try:
+        for node in doc.nodes:
+            if not node.is_translatable:
+                parts.append(node.raw_text)
+                continue
+            vp_input, junk_spans = (
+                sanitize_source(node.content) if cfg.qa_strip_junk else (node.content, [])
+            )
+            draft = vp_plan(
+                dic,
+                vp_input,
+                beam=1,
+                collapse_reps=cfg.collapse_repetitions,
+            )
+            n_warn += len(draft.warnings) + len(junk_spans)
+            parts.append(node.prefix + draft.text + node.suffix)
+            done += 1
+            prog.update(done, done, n_warn)
+    except KeyboardInterrupt:
+        prog.finish()
+        raise
+    prog.finish()
+    assembled = "".join(parts)
+    if assembled.count("\n") != doc.normalized_text.count("\n"):
+        raise RunFailure("So newline khong khop — co the mat/reorder dong")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    sha = atomic_write(output, assembled.encode(cfg.encoding))
+    elapsed = time.monotonic() - t0
+    return PipelineResult(
+        run_id="plain",
+        exit_code=0,
+        report={
+            "run_id": "plain",
+            "noop": False,
+            "stateless": True,
+            "blocks": len(trans),
+            "vp_ratio": 1.0,
+            "warnings": n_warn,
+            "elapsed_s": round(elapsed, 3),
+            "output": str(output),
+            "sha256": sha,
+        },
+    )
 
 
 def ensure_book_dictionary(
@@ -268,6 +344,15 @@ def _translate_locked(
     from .progress import Progress
 
     prog = Progress(total)
+    chk = max(1, cfg.runtime.checkpoint_blocks)
+    pending = 0
+
+    def flush() -> None:
+        nonlocal pending
+        if pending:
+            st.commit()
+            pending = 0
+
     try:
         for i, node in enumerate(nodes):
             bid = f"c{node.chapter_id}b{node.ordinal}"
@@ -295,14 +380,18 @@ def _translate_locked(
                     attempt={"id": uuid.uuid4().hex, "engine": "cache", "input_hash": src_hash,
                              "status": "ok", "duration_ms": 0},
                     cache_key=cache_key,
+                    commit=False,
                 )
                 n_committed += 1
+                pending += 1
+                if pending >= chk:
+                    flush()
                 prog.update(i + 1, n_committed, n_warnings)
                 continue
             draft = vp_plan(
                 dic,
                 vp_input,
-                beam=cfg.lattice_beam,
+                beam=1,  # M1 VP-only: greedy, khong DP lattice
                 occurrence_prefix=bid,
                 collapse_reps=cfg.collapse_repetitions,
             )
@@ -356,10 +445,16 @@ def _translate_locked(
                 router_version="none",
                 attempt=attempt,
                 cache_key=cache_key,
+                commit=False,
             )
             n_committed += 1
+            pending += 1
+            if pending >= chk:
+                flush()
             prog.update(i + 1, n_committed, n_warnings)
+        flush()
     except KeyboardInterrupt:
+        flush()
         prog.finish()
         st.set_run_status(run.id, "paused")
         # Dem tu DB (route_decisions) — dung cho block staged truoc interrupt.

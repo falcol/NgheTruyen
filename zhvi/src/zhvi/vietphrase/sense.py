@@ -9,21 +9,24 @@ from .patterns import PRONOUNS, VERBS
 _DE_DUOC = ("天地", "厚爱", "厚愛")
 _CLAUSE_END = frozenset("。！\n」』")
 _QUESTION_MARK = frozenset("？吗麼么")
-_SPEECH_AFTER_DAO = frozenset("：:「『")
+_SPEECH_AFTER_DAO = frozenset("：:；;「『“”\"'")
 _STOP_AFTER = frozenset("。！？，,、；;：:\n」』")
-# Cum 对+dai tu trong corpus = "đối với X" — convert cat "với".
+# Cum 对+dai tu: giu "với" — "đối với mình" moi dung ngu phap Viet.
+# (Ban cu cat "với" -> "đối mình cảm mến" la sai; parity chap1 para 34.)
 _DUI_PRONOUN = {
-    "对自己": "đối mình",
-    "对你": "đối ngươi",
-    "对我": "đối ta",
-    "对他": "đối hắn",
-    "对她": "đối nàng",
-    "对它": "đối nó",
-    "对您": "đối ngài",
+    "对自己": "đối với mình",
+    "对你": "đối với ngươi",
+    "对我": "đối với ta",
+    "对他": "đối với hắn",
+    "对她": "đối với nàng",
+    "对它": "đối với nó",
+    "对您": "đối với ngài",
 }
 # 会 + trai: tuong lai / kha nang.
 _FUTURE_LEFT = ("明天", "昨天", "今天", "今年", "将", "將", "一定", "可能")
 _FUTURE_RIGHT = frozenset("被让讓")
+# 十会 / 三会: hoi (tap hop), khong future se. 一会 la khoa 2 chu rieng.
+_NUM_BEFORE_HUI = frozenset("一二三四五六七八九十百千两兩幾几")
 # Hat the (1 chu sau AD-9). 的/地 van DROP_PARTICLES.
 _ASPECT = {
     "了": "đã",
@@ -32,8 +35,13 @@ _ASPECT = {
     "过": "rồi",
     "過": "rồi",
 }
-# 了 sau gioi tu noi cho (在了/到了/给了): particle, khong aspect "đã".
+# 了 sau gioi tu noi cho (在了/到了/给了) hoac sau cum 到/在+dia danh (到水月了).
 _LOCATIVE_BEFORE_LE = frozenset("在于於到给給")
+# 着 sau dong tu ket qua/keo dai (沉思着/约着): particle, khong "đang".
+# Khong gom 看 — 看着我 van aspect.
+_ZHE_DROP_AFTER = ("沉思", "说", "走", "约", "谈", "咆哮", "吼", "呆")
+_SIMILE_BEFORE_YIBAN = ("好像", "仿佛", "如同", "犹如", "好似")
+_YIBA_WEAPON = frozenset("刀剑剑槍枪棍棒斧锤弓刃戟")
 # 的了 cuoi cau: tieu tu (不可思议的了), khong "đã".
 _PARTICLE_BEFORE_LE = frozenset("的")
 # 了 truoc bo huong (飞了出去/收了起来): particle, khong "đã".
@@ -122,6 +130,31 @@ _IDIOMS = frozenset(
         "筋疲力尽",
         "全力以赴",
         "千钧一发",
+        "任人鱼肉",
+    }
+)
+
+# Cum bi edge ngan ben trai cuop chu dau (是知|情人, 你要|么, 人解|决, 的人口|中).
+_PROTECTED_OVERFLOWS = frozenset(
+    {
+        "知情人",
+        "要么",
+        "解决",
+        "口中",
+        "任人鱼肉",
+        "的话",
+        "的時候",
+        "的时候",
+        "烟雾弹",
+        "跟着",
+        "有点",
+        "吃着东西",
+        "吃东西",
+        "印记",
+        "圆润",
+        "女朋友",
+        "停了下来",
+        "题目",
     }
 )
 
@@ -287,8 +320,13 @@ def _sense_target(
 ) -> str | None:
     nxt = rest[:1]
     nxt2 = rest[:2]
-    if src == "一把" and (nxt2 in VERBS or nxt in VERBS):
-        return "một cái"
+    if src == "一把":
+        if nxt2 in VERBS or nxt in VERBS:
+            return "một cái"
+        if nxt in _YIBA_WEAPON:
+            return None
+        if nxt and _is_cjk(nxt):
+            return "một cái"
     if src == "一跃" and nxt in ("跳", "跃", "躍"):
         return "nhảy vọt"
     # 一跃 + 跳X: bo nhay trung, giu huong (一跃跳上 -> nhay vot len).
@@ -306,6 +344,51 @@ def _sense_target(
         return "bao nhiêu"
     if src == "道" and nxt in _SPEECH_AFTER_DAO:
         return "nói"
+    if src in ("打过来", "打过来了") and _clause_has(text, clause_pos, ("电话", "電話")):
+        return "gọi tới"
+    if src == "一般" and _clause_has(text, clause_pos, _SIMILE_BEFORE_YIBAN):
+        return ""
+    # 去跟|着: 去 directional truoc 跟着.
+    if src == "去" and rest.startswith("跟着"):
+        return ""
+    if src == "让人" and rest.startswith(("去", "盯", "看", "查", "办", "辦", "做")):
+        return "bảo người"
+    if src == "可能" and left.endswith("个"):
+        return "khả năng"
+    if src == "拼了" and rest.startswith("个"):
+        return "ghép"
+    if src == "一顿" and not rest.startswith("饭"):
+        return "một trận"
+    if src == "哟嚯" and "yeah" in (cur or "").lower():
+        return "ối"
+    if src in ("气爆", "气爆了") and "khí bạo" in (cur or "").lower():
+        return "nổi giận"
+    if src == "不疼" and "thương" in (cur or "").lower():
+        return "không đau"
+    if src.endswith("朋友") and "bằng hữu" in (cur or "").lower():
+        return cur.replace("Bằng hữu", "Bạn").replace("bằng hữu", "bạn")
+    if src == "下来" and ("tới" in (cur or "") or left.endswith("了")):
+        return "xuống"
+    if src == "来了" and "起" in left:
+        return ""
+    if src == "拿到" and rest.startswith("过"):
+        return "từng giành"
+    if src == "过" and left.endswith("拿到"):
+        return ""
+    if src == "草" and nxt in "！!？?":
+        return "đm"
+    if src == "那只" and "的手" in rest[:24]:
+        return "cái"
+    if src == "一颗" and ("拳" in rest[:6] or rest.startswith("玲珑")):
+        return "một cái"
+    if src == "玲珑" and rest.startswith("拳"):
+        return "nhỏ nhắn"
+    if src in ("开出", "开出了") and not rest.startswith("一"):
+        if any(ch in rest[:4] for ch in "路街巷"):
+            return "lái ra khỏi"
+    # 在吃|着东西: 在 aspect trung 吃着.
+    if src == "在" and rest.startswith("吃着"):
+        return ""
     if src.startswith("第") and len(src) > 1:
         sino = _sino_ordinal(_cn_numeral(src[1:]))
         if sino is not None:
@@ -317,7 +400,7 @@ def _sense_target(
             ):
                 return "đệ " + sino
     if src in _ASPECT:
-        if src == "了" and left[-1:] in _LOCATIVE_BEFORE_LE:
+        if src == "了" and any(ch in _LOCATIVE_BEFORE_LE for ch in left[-4:]):
             return ""
         if src == "了" and left[-1:] in _PARTICLE_BEFORE_LE:
             return ""
@@ -326,6 +409,10 @@ def _sense_target(
         if src == "了" and rest.startswith(_DIRECTIONAL_AFTER_LE):
             return ""
         if src == "了" and _clause_has(text, clause_pos, _YIJING):
+            return ""
+        if src == "了" and left.endswith("接起") and rest.startswith("电话"):
+            return ""
+        if src in ("着", "著") and any(left.endswith(w) for w in _ZHE_DROP_AFTER):
             return ""
         return _ASPECT[src]
     if src == "龙" or src == "龍":
@@ -352,15 +439,39 @@ def _sense_target(
         if "hội" in cur:
             return cur.replace("hội", "sẽ", 1)
         return None
+    if src == "串" and (left[-1:] in _NUM_BEFORE_HUI or (left and left[-1].isdigit())):
+        return "xiên"
     if src == "会":
+        if left[-1:] in _NUM_BEFORE_HUI:
+            return "hội"
         if any(left.endswith(w) for w in _FUTURE_LEFT) or nxt in _FUTURE_RIGHT:
             return "sẽ"
         return None
+    # 只要她原因来: Han go 原因 (typo pinyin 愿意). Pronoun+原因 NP
+    # + 来/去 -> dong tu "đồng ý" (Custom 愿意), khong "nguyên nhân".
+    if (
+        len(src) == 3
+        and src[0] in PRONOUNS
+        and src.endswith("原因")
+        and rest.startswith(("来", "去"))
+        and "nguyên nhân" in cur
+    ):
+        return cur.replace("nguyên nhân", "đồng ý")
     if src == "的话":
         ctx = _left_cjk(text, clause_pos, n=8)
         if any(w in ctx for w in _DEHUA_SPEECH):
             return "lời"
         return "thì"
+    if src == "的人":
+        return "người"
+    if src in ("的时候", "的時候"):
+        return "lúc"
+    if src == "让自己" and rest and _is_cjk(rest[0]):
+        return "để mình"
+    if src == "接起":
+        after = rest[1:] if rest.startswith("了") else rest
+        if after.startswith("电话"):
+            return "nhấc"
     if src == "想":
         if rest.startswith("要") or rest.startswith("和") or _starts_verb(rest):
             return None

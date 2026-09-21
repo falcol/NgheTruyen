@@ -107,6 +107,18 @@ def test_margin_and_entropy():
     assert isinstance(draft.lattice_margin, float)
 
 
+def test_vp_plan_beam1_same_text():
+    """beam<=1 bo lattice DP; ban dich giong beam=4."""
+    dic = mini_dict([
+        ("凌天", "Lăng Thiên", Layer.BASE_MULTI),
+        ("已经", "đã", Layer.BASE_MULTI),
+        ("到", "đến", Layer.BASE_SINGLE),
+        ("了", "đã", Layer.BASE_SINGLE),
+    ])
+    src = "凌天已经到了"
+    assert vp_plan(dic, src, beam=1).text == vp_plan(dic, src, beam=4).text
+
+
 def test_empty_text():
     dic = mini_dict([])
     draft = vp_plan(dic, "   ")

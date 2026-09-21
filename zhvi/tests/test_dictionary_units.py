@@ -15,7 +15,7 @@ import pytest
 from zhvi.pipeline import TranslateRequest, translate_project
 from zhvi.project import create_project
 from zhvi.revision import AutoEntry, BuildError, build_revision
-from zhvi.vietphrase.lattice import vp_plan
+from zhvi.vietphrase.lattice import greedy_path, vp_plan
 from zhvi.vietphrase.layers import Layer
 from zhvi.vietphrase.loader import load_dictionary, load_trad_simp, parse_dict_line, to_simplified
 
@@ -35,6 +35,27 @@ def _mini_dict_dir(tmp_path: Path, name: str = "mini-dicts") -> Path:
 
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_load_dictionary_memoizes_same_fingerprint(tmp_path):
+    """Cung dict_dir + fingerprint -> cung instance, khong parse lai."""
+    d = _mini_dict_dir(tmp_path)
+    a = load_dictionary(d)
+    b = load_dictionary(d)
+    assert a is b
+
+
+def test_load_dictionary_glossary_overlay_does_not_mutate_base(tmp_path):
+    """Glossary cow-insert: term moi co, base da cache khong doi."""
+    d = _mini_dict_dir(tmp_path)
+    g = tmp_path / "global.tsv"
+    g.write_text("全局測試詞=thuật ngữ toàn cục\n", encoding="utf-8")
+    base = load_dictionary(d)
+    on = load_dictionary(d, global_glossary=g)
+    assert on is not base
+    assert greedy_path(on, "全局測試詞")[0].target == "thuật ngữ toàn cục"
+    assert greedy_path(base, "全局測試詞")[0].target != "thuật ngữ toàn cục"
+    assert greedy_path(base, "凌天")[0].target == greedy_path(on, "凌天")[0].target
 
 
 def test_parse_dict_line_valid_and_skip_junk():

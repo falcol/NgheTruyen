@@ -747,9 +747,10 @@ class State:
         router_version: str,
         attempt: dict[str, Any],
         cache_key: str | None = None,
+        commit: bool = True,
     ) -> None:
-        """Commit block + trace + attempt trong MOT transaction (muc 27)."""
-        with self.conn:
+        """Ghi block + trace + attempt. commit=True: mot transaction (muc 27)."""
+        def _write() -> None:
             self.conn.execute(
                 "INSERT OR REPLACE INTO blocks VALUES (?,?,?,?,?,?,?,?,?,?)",
                 (block_id, run_id, chapter_ordinal, block_ordinal, source_start, source_end,
@@ -771,6 +772,15 @@ class State:
                     "INSERT OR REPLACE INTO block_cache VALUES (?,?,?,?,0)",
                     (cache_key, final_text, json.dumps(qa, ensure_ascii=False), utc_now()),
                 )
+
+        if commit:
+            with self.conn:
+                _write()
+        else:
+            _write()
+
+    def commit(self) -> None:
+        self.conn.commit()
 
     def cache_lookup(self, cache_key: str) -> dict | None:
         row = self.conn.execute(

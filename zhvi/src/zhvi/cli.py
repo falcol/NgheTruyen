@@ -643,43 +643,56 @@ def learn(
     )
 
 
+def _default_vi_path(source: Path) -> Path:
+    name = source.name
+    if name.endswith(".zh.txt"):
+        return source.with_name(name[: -len(".zh.txt")] + ".vi.txt")
+    return source.with_name(source.stem + ".vi.txt")
+
+
 @app.command()
 def translate(
-    file: Path = typer.Argument(None, help="TXT nguon (happy path 1 lenh)."),
+    file: Path = typer.Argument(None, help="TXT nguon."),
     output: Path = typer.Option(None, "-o", "--output"),
     project: Path = typer.Option(None, "--project", "-p"),
     style: str = typer.Option("convert-qt", "--style"),
     encoding: str = typer.Option("utf-8", "--encoding"),
     dict_dir: str = typer.Option(None, "--dict-dir"),
     refresh_revision: bool = typer.Option(
-        False, "--refresh-revision",
-        help="Correction (story 2.5): glossary doi -> revision moi + dich lai affected blocks.",
+        False, "--refresh-revision", hidden=True,
+        help="Bo qua — translate khong dung SQLite.",
     ),
     no_learn: bool = typer.Option(
-        False,
-        "--no-learn",
-        help="Bo LEARN; dich bang revision active hien tai.",
+        False, "--no-learn", hidden=True,
+        help="Bo qua — translate khong dung SQLite.",
+    ),
+    no_state: bool = typer.Option(
+        False, "--no-state", hidden=True,
+        help="Bo qua — translate luon khong dung SQLite.",
     ),
     json_out: bool = typer.Option(False, "--json", help="Bao cao JSON tren stdout."),
 ) -> None:
-    """Happy path: snapshot -> discover -> book-auto -> freeze -> VP -> QA -> export."""
-    from .pipeline import TranslateRequest, translate_project
+    """Dich TXT bang VietPhrase, ghi file. Doc dict hien tai, khong SQLite."""
+    from .pipeline import translate_plain
 
+    _ = (refresh_revision, no_learn, no_state)
     try:
-        if file is None and project is None:
-            _fail(EXIT_USAGE, "Can file TXT hoac --project")
-        p = _load_project(project, file)
-        if not no_learn:
-            _learn_for_translate(p, file=file, encoding=encoding, dict_dir=dict_dir)
-        req = TranslateRequest(
-            source=_source_for_translate(p, file),
-            output=output,
-            style=style,
-            encoding=encoding,
-            dict_dir=dict_dir,
-            refresh_revision=refresh_revision,
-        )
-        result = translate_project(p, req)
+        if file is None:
+            _fail(EXIT_USAGE, "Can file TXT")
+        book_gl = None
+        if project is not None:
+            cfg = resolve_config(
+                project, dict_dir=dict_dir, overrides={"encoding": encoding, "style": style}
+            )
+            gl = project / "glossary.manual.tsv"
+            if gl.is_file():
+                book_gl = gl
+        else:
+            cfg = resolve_config(
+                None, dict_dir=dict_dir, overrides={"encoding": encoding, "style": style}
+            )
+        out = output or _default_vi_path(file)
+        result = translate_plain(file, out, cfg=cfg, book_glossary=book_gl)
     except typer.Exit:
         raise
     except ProjectError as e:

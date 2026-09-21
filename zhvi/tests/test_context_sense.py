@@ -110,12 +110,12 @@ def test_sense_dui_pronoun():
     assert "đối" in draft.text.lower() or "Đối" in draft.text
 
 
-def test_sense_duiziji_drops_voi():
+def test_sense_duiziji_keeps_voi():
+    """对自己 giu "với" — "đối với mình cảm mến" moi dung ngu phap."""
     dic = mini([("对自己", "đối với mình", Layer.BASE_MULTI)])
     draft = vp_plan(dic, "对自己")
     low = draft.text.lower()
-    assert "đối mình" in low
-    assert "với" not in low
+    assert "đối với mình" in low
 
 
 def test_sense_doudui_ziji():
@@ -1635,6 +1635,92 @@ def test_jianchi_xialai_not_noun_plus_ra_roi():
     assert "sự kiên trì" not in t
 
 
+def test_jianchi_xialai_without_long_pronoun_key():
+    """Code: drop 它坚持 khi 坚持下来了 (5) tran — khong can khoa 它坚持下来了."""
+    dic = mini(
+        [
+            ("它坚持", "sự kiên trì của nó", Layer.BASE_MULTI),
+            ("坚持下来了", "kiên trì nổi", Layer.BASE_MULTI),
+            ("下来了", "ra rồi", Layer.BASE_MULTI),
+            ("它", "nó", Layer.BASE_SINGLE),
+            ("坚持", "kiên trì", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "它坚持下来了").text.lower()
+    assert "kiên trì nổi" in t
+    assert "ra rồi" not in t
+    assert "sự kiên trì" not in t
+
+
+def test_xinbuguo_not_thu_cua_nang():
+    """她信 (NP thư của nàng) cuop 信 của 信不过我."""
+    dic = mini(
+        [
+            ("她信", "thư của nàng", Layer.BASE_MULTI),
+            ("不过我", "bất quá ta", Layer.BASE_MULTI),
+            ("信不过", "không tin được", Layer.BASE_MULTI),
+            ("信不过我", "không tin được ta", Layer.BASE_MULTI),
+            ("不过", "bất quá", Layer.BASE_MULTI),
+            ("她", "nàng", Layer.BASE_SINGLE),
+            ("信", "tin", Layer.BASE_SINGLE),
+            ("我", "ta", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "她信不过我").text.lower()
+    assert "không tin được" in t
+    assert "thư của nàng" not in t
+    assert "bất quá" not in t
+
+
+def test_tamen_lai_not_split():
+    """他们 + 来: 们 skip, khong cat thanh hắn + các."""
+    dic = mini(
+        [
+            ("他们", "bọn họ", Layer.BASE_MULTI),
+            ("来处理", "đến xử lý", Layer.BASE_MULTI),
+            ("他", "hắn", Layer.BASE_SINGLE),
+            ("们", "các", Layer.BASE_SINGLE),
+            ("来", "đến", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "他们来处理").text.lower()
+    assert "bọn họ" in t
+    assert "hắn" not in t
+
+
+def test_takan_lai_two_char_overflow_kept():
+    """他看|来: overflow 看来 chi 2 chu — khong drop (min 3)."""
+    dic = mini(
+        [
+            ("他看", "nhìn hắn", Layer.BASE_MULTI),
+            ("看来", "xem ra", Layer.BASE_MULTI),
+            ("他", "hắn", Layer.BASE_SINGLE),
+            ("看", "nhìn", Layer.BASE_SINGLE),
+            ("来", "tới", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "他看来").text.lower()
+    assert "nhìn hắn" in t
+    assert "xem ra" not in t
+
+
+def test_pronoun_yuanyin_lai_typo_yuanxi():
+    """只要她原因来: Han go 原因 (muốn 愿意) — sense đồng ý, khong nguyên nhân."""
+    dic = mini(
+        [
+            ("只要", "chỉ cần", Layer.BASE_MULTI),
+            ("她原因", "nàng nguyên nhân", Layer.BASE_MULTI),
+            ("原因", "nguyên nhân", Layer.BASE_MULTI),
+            ("我们公司", "công ty của chúng ta", Layer.BASE_MULTI),
+            ("她", "nàng", Layer.BASE_SINGLE),
+            ("来", "đến", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "只要她原因来我们公司").text.lower()
+    assert "đồng ý" in t
+    assert "nguyên nhân" not in t
+
+
 def test_huai_zhong_not_mang_of_name():
     """凌天的{p} nuot 怀; 怀中 phai thang 'mang của Lăng Thiên trong'."""
     dic = mini(
@@ -2073,3 +2159,1593 @@ def test_dajia_ne_taunt_not_bare_danh_nhau():
     t2 = vp_plan(dic, "怎么就喜欢打架呢").text.lower()
     assert "đang đánh nhau mà" not in t2
     assert "đánh nhau" in t2
+
+
+def test_yigeniantou_not_trong_dau():
+    dic = mini(
+        [
+            ("一个念头", "một ý niệm", Layer.GLOBAL_MANUAL),
+            ("闪过一个念头", "vụt qua một ý niệm", Layer.GLOBAL_MANUAL),
+            ("念头", "suy nghĩ", Layer.BASE_MULTI),
+            ("闪过", "hiện lên", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "心底突然闪过一个念头").text.lower()
+    assert "ý niệm" in t
+    assert "trong đầu" not in t
+    assert "niệm đầu" not in t
+    t2 = vp_plan(dic, "脑海里闪过一个念头").text.lower()
+    assert "vụt qua" in t2
+
+
+def test_zaisu_skin_not_double_neg():
+    dic = mini(
+        [
+            ("再无一片肌肤是没有受过伤的", "không còn mảnh da nào nguyên vẹn", Layer.GLOBAL_MANUAL),
+            ("再无", "không tiếp tục", Layer.BASE_MULTI),
+            ("再无聊", "lại buồn chán", Layer.BASE_MULTI),
+            ("是没有", "là không có", Layer.BASE_MULTI),
+            ("受过伤的", "đã bị thương", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "身上再无一片肌肤是没有受过伤的").text.lower()
+    assert "nguyên vẹn" in t
+    assert "chưa bị thương" not in t
+    t2 = vp_plan(dic, "小胖再无聊下来").text.lower()
+    assert "không còn" not in t2
+
+
+def test_jilei_kept_gan_ga():
+    dic = mini([("鸡肋", "gân gà", Layer.BASE_MULTI), ("实在", "thực sự", Layer.BASE_MULTI)])
+    t = vp_plan(dic, "实在鸡肋").text.lower()
+    assert "gân gà" in t
+
+
+def test_zhejinshu_not_vang_nay_thuoc():
+    dic = mini(
+        [
+            ("这金属", "kim loại này", Layer.GLOBAL_MANUAL),
+            ("这金", "vàng này", Layer.BASE_MULTI),
+            ("金属", "kim loại", Layer.BASE_MULTI),
+            ("属", "thuộc", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "被这金属，刺穿了神念").text.lower()
+    assert "kim loại" in t
+    assert "vàng này" not in t
+
+
+def test_stolen_compound_keeps_dantian_after_noun():
+    """蒙面人 (3) bi 人丹 (duoi 丹) drop -> che mat + nhan dan + ruong.
+
+    Glue last-char 2 chu khi 丹田 (2+) bat dau dung edge.end: giu NP 3+ chu.
+    """
+    dic = mini(
+        [
+            ("蒙面人", "người bịt mặt", Layer.BASE_MULTI),
+            ("蒙面", "che mặt", Layer.GLOBAL_MANUAL),
+            ("人丹", "nhân đan", Layer.BASE_MULTI),
+            ("丹田", "đan điền", Layer.BASE_MULTI),
+            ("部位", "bộ vị", Layer.BASE_MULTI),
+            ("丹", "đan", Layer.BASE_SINGLE),
+            ("田", "ruộng", Layer.BASE_SINGLE),
+            ("人", "nhân", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "蒙面人丹田部位").text.lower()
+    assert "đan điền" in t
+    assert "người bịt mặt" in t
+    assert "ruộng" not in t
+    assert "nhân đan" not in t
+    assert "che mặt" not in t
+
+
+def test_rendan_kept_when_real_word():
+    """人丹 that: khong phai glue truoc 丹田."""
+    dic = mini(
+        [
+            ("人丹", "nhân đan", Layer.BASE_MULTI),
+            ("一枚", "một viên", Layer.BASE_MULTI),
+            ("人", "người", Layer.BASE_SINGLE),
+            ("丹", "đan", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "一枚人丹").text.lower()
+    assert "nhân đan" in t
+
+
+def test_wo_clan_name_possessive():
+    """灭我赵家: 我+ten X家 -> X gia cua ta, khong 'diệt ta Triệu Gia'."""
+    dic = mini(
+        [
+            ("花家", "Hoa gia", Layer.BASE_MULTI, 20.0),
+            ("赵家", "Triệu Gia", Layer.GLOBAL_MANUAL, 100.0),
+            ("想要", "muốn", Layer.BASE_MULTI),
+            ("灭", "diệt", Layer.BASE_SINGLE),
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("很轻松", "rất nhẹ nhàng", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "花家想要灭我赵家，很轻松").text
+    low = t.lower()
+    assert "triệu gia của ta" in low
+    assert "diệt ta" not in low
+    assert "hoa gia" in low
+
+
+def test_wo_huijia_not_clan_possessive():
+    """回家 la VP, khong phai ten ho: giu 'ta về nhà'."""
+    dic = mini(
+        [
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("回家", "về nhà", Layer.BASE_MULTI),
+            ("送", "tiễn", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "送我回家").text.lower()
+    assert "về nhà" in t
+    assert "của ta" not in t
+
+
+def test_women_clan_name_possessive():
+    """我们温家 = Ôn gia của chúng ta."""
+    dic = mini(
+        [
+            ("我们", "chúng ta", Layer.BASE_MULTI),
+            ("温家", "Ôn gia", Layer.BASE_MULTI, 20.0),
+        ]
+    )
+    t = vp_plan(dic, "我们温家").text.lower()
+    assert "ôn gia của chúng ta" in t
+
+
+def test_xinzhong_not_zhongqi():
+    """心中 (locative 2) khong bi 中气 (duoi 气) cat thanh tam + trung khi."""
+    dic = mini(
+        [
+            ("心中", "trong lòng", Layer.BASE_MULTI),
+            ("中气", "trung khí", Layer.BASE_MULTI),
+            ("气急", "tức giận", Layer.BASE_MULTI),
+            ("心", "tâm", Layer.BASE_SINGLE),
+            ("中", "trung", Layer.BASE_SINGLE),
+            ("气", "khí", Layer.BASE_SINGLE),
+            ("急", "gấp", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "霍德华心中气急").text.lower()
+    assert "trong lòng" in t
+    assert "trung khí" not in t
+
+
+def test_zhirenqing_not_qingren():
+    """是知 cuop 知 của 知情人 → 'ấy là biết tình nhân'."""
+    dic = mini(
+        [
+            ("是知", "ấy là biết", Layer.BASE_MULTI),
+            ("知情人", "người biết chuyện", Layer.BASE_MULTI),
+            ("情人", "tình nhân", Layer.BASE_MULTI),
+            ("知情", "hiểu rõ tình hình", Layer.BASE_MULTI),
+            ("是", "là", Layer.BASE_SINGLE),
+            ("万冲", "Vạn Xung", Layer.BASE_MULTI, 20.0),
+            ("只有", "chỉ có", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "只有万冲是知情人").text.lower()
+    assert "người biết chuyện" in t
+    assert "tình nhân" not in t
+    assert "ấy là biết" not in t
+
+
+def test_yaome_not_split_by_niyao():
+    """你要 cuop 要 của 要么."""
+    dic = mini(
+        [
+            ("你要", "ngươi muốn", Layer.BASE_MULTI),
+            ("要么", "hoặc là", Layer.BASE_MULTI),
+            ("乖乖听话", "ngoan ngoãn nghe lời", Layer.BASE_MULTI),
+            ("杀了", "giết", Layer.BASE_MULTI),
+            ("你", "ngươi", Layer.BASE_SINGLE),
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("么", "a", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "你要么乖乖听话，要么我杀了你").text.lower()
+    assert t.count("hoặc là") >= 2
+    assert "ngươi muốn" not in t
+    assert " a " not in f" {t} "
+
+
+def test_renjie_not_split_jiejue():
+    """人解 cuop 解 của 解决 → 'người hiểu quyết'."""
+    dic = mini(
+        [
+            ("人解", "người hiểu", Layer.BASE_MULTI),
+            ("解决", "giải quyết", Layer.BASE_MULTI),
+            ("被人", "bị người", Layer.BASE_MULTI),
+            ("人", "người", Layer.BASE_SINGLE),
+            ("解", "hiểu", Layer.BASE_SINGLE),
+            ("决", "quyết", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "这么轻松就被人解决").text.lower()
+    assert "giải quyết" in t
+    assert "hiểu quyết" not in t
+    assert "người hiểu" not in t
+
+
+def test_derenkou_splits_to_kouzhong():
+    """的人口 cuop 口 của 口中 → 'nhân khẩu bên trong'."""
+    dic = mini(
+        [
+            ("的人口", "nhân khẩu", Layer.BASE_MULTI),
+            ("人口", "nhân khẩu", Layer.BASE_MULTI),
+            ("人口中", "nhân khẩu bên trong", Layer.BASE_MULTI),
+            ("口中", "trong miệng", Layer.BASE_MULTI),
+            ("的人", "nhân", Layer.BASE_MULTI),
+            ("人", "người", Layer.BASE_SINGLE),
+            ("中", "bên trong", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "买凶杀人的人口中").text.lower()
+    assert "trong miệng" in t
+    assert "nhân khẩu" not in t
+
+
+def test_shitade_hua_is_conditional():
+    """是他的 + 话: 的话 dieu kien, khong 'là của hắn lời nói'."""
+    dic = mini(
+        [
+            ("是他的", "là của hắn", Layer.BASE_MULTI),
+            ("的话", "nếu", Layer.BASE_MULTI),
+            ("话", "lời nói", Layer.BASE_SINGLE),
+            ("是", "là", Layer.BASE_SINGLE),
+            ("他", "hắn", Layer.BASE_SINGLE),
+            ("冒名", "mạo danh", Layer.BASE_MULTI),
+            ("应该是", "hẳn là", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "是他的话，他应该是冒名了").text.lower()
+    assert "lời nói" not in t
+    assert "của hắn" not in t
+
+
+def test_name_de_shihou_not_possessive_time():
+    """凌天的{p} khong nuot 时候 → 'thời điểm của Lăng Thiên'."""
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("的时候", "thời điểm", Layer.BASE_MULTI),
+            ("时候", "thời gian", Layer.BASE_MULTI),
+            ("看向", "nhìn về phía", Layer.BASE_MULTI),
+            ("再", "lại", Layer.BASE_SINGLE),
+        ],
+        [("凌天的{p}", "{p} của Lăng Thiên")],
+    )
+    t = vp_plan(dic, "再看向凌天的时候").text.lower()
+    assert "lăng thiên" in t
+    assert "của lăng thiên" not in t
+    assert "lúc" in t
+
+
+def test_name_yijing_not_da_o():
+    """凌天已经 glue VP → 'Lăng Thiên đã ở'. Tach ten | 已经."""
+    dic = mini(
+        [
+            ("凌天已经", "Lăng Thiên đã ở", Layer.BASE_MULTI),
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("已经", "đã", Layer.BASE_MULTI),
+            ("不再管", "không quan tâm", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "凌天已经不再管什么了").text.lower()
+    assert "lăng thiên" in t
+    assert "đã ở" not in t
+    assert "ở" not in t.replace("lăng thiên", "")
+
+
+def test_le_after_dao_place_dropped():
+    """到水月了: 了 sau dia danh, khong 'đã'."""
+    dic = mini(
+        [
+            ("到", "đến", Layer.BASE_SINGLE),
+            ("水月", "Thủy Nguyệt", Layer.BASE_MULTI, 20.0),
+            ("了", "đã", Layer.GLOBAL_MANUAL),
+            ("来", "tới", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "đã" not in vp_plan(dic, "到水月了").text.lower()
+    assert "đã" in vp_plan(dic, "来了").text.lower()
+
+
+def test_deren_nguoi_not_nhan():
+    """的人 first-sense 'nhân' → người; {n}的人 dao ngu."""
+    dic = mini(
+        [
+            ("花家", "Hoa gia", Layer.BASE_MULTI, 20.0),
+            ("的人", "nhân", Layer.BASE_MULTI),
+            ("人", "nhân", Layer.BASE_SINGLE),
+            ("不是", "không phải", Layer.BASE_MULTI),
+        ],
+        context_rules(),
+    )
+    t = vp_plan(dic, "不是花家的人").text.lower()
+    assert "người" in t
+    assert "nhân" not in t
+
+
+def test_called_named_person_still_not_possessive():
+    """{n}的人 khong pha 一个叫{n}的人."""
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.GLOBAL_MANUAL, 100.0),
+            ("一个", "một", Layer.BASE_MULTI),
+            ("叫", "gọi", Layer.BASE_SINGLE),
+            ("人", "người", Layer.BASE_SINGLE),
+        ],
+        context_rules(),
+    )
+    t = vp_plan(dic, "一个叫凌天的人").text
+    assert "tên Lăng Thiên" in t or "tên lăng thiên" in t.lower()
+    assert "của Lăng Thiên" not in t
+
+
+def test_renrenyurou_not_nham_chuc():
+    """就任 cuop 任 của 任人鱼肉."""
+    dic = mini(
+        [
+            ("就任", "nhậm chức", Layer.BASE_MULTI),
+            ("任人鱼肉", "mặc người xẻ thịt", Layer.GLOBAL_MANUAL),
+            ("任人", "mặc người", Layer.BASE_MULTI),
+            ("人鱼", "nhân ngư", Layer.BASE_MULTI),
+            ("鱼肉", "thịt cá", Layer.BASE_MULTI),
+            ("他", "hắn", Layer.BASE_SINGLE),
+            ("就", "liền", Layer.BASE_SINGLE),
+            ("了", "đã", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "他就任人鱼肉了").text.lower()
+    assert "xẻ thịt" in t
+    assert "nhậm chức" not in t
+    assert "nhân ngư" not in t
+
+
+def test_jiezhe_phone_nhac():
+    dic = mini(
+        [
+            ("接起", "tiếp", Layer.BASE_MULTI),
+            ("电话", "điện thoại", Layer.BASE_MULTI),
+            ("了", "đã", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "接起了电话").text.lower()
+    assert "nhấc" in t
+    assert "tiếp" not in t
+    assert "đã" not in t
+
+
+def test_chensizhe_not_trailing_dang():
+    dic = mini(
+        [
+            ("低头沉思", "cúi đầu trầm tư", Layer.BASE_MULTI),
+            ("着", "đang", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "đang" not in vp_plan(dic, "低头沉思着").text.lower()
+
+
+def test_rangziji_de_minh():
+    dic = mini(
+        [
+            ("让自己", "chính để", Layer.BASE_MULTI),
+            ("紧张", "khẩn trương", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "让自己紧张").text.lower()
+    assert "để mình" in t
+    assert "chính để" not in t
+
+
+def test_rang_custom_not_entity_n_ziji():
+    """Custom 让=để (dong tu) khong duoc {n}自己 → 'chính để'."""
+    dic = mini(
+        [
+            ("让", "để", Layer.GLOBAL_MANUAL, 100.0),
+            ("让自己", "để cho mình", Layer.BASE_MULTI),
+            ("自己", "mình", Layer.BASE_MULTI),
+            ("紧张", "khẩn trương", Layer.BASE_MULTI),
+        ],
+        [("{n}自己", "chính {n}")],
+    )
+    t = vp_plan(dic, "让自己紧张").text.lower()
+    assert "chính để" not in t
+    assert "để cho mình" in t or "để mình" in t
+
+
+def test_name_de_noun_possessive():
+    """花少的耻辱: 的 boc + ten -> sỉ nhục của Hoa thiếu."""
+    dic = mini(
+        [
+            ("花少", "Hoa thiếu", Layer.BASE_MULTI, 20.0),
+            ("耻辱", "sỉ nhục", Layer.BASE_MULTI),
+            ("花", "hoa", Layer.BASE_SINGLE),
+            ("少", "thiếu", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "花少的耻辱").text.lower()
+    assert "sỉ nhục của hoa thiếu" in t
+
+
+def test_ouyang_de_noun_possessive():
+    """欧阳的麻烦 -> phiền phức của Âu Dương."""
+    dic = mini(
+        [
+            ("欧阳", "Âu Dương", Layer.BASE_MULTI, 20.0),
+            ("麻烦", "phiền phức", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "欧阳的麻烦").text.lower()
+    assert "phiền phức của âu dương" in t
+
+
+def test_pronoun_de_noun_possessive():
+    """我的女人 -> người phụ nữ của ta."""
+    dic = mini(
+        [
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("女人", "người phụ nữ", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "我的女人").text.lower()
+    assert "người phụ nữ của ta" in t
+
+
+def test_adj_de_not_possessive():
+    """新的老师: 新 khong phai ten -> khong 'thầy của mới'."""
+    dic = mini(
+        [
+            ("新", "mới", Layer.BASE_SINGLE),
+            ("老师", "thầy", Layer.BASE_MULTI),
+            ("的", "đích", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "新的老师").text.lower()
+    assert "của" not in t
+    assert "thầy" in t
+
+
+def test_relative_de_not_possessive():
+    """打不晕的凌天: ve trai dong tu, khong 'Lăng Thiên của'."""
+    dic = mini(
+        [
+            ("打不晕", "đánh không ngất", Layer.BASE_MULTI),
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("打", "đánh", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "打不晕的凌天").text.lower()
+    assert "của" not in t
+    assert "lăng thiên" in t
+
+
+def test_meiyou_not_stolen_by_youdiyi():
+    """没有 bi 有敌意 (duoi 意) drop -> không có + có địch ý."""
+    dic = mini(
+        [
+            ("没有", "không có", Layer.BASE_MULTI),
+            ("有敌意", "có địch ý", Layer.BASE_MULTI),
+            ("敌意", "địch ý", Layer.BASE_MULTI),
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("没", "không có", Layer.BASE_SINGLE),
+            ("有", "có", Layer.BASE_SINGLE),
+            ("意", "ý", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "我没有敌意").text.lower()
+    assert "không có địch ý" in t
+    assert "có có" not in t
+
+
+def test_wo_bu_suan_not_khong_co_tinh():
+    """我不 cuop 不 của 不算."""
+    dic = mini(
+        [
+            ("我不", "ta không có", Layer.BASE_MULTI),
+            ("不算", "không tính", Layer.BASE_MULTI),
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("不", "không", Layer.BASE_SINGLE),
+            ("算", "tính", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "我不算").text.lower()
+    assert "không tính" in t
+    assert "không có" not in t
+
+
+def test_hui_after_number_is_hoi():
+    """十会: hoi, khong future se."""
+    dic = mini(
+        [
+            ("一力", "dốc hết sức", Layer.BASE_MULTI),
+            ("斩", "trảm", Layer.BASE_SINGLE),
+            ("十", "mười", Layer.BASE_SINGLE),
+            ("会", "sẽ", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "一力斩十会").text.lower()
+    assert "hội" in t
+    assert "sẽ" not in t
+
+
+def test_hui_future_still_se():
+    """明天会来 van se."""
+    dic = mini(
+        [
+            ("明天", "ngày mai", Layer.BASE_MULTI),
+            ("会", "hội", Layer.BASE_SINGLE),
+            ("来", "đến", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "明天会来").text.lower()
+    assert "sẽ" in t
+    assert "hội" not in t
+
+
+def test_daikezhidao_not_dao_dai_khach():
+    dic = mini(
+        [
+            ("待客之道", "cách đãi khách", Layer.GLOBAL_MANUAL, 100.0),
+            ("待客", "đãi khách", Layer.BASE_MULTI),
+            ("之道", "chi đạo", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "不懂待客之道").text.lower()
+    assert "cách đãi khách" in t
+    assert "đạo đãi khách" not in t
+
+
+def test_xingshiwenzi_not_hung_su():
+    dic = mini(
+        [
+            ("兴师问罪", "kéo quân hỏi tội", Layer.GLOBAL_MANUAL, 100.0),
+            ("兴师", "khởi binh", Layer.BASE_MULTI),
+            ("问罪", "hỏi tội", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "过来兴师问罪").text.lower()
+    assert "kéo quân hỏi tội" in t
+    assert "hưng sư" not in t
+
+
+def test_fengbo_song_gio_not_phong_ba():
+    dic = mini(
+        [
+            ("风波", "sóng gió", Layer.GLOBAL_MANUAL, 100.0),
+            ("玩具枪风波", "sóng gió súng đồ chơi", Layer.GLOBAL_MANUAL, 100.0),
+            ("玩具枪", "súng đồ chơi", Layer.BASE_MULTI),
+            ("一场", "một trận", Layer.BASE_MULTI),
+        ]
+    )
+    t1 = vp_plan(dic, "玩具枪风波").text.lower()
+    assert "sóng gió súng đồ chơi" in t1
+    assert "phong ba" not in t1
+    t2 = vp_plan(dic, "一场风波").text.lower()
+    assert "một trận sóng gió" in t2
+    assert "phong ba" not in t2
+
+
+def test_woqu_chuiniu_title():
+    dic = mini(
+        [
+            ("我去吹牛", "ta đi chém gió", Layer.GLOBAL_MANUAL, 100.0),
+            ("我去", "ta đi", Layer.BASE_MULTI),
+            ("吹牛", "khoác lác", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "我去吹牛").text.lower()
+    assert "chém gió" in t
+    assert "khoác lác" not in t
+
+
+def test_jiudao_before_quote_is_noi():
+    """就道=lên đường, truoc ngoac thoai phai 'nói'."""
+    dic = mini(
+        [
+            ("就道", "lên đường", Layer.BASE_MULTI),
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("就", "liền", Layer.BASE_SINGLE),
+            ("道", "đạo", Layer.BASE_SINGLE),
+            ("烤肉串", "que thịt nướng", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "凌天就道：“烤肉串").text.lower()
+    assert "nói" in t
+    assert "lên đường" not in t
+
+
+def test_jiudao_without_quote_kept():
+    dic = mini(
+        [
+            ("就道", "lên đường", Layer.BASE_MULTI),
+            ("我们", "chúng ta", Layer.BASE_MULTI),
+            ("了", "đã", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "我们就道了").text.lower()
+    assert "lên đường" in t
+
+
+def test_dui_name_de_noun_attitude():
+    """对凌天的尊敬 = tôn kính đối với Lăng Thiên, khong 'đối tôn kính của'."""
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("是对", "là đối", Layer.BASE_MULTI),
+            ("尊敬", "tôn kính", Layer.BASE_MULTI),
+            ("是", "là", Layer.BASE_SINGLE),
+            ("对", "đối", Layer.BASE_SINGLE),
+        ],
+        [("对{n}的{p}", "{p} đối với {n}")],
+    )
+    t = vp_plan(dic, "是对凌天的尊敬").text.lower()
+    assert "tôn kính đối với lăng thiên" in t
+    assert "đối tôn kính" not in t
+
+
+def test_dashengpaoxiao_not_english():
+    dic = mini(
+        [
+            ("大声咆哮", "gào thét", Layer.GLOBAL_MANUAL, 100.0),
+            ("大声咆哮", "Snarl", Layer.BASE_MULTI),
+            ("着", "đang", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "他大声咆哮着").text.lower()
+    assert "gào thét" in t
+    assert "snarl" not in t
+
+
+def test_chi_dongxi_eat():
+    dic = mini(
+        [
+            ("先吃东西", "ăn trước", Layer.GLOBAL_MANUAL, 100.0),
+            ("吃东西", "ăn", Layer.GLOBAL_MANUAL, 100.0),
+            ("先吃", "ăn trước", Layer.BASE_MULTI),
+            ("东西", "đồ vật", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "先吃东西").text.lower()
+    assert "ăn trước" in t
+    assert "đồ vật" not in t
+
+
+def test_yanwudan_not_split_by_nayenwu():
+    dic = mini(
+        [
+            ("那烟雾", "sương khói kia", Layer.BASE_MULTI),
+            ("烟雾弹", "bom khói", Layer.BASE_MULTI),
+            ("那", "kia", Layer.BASE_SINGLE),
+            ("弹", "đạn", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "那烟雾弹").text.lower()
+    assert "bom khói" in t
+    assert "đạn" not in t
+    assert "sương khói kia" not in t
+
+
+def test_paoxiao_zhe_drops_dang():
+    dic = mini(
+        [
+            ("大声咆哮", "gào thét", Layer.GLOBAL_MANUAL, 100.0),
+            ("着", "đang", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "他大声咆哮着").text.lower()
+    assert "gào thét" in t
+    assert "đang" not in t
+
+
+def test_chuan_after_number_is_xien():
+    dic = mini(
+        [
+            ("一百", "một trăm", Layer.BASE_MULTI),
+            ("二十", "hai mươi", Layer.BASE_MULTI),
+            ("串", "xuyên", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "一百串").text.lower()
+    assert "xiên" in t
+    assert "xuyên" not in t
+
+
+def test_qugen_not_split_genzhe():
+    """去跟 cuop 跟 của 跟着 → 'đi cùng đang'."""
+    dic = mini(
+        [
+            ("跟着", "đi theo", Layer.BASE_MULTI),
+            ("去跟", "đi cùng", Layer.BASE_MULTI),
+            ("雅樱姐姐", "Nhã Anh tỷ tỷ", Layer.BASE_MULTI, 20.0),
+            ("让我", "để cho ta", Layer.BASE_MULTI),
+            ("去", "đi", Layer.BASE_SINGLE),
+            ("跟", "cùng", Layer.BASE_SINGLE),
+            ("着", "đang", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "让我去跟着雅樱姐姐").text.lower()
+    assert "đi theo" in t
+    assert "cùng đang" not in t
+    dic2 = mini(
+        [
+            ("跟着我", "đi theo ta", Layer.BASE_MULTI),
+            ("跟着", "đi theo", Layer.BASE_MULTI),
+            ("看着我", "nhìn ta", Layer.BASE_MULTI),
+            ("我", "ta", Layer.BASE_SINGLE),
+        ]
+    )
+    assert "đi theo ta" in vp_plan(dic2, "跟着我").text.lower()
+    assert "nhìn ta" in vp_plan(dic2, "看着我").text.lower()
+
+
+def test_place_de_evening_youtian():
+    """桐城的晚上有点冷: 晚上有 cuop 有点; 的+time dung 'ở'."""
+    dic = mini(
+        [
+            ("桐城", "Đồng Thành", Layer.BASE_MULTI, 20.0),
+            ("晚上有", "buổi tối có", Layer.BASE_MULTI),
+            ("有点冷", "có chút lạnh", Layer.BASE_MULTI),
+            ("有点", "có chút", Layer.BASE_MULTI),
+            ("晚上", "ban đêm", Layer.BASE_MULTI),
+            ("点冷", "chút lạnh", Layer.BASE_MULTI),
+            ("耻辱", "sỉ nhục", Layer.BASE_MULTI),
+            ("花少", "Hoa thiếu", Layer.BASE_MULTI, 20.0),
+        ]
+    )
+    t = vp_plan(dic, "桐城的晚上有点冷").text.lower()
+    assert "ở đồng thành" in t
+    assert "của" not in t
+    assert "buổi tối có" not in t
+    t2 = vp_plan(dic, "花少的耻辱").text.lower()
+    assert "sỉ nhục của hoa thiếu" in t2
+
+
+def test_wucaibinfen_not_ngu_thai():
+    dic = mini(
+        [
+            ("五彩缤纷", "rực rỡ muôn màu", Layer.GLOBAL_MANUAL, 100.0),
+            ("五彩缤纷", "ngũ thải tân phân", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "五彩缤纷").text.lower()
+    assert "rực rỡ" in t
+    assert "ngũ thải" not in t
+
+
+def test_zaichi_zhe_dongxi():
+    dic = mini(
+        [
+            ("吃着东西", "đang ăn", Layer.GLOBAL_MANUAL, 100.0),
+            ("在吃", "đang ăn", Layer.BASE_MULTI),
+            ("东西", "đồ vật", Layer.BASE_MULTI),
+            ("在", "ở", Layer.BASE_SINGLE),
+            ("着", "đang", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "在吃着东西").text.lower()
+    assert "đang ăn" in t
+    assert "đồ vật" not in t
+    assert t.count("đang") == 1
+
+
+def test_haiyaochi_not_split_chidongxi():
+    """还要吃 cuop 吃 của 吃东西."""
+    dic = mini(
+        [
+            ("吃东西", "ăn", Layer.GLOBAL_MANUAL, 100.0),
+            ("还要吃", "còn muốn ăn", Layer.BASE_MULTI),
+            ("东西", "đồ vật", Layer.BASE_MULTI),
+            ("我们", "chúng ta", Layer.BASE_MULTI),
+            ("还要", "còn muốn", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "我们还要吃东西").text.lower()
+    assert "ăn" in t
+    assert "đồ vật" not in t
+
+
+def test_xingshiwenzi_de_tail_not_hung_su():
+    """兴师问罪的 (5) nuot Custom 4 chu."""
+    dic = mini(
+        [
+            ("兴师问罪", "kéo quân hỏi tội", Layer.GLOBAL_MANUAL, 100.0),
+            ("兴师问罪的", "hưng sư vấn tội", Layer.BASE_MULTI),
+            ("过来", "tới", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "过来兴师问罪的").text.lower()
+    assert "kéo quân hỏi tội" in t
+    assert "hưng sư" not in t
+
+
+def test_mudengkoudai_zhe_drops_dang():
+    dic = mini(
+        [
+            ("目瞪口呆", "trợn mắt hốc mồm", Layer.BASE_MULTI),
+            ("着", "đang", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "目瞪口呆着").text.lower()
+    assert "trợn mắt hốc mồm" in t
+    assert "đang" not in t
+
+
+def test_haoxiang_yiban_drops_binh_thuong():
+    dic = mini(
+        [
+            ("这好像", "cái này thật giống như", Layer.BASE_MULTI),
+            ("成年人", "người trưởng thành", Layer.BASE_MULTI),
+            ("一般", "bình thường", Layer.BASE_MULTI),
+            ("是", "là", Layer.BASE_SINGLE),
+            ("两个", "hai cái", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "这好像是两个成年人一般").text.lower()
+    assert "bình thường" not in t
+    assert "giống như" in t
+
+
+def test_meichen_jie_name():
+    dic = mini(
+        [
+            ("美辰姐", "Mỹ Thần tỷ", Layer.SERIES_MANUAL, 1000.0),
+            ("美", "đẹp", Layer.BASE_SINGLE),
+            ("姐", "tỷ", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "美辰姐").text
+    assert "Mỹ Thần tỷ" in t
+    assert "đẹp" not in t.lower()
+
+
+def test_hua_shao_chi_nhuc_still_cua():
+    dic = mini(
+        [
+            ("花少", "Hoa thiếu", Layer.BASE_MULTI, 20.0),
+            ("耻辱", "sỉ nhục", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "花少的耻辱").text.lower()
+    assert "sỉ nhục của hoa thiếu" in t
+
+
+def test_haosi_yiban_drops_binh_thuong():
+    dic = mini(
+        [
+            ("好似被", "thật giống như bị", Layer.BASE_MULTI),
+            ("冰水", "nước đá", Layer.BASE_MULTI),
+            ("一般", "bình thường", Layer.BASE_MULTI),
+            ("泼了", "giội cho", Layer.BASE_MULTI),
+            ("人", "người", Layer.BASE_SINGLE),
+            ("盆", "bồn", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "好似被人泼了盆冰水一般").text.lower()
+    assert "bình thường" not in t
+    assert "giống như" in t
+
+
+def test_rangren_qu_is_bao_nguoi():
+    dic = mini(
+        [
+            ("让人", "làm cho người ta", Layer.BASE_MULTI),
+            ("去查", "đi thăm dò", Layer.BASE_MULTI),
+            ("去", "đi", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "让人去查").text.lower()
+    assert "bảo người" in t
+    assert "làm cho người ta" not in t
+
+
+def test_yiba_noun_not_thanh():
+    dic = mini(
+        [
+            ("一把", "một thanh", Layer.BASE_MULTI),
+            ("红蛤蟆", "cóc đỏ", Layer.GLOBAL_MANUAL, 100.0),
+            ("拿出", "xuất ra", Layer.BASE_MULTI),
+            ("刀", "đao", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "拿出一把红蛤蟆").text.lower()
+    assert "thanh" not in t
+    assert "cóc đỏ" in t
+    t2 = vp_plan(dic, "一把刀").text.lower()
+    assert "thanh" in t2
+
+
+def test_zunyan_wenti_inverts():
+    dic = mini(
+        [
+            ("尊严", "tôn nghiêm", Layer.BASE_MULTI),
+            ("问题", "vấn đề", Layer.BASE_MULTI),
+        ],
+        [("{p}问题", "vấn đề {p}")],
+    )
+    t = vp_plan(dic, "尊严问题").text.lower()
+    assert "vấn đề tôn nghiêm" in t
+
+
+def test_yunling_zhuangyuan_nei():
+    dic = mini(
+        [
+            ("云岭庄园", "Vân Lĩnh Trang Viên", Layer.SERIES_MANUAL, 1000.0),
+            ("庄园内", "trong trang viên", Layer.BASE_MULTI),
+            ("云岭", "Vân Lĩnh", Layer.BASE_MULTI, 20.0),
+            ("内", "nội", Layer.BASE_SINGLE),
+        ],
+        [("{n}内", "trong {n}")],
+    )
+    t = vp_plan(dic, "云岭庄园内").text.lower()
+    assert "trong vân lĩnh trang viên" in t
+    assert t.index("trong") < t.index("vân")
+
+
+def test_cao_swear_in_quote():
+    dic = mini(
+        [
+            ("草", "cỏ", Layer.BASE_SINGLE),
+            ("邵哥", "Thiệu ca", Layer.BASE_MULTI, 20.0),
+        ]
+    )
+    t = vp_plan(dic, "“草！”").text.lower()
+    assert "đm" in t
+    assert "cỏ" not in t
+
+
+def test_nazhi_hand_not_con_kia():
+    dic = mini(
+        [
+            ("那只", "con kia", Layer.BASE_MULTI),
+            ("将自己", "đem chính mình", Layer.BASE_MULTI),
+            ("丢出来的", "ném ra tới", Layer.BASE_MULTI),
+            ("手", "tay", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "那只将自己丢出来的手").text.lower()
+    assert "con kia" not in t
+    assert "tay" in t
+
+
+def test_kaichu_road_not_mo_ra():
+    dic = mini(
+        [
+            ("开出了", "mở ra", Layer.GLOBAL_MANUAL, 100.0),
+            ("梧桐路", "Ngô Đồng Lộ", Layer.BASE_MULTI, 20.0),
+            ("一条大道", "một đại đạo", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "开出了梧桐路").text.lower()
+    assert "lái ra khỏi" in t
+    assert "mở ra" not in t
+    t2 = vp_plan(dic, "开出了一条大道").text.lower()
+    assert "mở ra" in t2
+    assert "lái ra khỏi" not in t2
+
+
+def test_dui_name_ke_khach():
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("对", "đối", Layer.BASE_SINGLE),
+            ("各种", "các loại", Layer.BASE_MULTI),
+            ("客气", "khách khí", Layer.BASE_MULTI),
+        ],
+        [("对{n}各种客气", "rất khách khí với {n}")],
+    )
+    t = vp_plan(dic, "对凌天各种客气").text.lower()
+    assert "khách khí với lăng thiên" in t
+    assert "đối lăng thiên" not in t
+
+
+def test_jiang_diu_shou_relative():
+    dic = mini(
+        [
+            ("那只", "con kia", Layer.BASE_MULTI),
+            ("将自己", "đem chính mình", Layer.BASE_MULTI),
+            ("丢出来的", "ném ra tới", Layer.BASE_MULTI),
+            ("手", "tay", Layer.BASE_SINGLE),
+            ("自己", "chính mình", Layer.BASE_MULTI),
+        ],
+        [("将{p}丢出来的手", "tay đã ném {p} ra")],
+    )
+    t = vp_plan(dic, "那只将自己丢出来的手").text.lower()
+    assert "tay đã ném" in t
+    assert "con kia" not in t
+    assert "ném ra tới" not in t
+
+
+def test_youhuo_not_oh_yeah():
+    dic = mini(
+        [
+            ("哟嚯", "oh yeah", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "哟嚯").text.lower()
+    assert "ối" in t
+    assert "yeah" not in t
+
+
+def test_bazhang_yinji_not_nho():
+    dic = mini(
+        [
+            ("巴掌印记", "dấu tát", Layer.GLOBAL_MANUAL, 100.0),
+            ("巴掌印", "dấu bàn tay", Layer.BASE_MULTI),
+            ("印记", "dấu", Layer.GLOBAL_MANUAL, 100.0),
+            ("记", "nhớ", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "巴掌印记").text.lower()
+    assert "dấu tát" in t
+    assert "nhớ" not in t
+
+
+def test_yuanrun_not_split_nayuan():
+    dic = mini(
+        [
+            ("圆润", "mượt mà", Layer.BASE_MULTI),
+            ("那圆", "viên kia", Layer.BASE_MULTI),
+            ("屁股", "cái mông", Layer.BASE_MULTI),
+            ("那", "kia", Layer.BASE_SINGLE),
+        ],
+        [("{p}的屁股", "cái mông {p}")],
+    )
+    t = vp_plan(dic, "那圆润的屁股").text.lower()
+    assert "mượt mà" in t
+    assert "viên kia" not in t
+
+
+def test_nu_pengyou_not_split():
+    dic = mini(
+        [
+            ("女朋友", "bạn gái", Layer.BASE_MULTI),
+            ("小女朋友", "bạn gái nhỏ", Layer.GLOBAL_MANUAL, 100.0),
+            ("那小女", "vậy tiểu nữ", Layer.BASE_MULTI),
+            ("朋友", "bằng hữu", Layer.BASE_MULTI),
+            ("你", "ngươi", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "你那小女朋友").text.lower()
+    assert "bạn gái" in t
+    assert "bằng hữu" not in t
+
+
+def test_liangge_keneng_is_kha_nang():
+    dic = mini(
+        [
+            ("可能", "có thể", Layer.GLOBAL_MANUAL, 25.0),
+            ("两个", "hai cái", Layer.BASE_MULTI),
+            ("可能会", "có thể sẽ", Layer.BASE_MULTI),
+            ("来", "đến", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "两个可能").text.lower()
+    assert "khả năng" in t
+    t2 = vp_plan(dic, "可能会来").text.lower()
+    assert "có thể" in t2
+
+
+def test_pinle_ge_zhuozi_is_ghep():
+    dic = mini(
+        [
+            ("拼了", "liều mạng", Layer.BASE_MULTI),
+            ("桌子", "cái bàn", Layer.BASE_MULTI),
+            ("个", "cái", Layer.BASE_SINGLE),
+            ("给", "cho", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "给拼了个桌子").text.lower()
+    assert "ghép" in t
+    assert "liều mạng" not in t
+
+
+def test_yidun_pili_is_mot_tran():
+    dic = mini(
+        [
+            ("一顿", "dừng lại", Layer.BASE_MULTI),
+            ("噼里啪啦", "lốp bốp", Layer.BASE_MULTI),
+            ("一顿饭", "một bữa cơm", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "一顿噼里啪啦").text.lower()
+    assert "một trận" in t
+    assert "dừng lại" not in t
+    t2 = vp_plan(dic, "一顿饭").text.lower()
+    assert "bữa" in t2
+
+
+def test_cheting_le_xialai_not_di():
+    dic = mini(
+        [
+            ("车停", "đậu xe", Layer.BASE_MULTI),
+            ("停了下来", "ngừng lại", Layer.BASE_MULTI),
+            ("了下来", "đi", Layer.BASE_MULTI),
+            ("一群人", "một đám người", Layer.BASE_MULTI),
+            ("坐了下来", "ngồi xuống", Layer.BASE_MULTI),
+            ("车", "xe", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "车停了下来").text.lower()
+    assert "ngừng lại" in t
+    assert "đi" not in t
+    t2 = vp_plan(dic, "一群人停了下来").text.lower()
+    assert "ngừng lại" in t2
+    t3 = vp_plan(dic, "坐了下来").text.lower()
+    assert "ngồi xuống" in t3
+
+
+def test_qibao_not_khi_bao():
+    dic = mini(
+        [
+            ("气爆了", "khí bạo", Layer.BASE_MULTI),
+            ("气爆", "khí bạo", Layer.BASE_MULTI),
+            ("让", "để", Layer.BASE_SINGLE),
+            ("他", "hắn", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "让他气爆了").text.lower()
+    assert "nổi giận" in t
+    assert "khí bạo" not in t
+
+
+def test_haiyihou_is_con_co():
+    dic = mini(
+        [
+            ("还以后", "còn có", Layer.GLOBAL_MANUAL, 100.0),
+            ("还以", "còn lấy", Layer.BASE_MULTI),
+            ("炒菜", "xào rau", Layer.BASE_MULTI),
+            ("后", "sau", Layer.BASE_SINGLE),
+            ("还有", "còn có", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "还以后炒菜").text.lower()
+    assert "còn có" in t
+    assert "còn lấy" not in t
+    t2 = vp_plan(dic, "还有炒菜").text.lower()
+    assert "còn có" in t2
+
+
+def test_daxiao_de_is_co():
+    dic = mini(
+        [
+            ("一个成年人", "một người trưởng thành", Layer.BASE_MULTI),
+            ("大小的", "lớn nhỏ", Layer.BASE_MULTI),
+            ("巴掌印记", "dấu tát", Layer.GLOBAL_MANUAL, 100.0),
+            ("成年人", "người trưởng thành", Layer.BASE_MULTI),
+        ],
+        [("一个{p}大小的{p}", "một {2} cỡ {1}")],
+    )
+    t = vp_plan(dic, "一个成年人大小的巴掌印记").text.lower()
+    assert "dấu tát cỡ người trưởng thành" in t
+    assert "lớn nhỏ" not in t
+
+
+def test_buteng_is_khong_dau():
+    dic = mini(
+        [
+            ("不疼", "không thương", Layer.BASE_MULTI),
+            ("疼", "đau", Layer.BASE_SINGLE),
+            ("我保证", "ta bảo đảm", Layer.BASE_MULTI),
+            ("你", "ngươi", Layer.BASE_SINGLE),
+            ("还疼", "còn đau", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "我保证你不疼").text.lower()
+    assert "không đau" in t
+    assert "thương" not in t
+    t2 = vp_plan(dic, "还疼").text.lower()
+    assert "đau" in t2
+
+
+def test_zuncong_is_tuan_theo():
+    dic = mini(
+        [
+            ("尊从", "tuân theo", Layer.GLOBAL_MANUAL, 100.0),
+            ("尊", "tôn", Layer.BASE_SINGLE),
+            ("从", "từ", Layer.BASE_SINGLE),
+            ("必须要", "nhất định phải", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "必须要尊从").text.lower()
+    assert "tuân theo" in t
+    assert "tôn từ" not in t
+
+
+def test_dinglexialai_is_chot_lai():
+    dic = mini(
+        [
+            ("定了下来", "chốt lại", Layer.GLOBAL_MANUAL, 100.0),
+            ("定了", "định rồi", Layer.BASE_MULTI),
+            ("下来", "xuống tới", Layer.BASE_MULTI),
+            ("事情", "chuyện", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "事情定了下来").text.lower()
+    assert "chốt lại" in t
+    assert "xuống tới" not in t
+
+
+def test_lulexialai_is_lot_xuong():
+    dic = mini(
+        [
+            ("撸了下来", "lột xuống", Layer.GLOBAL_MANUAL, 100.0),
+            ("撸了", "lột", Layer.BASE_MULTI),
+            ("下来", "xuống tới", Layer.BASE_MULTI),
+            ("烤串", "xâu nướng", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "烤串撸了下来").text.lower()
+    assert "lột xuống" in t
+    assert "xuống tới" not in t
+    dic2 = mini(
+        [
+            ("停了下来", "ngừng lại", Layer.BASE_MULTI),
+            ("车停", "đậu xe", Layer.BASE_MULTI),
+            ("了下来", "đi", Layer.BASE_MULTI),
+            ("车", "xe", Layer.BASE_SINGLE),
+        ]
+    )
+    t2 = vp_plan(dic2, "车停了下来").text.lower()
+    assert "ngừng lại" in t2
+
+
+def test_xialai_drops_toi():
+    dic = mini(
+        [
+            ("下来", "xuống tới", Layer.BASE_MULTI),
+            ("打电话", "gọi điện thoại", Layer.BASE_MULTI),
+            ("定了", "định rồi", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "打电话下来").text.lower()
+    assert "xuống" in t
+    assert "tới" not in t
+
+
+def test_rangren_ding_is_bao_nguoi():
+    dic = mini(
+        [
+            ("让人", "làm cho người ta", Layer.BASE_MULTI),
+            ("盯着点", "để ý", Layer.GLOBAL_MANUAL, 100.0),
+            ("盯着", "nhìn chằm chằm", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "你让人盯着点").text.lower()
+    assert "bảo người" in t
+    assert "làm cho người ta" not in t
+
+
+def test_pengyou_is_ban():
+    dic = mini(
+        [
+            ("朋友", "bạn", Layer.GLOBAL_MANUAL, 100.0),
+            ("朋友", "bằng hữu", Layer.BASE_MULTI),
+            ("说一声", "nói một tiếng", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "朋友说一声").text.lower()
+    assert "bạn" in t
+    assert "bằng hữu" not in t
+
+
+def test_de_pengyou_strips_bang_huu():
+    dic = mini(
+        [
+            ("的朋友", "bằng hữu của", Layer.BASE_MULTI),
+            ("我的朋友", "bạn của ta", Layer.BASE_MULTI),
+            ("朋友", "bạn", Layer.GLOBAL_MANUAL, 100.0),
+            ("打了", "đánh cho", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "打了我的朋友").text.lower()
+    assert "bằng hữu" not in t
+    assert "bạn" in t
+
+
+def test_linglong_quan_tou_not_vien_linh_lung():
+    dic = mini(
+        [
+            ("一颗", "một viên", Layer.BASE_MULTI),
+            ("玲珑", "linh lung", Layer.BASE_MULTI),
+            ("拳头", "nắm đấm", Layer.BASE_MULTI),
+            ("玲珑拳头", "nắm đấm nhỏ", Layer.GLOBAL_MANUAL, 100.0),
+        ]
+    )
+    t = vp_plan(dic, "一颗玲珑拳头").text.lower()
+    assert "viên" not in t
+    assert "nắm đấm" in t
+    assert "linh lung" not in t
+
+
+def test_xiaoniangmen_tamadang():
+    dic = mini(
+        [
+            ("小娘们", "con nhỏ", Layer.GLOBAL_MANUAL, 100.0),
+            ("还他妈", "còn đm", Layer.GLOBAL_MANUAL, 100.0),
+            ("他妈的", "đm", Layer.GLOBAL_MANUAL, 100.0),
+            ("敢", "dám", Layer.BASE_SINGLE),
+            ("仙女", "tiên nữ", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "小娘们还他妈敢").text.lower()
+    assert "con nhỏ" in t
+    assert "còn đm" in t
+    assert "nương môn" not in t
+    assert "mẹ hắn" not in t
+    t2 = vp_plan(dic, "他妈的仙女").text.lower()
+    assert "đm" in t2
+    assert "mẹ nhà hắn" not in t2
+
+
+def test_duizhe_lian_da_guolai():
+    dic = mini(
+        [
+            ("对着自己", "chính đối với", Layer.BASE_MULTI),
+            ("的脸", "mặt của", Layer.BASE_MULTI),
+            ("打了过来", "đánh tới", Layer.BASE_MULTI),
+            ("自己", "mình", Layer.BASE_MULTI),
+            ("拳头", "nắm đấm", Layer.BASE_MULTI),
+        ],
+        [("对着{p}的脸打了过来", "đánh vào mặt {p}")],
+    )
+    t = vp_plan(dic, "拳头对着自己的脸打了过来").text.lower()
+    assert "đánh vào mặt mình" in t
+    assert "đối với mặt của" not in t
+
+
+def test_ni_na_xiaonvpengyou_order():
+    dic = mini(
+        [
+            ("小女朋友", "bạn gái nhỏ", Layer.GLOBAL_MANUAL, 100.0),
+            ("你", "ngươi", Layer.BASE_SINGLE),
+            ("那", "kia", Layer.BASE_SINGLE),
+            ("被人欺负了", "bị người khi dễ", Layer.BASE_MULTI),
+        ],
+        [("你那{p}", "{p} kia của ngươi")],
+    )
+    t = vp_plan(dic, "你那小女朋友被人欺负了").text.lower()
+    assert "bạn gái nhỏ kia của ngươi" in t
+    assert t.index("bạn gái") < t.index("kia")
+
+
+def test_weixie_qi_wo_laile_not_toi_da():
+    dic = mini(
+        [
+            ("威胁起", "uy hiếp", Layer.BASE_MULTI),
+            ("我来", "ta tới", Layer.BASE_MULTI),
+            ("来了", "đã đến", Layer.BASE_MULTI),
+            ("我", "ta", Layer.BASE_SINGLE),
+            ("了", "đã", Layer.BASE_SINGLE),
+            ("他", "hắn", Layer.BASE_SINGLE),
+            ("记起来了", "nhớ ra rồi", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "威胁起我来了").text.lower()
+    assert "uy hiếp ta" in t
+    assert "tới" not in t
+    t2 = vp_plan(dic, "他来了").text.lower()
+    assert "đã đến" in t2
+    t3 = vp_plan(dic, "记起来了").text.lower()
+    assert "nhớ ra rồi" in t3
+
+
+def test_nadaoguo_is_tung_gianh():
+    dic = mini(
+        [
+            ("拿到", "cầm tới", Layer.BASE_MULTI),
+            ("过", "rồi", Layer.BASE_SINGLE),
+            ("第一名", "hạng nhất", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "拿到过第一名").text.lower()
+    assert "từng giành" in t
+    assert "cầm tới" not in t
+    assert "rồi" not in t
+
+
+def test_chuchulai_is_ra():
+    dic = mini(
+        [
+            ("出出来", "ra", Layer.GLOBAL_MANUAL, 100.0),
+            ("出出来的", "ra", Layer.GLOBAL_MANUAL, 100.0),
+            ("出出", "xuất một chút", Layer.BASE_MULTI),
+            ("来的", "tới", Layer.BASE_MULTI),
+            ("小学题目", "đề bài tiểu học", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "出出来的小学题目").text.lower()
+    assert "ra" in t
+    assert "tới" not in t
+    assert "xuất một chút" not in t
+
+
+def test_kaotimu_not_mat():
+    dic = mini(
+        [
+            ("考题目", "đề thi", Layer.GLOBAL_MANUAL, 100.0),
+            ("题目", "đề bài", Layer.GLOBAL_MANUAL, 100.0),
+            ("考题", "khảo đề", Layer.BASE_MULTI),
+            ("目", "mắt", Layer.BASE_SINGLE),
+            ("所谓", "cái gọi là", Layer.BASE_MULTI),
+            ("这个", "cái này", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "所谓考题目这个").text.lower()
+    assert "mắt" not in t
+    assert "đề" in t
+
+
+def test_hexini_de_fangshi_inverts():
+    dic = mini(
+        [
+            ("和稀泥", "ba phải", Layer.BASE_MULTI),
+            ("的方式", "phương thức", Layer.BASE_MULTI),
+            ("方式", "phương thức", Layer.BASE_MULTI),
+            ("以", "lấy", Layer.BASE_SINGLE),
+            ("这样", "dạng này", Layer.BASE_MULTI),
+            ("解决", "giải quyết", Layer.BASE_MULTI),
+            ("事情", "chuyện", Layer.BASE_MULTI),
+            ("和稀泥的方式", "cách ba phải", Layer.GLOBAL_MANUAL, 100.0),
+            ("以这样和稀泥的方式", "theo cách ba phải", Layer.GLOBAL_MANUAL, 100.0),
+        ],
+        [
+            ("{p}的方式", "cách {p}"),
+            ("以这样{p}的方式", "theo cách {p}"),
+        ],
+    )
+    t = vp_plan(dic, "以这样和稀泥的方式解决事情").text.lower()
+    assert "theo cách ba phải" in t or "cách ba phải" in t
+    assert "ba phải phương thức" not in t
+
+
+def test_jiejie_de_zhuren_inverts():
+    dic = mini(
+        [
+            ("是她姐姐", "là tỷ tỷ của nàng", Layer.BASE_MULTI),
+            ("是她", "là nàng", Layer.BASE_MULTI),
+            ("她姐姐", "tỷ tỷ nàng", Layer.BASE_MULTI),
+            ("她姐姐的主人", "chủ nhân của tỷ tỷ nàng", Layer.GLOBAL_MANUAL, 100.0),
+            ("姐姐", "tỷ tỷ", Layer.BASE_MULTI),
+            ("主人", "chủ nhân", Layer.BASE_MULTI),
+            ("是", "là", Layer.BASE_SINGLE),
+            ("她", "nàng", Layer.BASE_SINGLE),
+        ],
+        [("{p}的主人", "chủ nhân của {p}")],
+    )
+    t = vp_plan(dic, "是她姐姐的主人").text.lower()
+    assert "chủ nhân của tỷ tỷ" in t
+    assert "nàng chủ nhân" not in t
+    assert t.index("chủ nhân") < t.index("tỷ")
+    t2 = vp_plan(dic, "她的主人").text.lower()
+    assert "chủ nhân của nàng" in t2
+    assert "nàng chủ nhân" not in t2
+
+
+def test_baohu_lingtian_de_ren():
+    dic = mini(
+        [
+            ("保护", "bảo hộ", Layer.BASE_MULTI),
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("凌天的人", "người của Lăng Thiên", Layer.BASE_MULTI),
+        ],
+        [("保护{n}的人", "người bảo vệ {n}")],
+    )
+    t = vp_plan(dic, "保护凌天的人").text.lower()
+    assert "người bảo vệ lăng thiên" in t
+    assert "người của lăng thiên" not in t
+
+
+def test_zhuoshang_de_ren():
+    dic = mini(
+        [
+            ("几个桌子", "mấy cái bàn", Layer.BASE_MULTI),
+            ("上的人", "người trên", Layer.BASE_MULTI),
+            ("桌子", "bàn", Layer.BASE_MULTI),
+        ],
+        [("几个{p}上的人", "người trên mấy cái {p}")],
+    )
+    t = vp_plan(dic, "几个桌子上的人").text.lower()
+    assert "người trên mấy cái bàn" in t
+    assert "bàn người trên" not in t
+
+
+def test_gei_ta_de_zhuren_dadianhua():
+    dic = mini(
+        [
+            ("给她的", "cho nàng", Layer.BASE_MULTI),
+            ("给她", "cho nàng", Layer.BASE_MULTI),
+            ("她的", "nàng", Layer.BASE_MULTI),
+            ("主人", "chủ nhân", Layer.BASE_MULTI),
+            ("打电话", "gọi điện thoại", Layer.BASE_MULTI),
+            ("给", "cho", Layer.BASE_SINGLE),
+            ("她", "nàng", Layer.BASE_SINGLE),
+        ],
+        [
+            ("{p}的主人", "chủ nhân của {p}"),
+            ("给{p}的主人打电话", "gọi điện cho chủ nhân của {p}"),
+        ],
+    )
+    t = vp_plan(dic, "给她的主人打电话").text.lower()
+    assert "chủ nhân của nàng" in t
+    assert "nàng chủ nhân" not in t
+
+
+def test_ziji_de_banlian_inverts():
+    dic = mini(
+        [
+            ("捂住", "che", Layer.BASE_MULTI),
+            ("自己的", "mình", Layer.BASE_MULTI),
+            ("半边脸", "nửa bên mặt", Layer.BASE_MULTI),
+            ("自己", "mình", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "捂住自己的半边脸").text.lower()
+    assert "nửa bên mặt của mình" in t
+    assert "mình nửa" not in t
+
+
+def test_jiejie_huawayin_inverts():
+    dic = mini(
+        [
+            ("自己姐姐", "tỷ tỷ mình", Layer.BASE_MULTI),
+            ("画外音", "hàm ý", Layer.GLOBAL_MANUAL, 100.0),
+            ("听出了", "nghe được", Layer.BASE_MULTI),
+            ("她", "nàng", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "她听出了自己姐姐的画外音").text.lower()
+    assert "hàm ý của tỷ tỷ" in t
+    assert "tỷ tỷ mình lời" not in t
+    assert "thuyết minh" not in t
+
+
+def test_dianhua_jiu_da_guolai_is_goi():
+    dic = mini(
+        [
+            ("凌天", "Lăng Thiên", Layer.BASE_MULTI, 20.0),
+            ("就打", "đánh liền", Layer.BASE_MULTI),
+            ("打过来了", "đánh tới", Layer.BASE_MULTI),
+            ("过来了", "đã tới", Layer.BASE_MULTI),
+            ("就", "liền", Layer.BASE_SINGLE),
+            ("打", "đánh", Layer.BASE_SINGLE),
+        ],
+        [("{n}的电话", "điện thoại của {n}")],
+    )
+    t = vp_plan(dic, "凌天的电话就打过来了").text.lower()
+    assert "gọi tới" in t
+    assert "đánh liền" not in t
+    assert "đánh tới" not in t
+
+
+def test_dao_semicolon_quote_is_noi():
+    dic = mini(
+        [
+            ("雅樱", "Nhã Anh", Layer.BASE_MULTI, 20.0),
+            ("道", "đạo", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "雅樱道；“你过来吧").text.lower()
+    assert "nói" in t
+    assert "đạo" not in t
+
+
+def test_naying_qingkuang_inverts():
+    dic = mini(
+        [
+            ("哪一种", "loại nào", Layer.BASE_MULTI),
+            ("情况", "tình huống", Layer.BASE_MULTI),
+            ("到底是", "rút cuộc là", Layer.BASE_MULTI),
+        ],
+        [("哪一种{p}", "{p} nào")],
+    )
+    t = vp_plan(dic, "到底是哪一种情况").text.lower()
+    assert "tình huống nào" in t
+    assert "loại nào tình huống" not in t

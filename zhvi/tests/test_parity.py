@@ -45,21 +45,31 @@ def test_parity_chap1(dic, old_convert):
     paras = _paragraphs()
     assert len(paras) > 20
     diffs = []
+    diff_idx = []
     old_cjk = 0
     new_cjk = 0
     import re
 
     cjk = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
-    for p in paras:
+    for i, p in enumerate(paras):
         old_out = old_convert(p)
         new_out = vp_plan(dic, p).text
         old_cjk += len(cjk.findall(old_out))
         new_cjk += len(cjk.findall(new_out))
         if old_out != new_out:
             diffs.append((p[:40], old_out[:60], new_out[:60]))
+            diff_idx.append(i)
     ratio = len(diffs) / len(paras)
-    # ContextPatterns inversion vs greedy (~11/51). Cap 0.22; khong noi khi them rule.
+    # ContextPatterns inversion vs greedy. Cap 0.22; khong noi khi them rule.
     assert ratio < 0.22, f"{len(diffs)}/{len(paras)} doan khac: {diffs[:3]}"
+    # Moi diff phai thuoc whitelist da duyet (lattice TOT hon greedy).
+    # Rule moi gay diff moi hop le -> them index + ly do vao day (review
+    # tuong minh), khong duoc xoa cap mo. Cu the (chap1_raw.txt):
+    # 9/18/26/27/36: inversion X的Y -> Y cua X; 25/48: pronoun-NP tach dung
+    # (segmenter-8); 21/22/46: giu aspect 了 (đã), engine cu DROP.
+    allowed = {9, 18, 21, 22, 25, 26, 27, 36, 46, 48}
+    unexpected = [i for i in diff_idx if i not in allowed]
+    assert not unexpected, f"diff la ngoai whitelist: {unexpected}"
     # khong duoc sot CJK nhieu hon engine cu
     assert new_cjk <= old_cjk, f"new {new_cjk} > old {old_cjk}"
 

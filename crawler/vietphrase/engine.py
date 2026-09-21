@@ -146,6 +146,22 @@ def _join_tokens(parts: list[str]) -> str:
     return text.strip()
 
 
+POST_PROCESS_RULES: list[tuple[re.Pattern, str]] = []
+
+
+
+
+
+
+
+
+def _post_process_vietnamese(text: str) -> str:
+    for rx, repl in POST_PROCESS_RULES:
+        text = rx.sub(repl, text)
+    return text
+
+
+
 class Engine:
     def __init__(self) -> None:
         self.root = _Node()
@@ -233,7 +249,7 @@ class Engine:
                 continue
             parts.append(val)
             i = end
-        return unicodedata.normalize("NFC", _capitalize(_join_tokens(parts)))
+        return unicodedata.normalize("NFC", _capitalize(_post_process_vietnamese(_join_tokens(parts))))
 
 
 _ENGINE: Engine | None = None

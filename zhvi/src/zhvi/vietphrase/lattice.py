@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import math
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from .layers import Layer
 from .loader import TRUST_BY_FILE, Dictionary, TrieNode, normalize_nfc, to_simplified
@@ -20,14 +20,21 @@ from .patterns import (
     CJK_KEY,
     DIGIT_KEY,
     ENTITY_SUFFIXES,
-    ENTITY_TRUSTS,
     PRONOUNS,
     VERBS,
     PatternRule,
     fill_target,
     is_num_start,
 )
-from .sense import _IDIOMS, _ORD_TITLE2, apply_sense, dehua_conditional, ordinal_tail
+from .sense import (
+    _IDIOMS,
+    _ORD_TITLE2,
+    _PROTECTED_OVERFLOWS,
+    _SPEECH_AFTER_DAO,
+    apply_sense,
+    dehua_conditional,
+    ordinal_tail,
+)
 from .trace import SourceSpan, VpDraft, VpSpan
 
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
@@ -242,7 +249,51 @@ def _longest_word_len(dic: Dictionary, text: str, pos: int) -> int:
 
 # Duoi tu ghep 2-4 chu: leftover 1 chu nay hiem khi dung le (脉/力/云/乎/意),
 # khac 人/子/的 (一个+人, 个人). Dung de drop edge cuop chu dau 血脉/之力/在乎.
-_BOUND_COMPOUND_TAILS = frozenset("脉力气云术丹阵魄灵光魂界门乎意")
+# [Note] 魂 bi loai: 魂力 (hon luc) qua pho bien tien hiep; overflow 大魂
+# hiem khi la tu that — giu lai gay false positive chet 强大魂力 (parity chap1).
+_BOUND_COMPOUND_TAILS = frozenset("脉力气云术丹阵魄灵光界门乎意")
+# Locative 2 chu (心中/桌上): khong drop khi 中气/上X tran — khac 他在|乎.
+_LOCATIVE_EDGE_ENDS = frozenset("中上下内外前后里间")
+_NAME_GLUE_REST = frozenset({"已经", "已經"})
+# 没有/所有 (2) vs 有敌意 (duoi 意): khong drop 2 chu chuc nang.
+_CLOSED_YOU = frozenset({"没有", "所有", "只有", "还有"})
+
+
+_PRONOUN_SKIP_TAIL = frozenset("们們的")
+
+
+def _stolen_pronoun_np(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Pronoun+X NP (她信, 它坚持) cuop chu dau cua tu 3+ chu tran khoi
+    (信不过, 坚持下来了). Drop de dai tu don + compound thang.
+
+    Khong them 过 vao bound-tail (qua/rồi pho bien). Chi prefix dai tu,
+    overflow dai >= 3 (tranh 他看|来 2 chu); 不 thi >= 2 (我不|算).
+    们/的 khong drop (他们/她的).
+    Name-prec giu nhu _stolen_compound; Custom van drop.
+    """
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    if text[edge.start] not in PRONOUNS:
+        return False
+    if text[edge.start + 1] in _PRONOUN_SKIP_TAIL:
+        return False
+    if _is_name_prec(edge.precedence):
+        return False
+    i = edge.start + 1
+    # 我不|算: 不算 chi 2 chu; 他看|来 van min 3.
+    min_wlen = 2 if text[i] == "不" else 3
+    node = dic.root
+    n = len(text)
+    for j in range(i, min(i + 8, n)):
+        node = node.children.get(text[j])
+        if node is None:
+            break
+        wlen = j - i + 1
+        word_end = j + 1
+        if not node.entries or wlen < min_wlen or word_end <= edge.end:
+            continue
+        return True
+    return False
 
 
 def _stolen_compound(dic: Dictionary, text: str, edge: Edge) -> bool:
@@ -270,8 +321,33 @@ def _stolen_compound(dic: Dictionary, text: str, edge: Edge) -> bool:
             word_end = j + 1
             if not node.entries or wlen < 2 or word_end <= edge.end:
                 continue
-            if text[word_end - 1] in _BOUND_COMPOUND_TAILS:
-                return True
+            if text[word_end - 1] not in _BOUND_COMPOUND_TAILS:
+                continue
+            # Glue last-char 2 chu (人丹) khi tu 2+ bat dau dung edge.end
+            # (丹田): NP 3+ chu (蒙面人) la that, khong phai ke cuop.
+            # 这么多血|脉 (edge.end = 1 chu) va 他在|乎 van drop.
+            if (
+                i == edge.end - 1
+                and wlen == 2
+                and edge.end - edge.start >= 3
+                and _longest_word_len(dic, text, edge.end) >= 2
+            ):
+                continue
+            # 心中 vs 中气: locative 2 chu that, 气 bound-tail khong duoc cat.
+            if (
+                edge.end - edge.start == 2
+                and text[edge.end - 1] in _LOCATIVE_EDGE_ENDS
+                and i == edge.end - 1
+                and wlen == 2
+            ):
+                continue
+            if (
+                i == edge.end - 1
+                and edge.end - edge.start == 2
+                and text[edge.start : edge.end] in _CLOSED_YOU
+            ):
+                continue
+            return True
     return False
 
 
@@ -313,6 +389,129 @@ def _idiom_overflow(dic: Dictionary, text: str, edge: Edge) -> bool:
     if text[tail : tail + 4] not in _IDIOMS:
         return False
     return _longest_word_len(dic, text, tail) >= 4
+
+
+def _has_entry(dic: Dictionary, zh: str) -> bool:
+    node = dic.root
+    for ch in zh:
+        node = node.children.get(ch)
+        if node is None:
+            return False
+    return bool(node.entries)
+
+
+def _de_tail_vp(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """兴师问罪的 (5+): 的 hat, drop de idiom | 的."""
+    if edge.is_pattern or edge.end - edge.start < 5:
+        return False
+    if text[edge.end - 1] != "的":
+        return False
+    return _has_entry(dic, text[edge.start : edge.end - 1])
+
+
+def _protected_overflow(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Edge ngan cuop chu dau cum bao ve (是知|知情人, 你要|要么, 人解|解决)."""
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    if _is_name_prec(edge.precedence):
+        return False
+    n = len(text)
+    for i in range(edge.start + 1, edge.end):
+        for length in (2, 3, 4):
+            end = i + length
+            if end > n:
+                break
+            if end <= edge.end:
+                continue
+            if text[i:end] in _PROTECTED_OVERFLOWS:
+                return True
+    return False
+
+
+_DAO_TRAVEL = frozenset({"就道", "便道"})
+
+
+def _travel_dao_before_speech(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """就道/便道 truoc ngoac thoai: drop de 就|道, 道 -> nói."""
+    if edge.is_pattern:
+        return False
+    if text[edge.start : edge.end] not in _DAO_TRAVEL:
+        return False
+    rest = text[edge.end :]
+    return bool(rest) and rest[0] in _SPEECH_AFTER_DAO
+
+
+_QI_PRONOUN_LAI = frozenset({"我来", "你来", "他来", "她来", "它来"})
+_KIN_TITLES = ("姐姐", "哥哥", "妹妹", "弟弟")
+_PRONOUN_DE_TAILS = tuple(p + "的" for p in sorted(PRONOUNS)) + ("自己的",)
+
+
+def _kin_before_de_zhuren(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """是她 / 是她姐姐 + 姐姐的主人: drop de 她姐姐的主人 thang, khong 'nàng chủ nhân'."""
+    if edge.is_pattern:
+        return False
+    src = text[edge.start : edge.end]
+    rest = text[edge.end :]
+    if rest.startswith("的主人") and any(src.endswith(k) for k in _KIN_TITLES):
+        return True
+    return any(rest.startswith(k + "的主人") for k in _KIN_TITLES)
+
+
+def _pronoun_de_before_noun(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """给她的|主人, 自己的|半边脸: drop de {p}的主人 / 自己 | 的 | NP dao."""
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    src = text[edge.start : edge.end]
+    if not any(src.endswith(t) for t in _PRONOUN_DE_TAILS):
+        return False
+    rest = text[edge.end :]
+    if not rest or not CJK_RE.match(rest[0]):
+        return False
+    return _longest_word_len(dic, text, edge.end) >= 2
+
+
+def _jiu_da_before_guolai(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """电话就打|过来了: 就打 cuop 打 của 打过来. Drop de 就 | 打过来."""
+    if edge.is_pattern:
+        return False
+    if text[edge.start : edge.end] != "就打":
+        return False
+    return text[edge.end :].startswith("过来")
+
+
+def _pronoun_lai_after_qi(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """威胁起我来了: 我来 cuop 来 của 来了. Drop de 我 | 来了 (sense empty)."""
+    if edge.is_pattern:
+        return False
+    if text[edge.start : edge.end] not in _QI_PRONOUN_LAI:
+        return False
+    return "起" in text[max(0, edge.start - 4) : edge.start]
+
+
+def _shi_dui_before_name(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """是对 + ten: drop de 是 | 对{n}的{p}."""
+    if edge.is_pattern or text[edge.start : edge.end] != "是对":
+        return False
+    for length in (2, 3, 4):
+        seg = text[edge.end : edge.end + length]
+        if len(seg) == length and _entity_ok(dic, seg):
+            return True
+    return False
+
+
+def _name_function_glue(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """VP glue 凌天已经: ten o dau + 已经. Drop de ten | 已经."""
+    if edge.is_pattern or _is_name_prec(edge.precedence):
+        return False
+    hit = _inner_name(dic, text, edge.start)
+    if hit is None:
+        return False
+    name_end, _layer, target = hit
+    if not target or not target[0].isupper():
+        return False
+    if name_end <= edge.start or name_end >= edge.end:
+        return False
+    return text[name_end:edge.end] in _NAME_GLUE_REST
 
 
 def _swallows_name(dic: Dictionary, text: str, edge: Edge) -> bool:
@@ -361,6 +560,16 @@ def _candidates_at(dic: Dictionary, text: str, pos: int, *, patterns: bool) -> l
         candidates = [e for e in candidates if not _idiom_overflow(dic, text, e)]
         candidates = [e for e in candidates if not _stolen_bu(dic, text, e)]
         candidates = [e for e in candidates if not _stolen_compound(dic, text, e)]
+        candidates = [e for e in candidates if not _stolen_pronoun_np(dic, text, e)]
+        candidates = [e for e in candidates if not _protected_overflow(dic, text, e)]
+        candidates = [e for e in candidates if not _name_function_glue(dic, text, e)]
+        candidates = [e for e in candidates if not _travel_dao_before_speech(dic, text, e)]
+        candidates = [e for e in candidates if not _shi_dui_before_name(dic, text, e)]
+        candidates = [e for e in candidates if not _de_tail_vp(dic, text, e)]
+        candidates = [e for e in candidates if not _pronoun_lai_after_qi(dic, text, e)]
+        candidates = [e for e in candidates if not _kin_before_de_zhuren(dic, text, e)]
+        candidates = [e for e in candidates if not _pronoun_de_before_noun(dic, text, e)]
+        candidates = [e for e in candidates if not _jiu_da_before_guolai(dic, text, e)]
         if not candidates:
             candidates = [
                 Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
@@ -399,7 +608,14 @@ def _entity_ok(dic: Dictionary, seg: str) -> bool:
         node = node.children.get(ch)
         if node is None:
             return False
-    return any(p[1] in ENTITY_TRUSTS for _t, p, _pol in node.entries)
+    for target, prec, _pol in node.entries:
+        trust = prec[1]
+        if trust in (20.0, 25.0, 1000.0):
+            return True
+        # Custom 100: chi ten (viet hoa). 让=để khong phai {n}.
+        if trust >= 100.0 and target and target[0].isupper():
+            return True
+    return False
 
 
 def _candidate_rules(dic: Dictionary, ch: str) -> list[PatternRule]:
@@ -412,6 +628,32 @@ def _candidate_rules(dic: Dictionary, ch: str) -> list[PatternRule]:
     if CJK_RE.match(ch):
         out += dic.patterns.get(CJK_KEY, ())
     return out
+
+
+def _pattern_capture_swallows_word(dic: Dictionary, text: str, cap_start: int, cap_end: int) -> bool:
+    """Capture {p} tham nuot chu dau cua tu dai tran ra ngoai capture
+    (VD 六岁的{p} bat 小胖子幸, nuot 幸 cua 幸灾乐祸道). Skip de literal
+    dai thang — doi xung cua _swallows_name (literal nuot ten).
+
+    Chi tinh word dai >= 3 trong trie: overlap 2 chu thuong la common-word
+    rac (cung triet ly _swallows_name). {n} da co _entity_ok rieng; {s}/{v}
+    (so/dong tu) khong the chua word CJK tran.
+    """
+    if cap_end - cap_start < 2:
+        return False
+    n = len(text)
+    for i in range(cap_start + 1, cap_end):
+        node = dic.root
+        for j in range(i, min(i + 8, n)):
+            node = node.children.get(text[j])
+            if node is None:
+                break
+            wlen = j - i + 1
+            word_end = j + 1
+            if not node.entries or wlen < 3 or word_end <= cap_end:
+                continue
+            return True
+    return False
 
 
 def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
@@ -430,6 +672,11 @@ def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
             if kind == "v" and cap not in VERBS:
                 skip = True
                 break
+            if kind == "p":
+                cs, ce = m.start(i + 1), m.end(i + 1)
+                if ce > cs and _pattern_capture_swallows_word(dic, text, cs, ce):
+                    skip = True  # {p} nuot chu dau tu dai tran ra ngoai
+                    break
         if skip:
             continue
         # So huu X的{p} nuot hat dieu kien 的话 (VD 要是杀掉凌天的话 ->
@@ -437,7 +684,10 @@ def _pattern_edges(dic: Dictionary, text: str, pos: int) -> list[Edge]:
         # nhan conditional; topic X的话 + dong tu (VD 凌天的话让...) va
         # ngu canh nghe/tin (VD 听到凌天的话) giu "loi noi cua X".
         if rule.key.endswith("的{p}") and rule.slots[-1:] == ("p",):
-            if m.group(len(rule.slots)) in ("话", "話"):
+            cap = m.group(len(rule.slots))
+            if cap in ("时候", "時候"):
+                continue
+            if cap in ("话", "話"):
                 if dehua_conditional(text, m.end() - 2, m.end()):
                     continue
         filled = fill_target(rule, m, lambda s: _translate_capture(dic, s))
@@ -516,6 +766,119 @@ def best_paths(dic: Dictionary, text: str, k: int = 4, *, patterns: bool = True)
         materialized.append(_Path(edges, states[sid].score, False))
     materialized.sort(key=_path_tiebreak_key)
     return materialized[:k]
+
+
+_CLAN_PLURAL = frozenset(("我们", "你们", "他们", "她们", "它们", "咱们"))
+
+
+def _is_clan_name_edge(edge: Edge, src: str) -> bool:
+    """Ten ho X家 (Names/Custom), khong VP 回家/国家/全家."""
+    if not (2 <= len(src) <= 3 and src.endswith("家")):
+        return False
+    if _is_name_prec(edge.precedence):
+        return True
+    layer, trust, _idx = edge.precedence
+    return _is_custom_name(layer, trust, edge.target, src)
+
+
+def _possessive_clan(edges: list[Edge], text: str) -> list[Edge]:
+    """Pronoun + ten ho X家 -> 'X gia của ta' (灭我赵家, khong 'diệt ta Triệu Gia')."""
+    out: list[Edge] = []
+    i = 0
+    n = len(edges)
+    while i < n:
+        e = edges[i]
+        src = text[e.start : e.end]
+        if (src in PRONOUNS or src in _CLAN_PLURAL) and i + 1 < n and e.target:
+            nxt = edges[i + 1]
+            nsrc = text[nxt.start : nxt.end]
+            if nxt.start == e.end and _is_clan_name_edge(nxt, nsrc) and nxt.target:
+                out.append(
+                    replace(
+                        nxt,
+                        start=e.start,
+                        target=f"{nxt.target} của {e.target}",
+                        score=e.score + nxt.score,
+                    )
+                )
+                i += 2
+                continue
+        out.append(e)
+        i += 1
+    return out
+
+
+def _is_possessive_head(edge: Edge, src: str) -> bool:
+    """Ve trai 的 so huu: dai tu hoac ten (target viet hoa)."""
+    if not edge.target:
+        return False
+    if src in PRONOUNS or src in _CLAN_PLURAL or src == "自己":
+        return True
+    if any(src.endswith(k) for k in _KIN_TITLES):
+        return True
+    return bool(edge.target[0].isupper())
+
+
+_TIME_AFTER_DE = frozenset(
+    {"晚上", "夜晚", "早上", "中午", "下午", "白天", "夜里", "夜裏", "清晨", "傍晚", "凌晨"}
+)
+
+
+def _possessive_de(edges: list[Edge], text: str) -> list[Edge]:
+    """Ten/dai tu + 的 (boc) + NP -> 'NP của ten' (花少的耻辱).
+
+    Thoi diem (晚上): 'buổi tối ở Đồng Thành', khong 'của'.
+    Khong dao 新的老师 / 打不晕的凌天 (ve trai khong phai ten).
+    """
+    out: list[Edge] = []
+    i = 0
+    n = len(edges)
+    while i < n:
+        e = edges[i]
+        src = text[e.start : e.end]
+        if src in ("的", "旳") and not e.target and out and i + 1 < n:
+            left = out[-1]
+            right = edges[i + 1]
+            lsrc = text[left.start : left.end]
+            rsrc = text[right.start : right.end]
+            if (
+                left.end == e.start
+                and e.end == right.start
+                and right.target
+                and _is_possessive_head(left, lsrc)
+                and CJK_RE.match(text[right.start])
+            ):
+                if rsrc in _TIME_AFTER_DE:
+                    joined = f"{right.target} ở {left.target}"
+                else:
+                    joined = f"{right.target} của {left.target}"
+                out[-1] = replace(
+                    right,
+                    start=left.start,
+                    target=joined,
+                    score=left.score + right.score,
+                )
+                i += 2
+                continue
+        out.append(e)
+        i += 1
+    return out
+
+
+def _dui_before_name(edges: list[Edge], text: str) -> list[Edge]:
+    """对 + ten (viet hoa) -> 'với' (对凌天各种客气), khong 'đối'."""
+    out = list(edges)
+    for i, e in enumerate(out):
+        if text[e.start : e.end] != "对" or not e.target:
+            continue
+        if i + 1 >= len(out):
+            continue
+        nxt = out[i + 1]
+        if nxt.start != e.end or not nxt.target:
+            continue
+        if nxt.target[0].isupper():
+            out[i] = replace(e, target="với")
+    return out
 
 
 def greedy_path(dic: Dictionary, text: str, *, patterns: bool = True) -> list[Edge]:
@@ -666,13 +1029,12 @@ def vp_plan(
     # that; to_simplified thay tung ky tu nen offset simplified == offset goc.
     orig = normalize_nfc(text)
     text = normalize_nfc(to_simplified(text, dic.trad_simp))
-    paths = best_paths(dic, text, k=max(2, beam))
-    if not paths:
-        return VpDraft(text=text, spans=(), unknown_spans=(), single_char_ratio=0.0,
-                       lattice_margin=0.0, lattice_entropy=0.0, warnings=("NO_PATH",))
-    # M1: render theo greedy (parity QuickTrans cu); lattice lo duong di
-    # khac de do margin/entropy — router M2 quyet dinh dung cai nao.
+    # M1: render theo greedy (parity QuickTrans). beam<=1 bo DP top-K —
+    # margin/entropy chi can cho router M2 / explain.
     greedy_edges = greedy_path(dic, text)
+    greedy_edges = _possessive_clan(greedy_edges, text)
+    greedy_edges = _possessive_de(greedy_edges, text)
+    greedy_edges = _dui_before_name(greedy_edges, text)
     # Rule chong lap: loai artifact trung target giua hai edge ke nhau khi
     # nguon khong lap lai that (VD 'có chút'+'có chút lo lắng' -> giu cai sau).
     collapsed_count = 0
@@ -681,10 +1043,16 @@ def vp_plan(
         greedy_edges, collapsed_count, collapsed_spans = collapse_repetitions(greedy_edges, text)
     greedy_score = sum(e.score for e in greedy_edges)
     best = _Path(greedy_edges, greedy_score, False)
-    margin = (paths[0].score - paths[1].score) if len(paths) > 1 else float("inf")
-    entropy = _entropy(paths)
-    # bat dong greedy vs lattice best = segmentation instability (risk feature muc 12)
-    disagreement = max(0.0, paths[0].score - greedy_score)
+    if beam <= 1:
+        margin, entropy, disagreement = 1.0, 0.0, 0.0
+    else:
+        paths = best_paths(dic, text, k=max(2, beam))
+        if not paths:
+            return VpDraft(text=text, spans=(), unknown_spans=(), single_char_ratio=0.0,
+                           lattice_margin=0.0, lattice_entropy=0.0, warnings=("NO_PATH",))
+        margin = (paths[0].score - paths[1].score) if len(paths) > 1 else float("inf")
+        entropy = _entropy(paths)
+        disagreement = max(0.0, paths[0].score - greedy_score)
 
     spans: list[VpSpan] = []
     unknowns: list[SourceSpan] = []

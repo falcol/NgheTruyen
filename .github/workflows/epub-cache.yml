@@ -47,4 +47,4 @@ jobs:
           publish_dir: ./publish
           publish_branch: epub-data
           force_orphan: true
-          commit_message: "chore: update epub cache [skip ci]"
+          commit_message: "chore: update epub cache [skip ci] [skip vercel]"
