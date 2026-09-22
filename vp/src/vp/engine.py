@@ -38,6 +38,58 @@ _CLAUSE_BOUNDARY_RE = re.compile(r"[，。？！；：,.!?;:…—)\]\u00bb\u201
 _LATIN_NUM_RE = re.compile(r"[A-Za-z0-9]")
 _NEXT_STATION_PARTICLE_RE = re.compile(r"^(?:呗|唄|吧|啊|呀|嘛|呢|啦)$")
 
+# Tails and exception lists copied from zhvi longest-match guards.
+_BOUND_COMPOUND_TAILS = frozenset("脉力气云术丹阵魄灵光界门乎意")
+_LOCATIVE_EDGE_ENDS = frozenset("中上下内外前后里间")
+_CLOSED_YOU = frozenset({"没有", "所有", "只有", "还有"})
+_CLOSED_BU = frozenset({"要不", "这不", "那不", "毫不", "莫不", "并不"})
+_PRONOUN_SKIP_TAIL = frozenset("们們的")
+_NAME_GLUE_REST = frozenset({"已经", "已經"})
+_NAME_PARTICLES = frozenset("的得地了着过")
+_KIN_TITLES = ("姐姐", "哥哥", "妹妹", "弟弟")
+_CLAN_SKIP = frozenset({"回家", "国家", "全家"})
+_DE_SKIP_RIGHT = frozenset({"话", "話", "时候", "時候"})
+_TIME_AFTER_DE = frozenset(
+    {"晚上", "夜晚", "早上", "中午", "下午", "白天", "夜里", "夜裏", "清晨", "傍晚", "凌晨"}
+)
+_IDIOMS = frozenset(
+    {
+        "望其项背",
+        "望尘莫及",
+        "莫名其妙",
+        "出乎意料",
+        "理所当然",
+        "心服口服",
+        "触目惊心",
+        "铺天盖地",
+        "震耳欲聋",
+        "目瞪口呆",
+        "哑口无言",
+        "手足无措",
+        "筋疲力尽",
+        "全力以赴",
+        "千钧一发",
+        "任人鱼肉",
+    }
+)
+_PROTECTED_OVERFLOWS = frozenset(
+    {
+        "知情人",
+        "要么",
+        "解决",
+        "口中",
+        "任人鱼肉",
+        "烟雾弹",
+        "跟着",
+        "有点",
+        "印记",
+        "圆润",
+        "女朋友",
+        "停了下来",
+        "题目",
+    }
+)
+
 
 class _Node:
     __slots__ = ("c", "v", "p", "o", "has")
@@ -73,6 +125,17 @@ class _Step:
     @property
     def length(self) -> int:
         return self.end - self.start
+
+
+@dataclass(slots=True)
+class _Tok:
+    start: int
+    end: int
+    zh: str
+    value: str
+    pri: int
+    drop: bool
+    kind: str
 
 
 def _normalize_variant(value: str) -> str:
@@ -369,27 +432,28 @@ class Engine:
         text: str,
         overlay: dict[str, list[tuple[str, str, int]]] | None,
     ) -> str:
-        out: list[str] = []
+        toks: list[_Tok] = []
         i = 0
         n = len(text)
         while i < n:
             step = self._step_at(text, i, n, overlay)
             if step.length <= 0:
-                out.append(text[i])
+                toks.append(_Tok(i, i + 1, text[i], text[i], 0, False, "literal"))
                 i += 1
                 continue
+            zh = text[step.start : step.end]
             if step.kind == "pattern":
                 cap = text[step.cap_start : step.cap_end]
                 rendered = step.template.replace("{0}", self._translate_run(cap, overlay), 1)
-                out.append(rendered)
+                toks.append(_Tok(step.start, step.end, zh, rendered, step.pri, False, "pattern"))
             else:
-                zh = text[i : i + step.length]
-                if len(zh) == 1 and zh in _PARTICLES:
-                    i += step.length
-                    continue
-                out.append(step.value if step.value is not None else zh)
+                particle = len(zh) == 1 and zh in _PARTICLES
+                value = "" if particle else (step.value if step.value is not None else zh)
+                toks.append(_Tok(step.start, step.end, zh, value, step.pri, particle, step.kind))
             i += step.length
-        return " ".join(out)
+        toks = _merge_clan(toks)
+        toks = _merge_possessive(toks)
+        return " ".join(tok.value for tok in toks if not tok.drop and tok.value)
 
     def _step_at(
         self,
@@ -604,6 +668,179 @@ def _swallows_protected_name(root: _Node, text: str, start: int, end: int, pri: 
     return False
 
 
+def _is_protected_name(pri: int, value: str) -> bool:
+    return pri >= 20 and bool(value) and value[:1].isupper()
+
+
+def _longest_word_len(root: _Node, text: str, pos: int) -> int:
+    node = root
+    best = 0
+    j = pos
+    n = len(text)
+    while j < n:
+        nxt = node.c.get(text[j])
+        if nxt is None:
+            break
+        node = nxt
+        j += 1
+        if node.has:
+            best = j - pos
+    return best
+
+
+def _stolen_compound(root: _Node, text: str, start: int, end: int) -> bool:
+    """Generic span steals the head of a shorter compound that runs past it."""
+    if end - start < 2:
+        return False
+    n = len(text)
+    for i in range(start + 1, end):
+        node = root
+        for j in range(i, min(i + 4, n)):
+            nxt = node.c.get(text[j])
+            if nxt is None:
+                break
+            node = nxt
+            wlen = j - i + 1
+            word_end = j + 1
+            if not node.has or wlen < 2 or word_end <= end:
+                continue
+            if text[word_end - 1] not in _BOUND_COMPOUND_TAILS:
+                continue
+            if (
+                i == end - 1
+                and wlen == 2
+                and end - start >= 3
+                and _longest_word_len(root, text, end) >= 2
+            ):
+                continue
+            if (
+                end - start == 2
+                and text[end - 1] in _LOCATIVE_EDGE_ENDS
+                and i == end - 1
+                and wlen == 2
+            ):
+                continue
+            if i == end - 1 and end - start == 2 and text[start:end] in _CLOSED_YOU:
+                continue
+            return True
+    return False
+
+
+def _protected_overflow(text: str, start: int, end: int) -> bool:
+    """Short span steals the head of a curated compound."""
+    if end - start < 2:
+        return False
+    n = len(text)
+    for i in range(start + 1, end):
+        for length in (2, 3, 4):
+            stop = i + length
+            if stop > n:
+                break
+            if stop <= end:
+                continue
+            if text[i:stop] in _PROTECTED_OVERFLOWS:
+                return True
+    return False
+
+
+def _stolen_bu(root: _Node, text: str, start: int, end: int) -> bool:
+    """Span ending in 不 steals 不 from a longer word that starts there."""
+    if end - start < 2 or text[end - 1] != "不":
+        return False
+    if text[start:end] in _CLOSED_BU:
+        return False
+    return _longest_word_len(root, text, end - 1) > end - start
+
+
+def _stolen_pronoun_np(root: _Node, text: str, start: int, end: int) -> bool:
+    """Pronoun+X steals the head of a compound that runs past the span."""
+    if end - start < 2 or text[start] not in PRONOUNS:
+        return False
+    if text[start + 1] in _PRONOUN_SKIP_TAIL:
+        return False
+    i = start + 1
+    min_wlen = 2 if text[i] == "不" else 3
+    node = root
+    n = len(text)
+    for j in range(i, min(i + 8, n)):
+        nxt = node.c.get(text[j])
+        if nxt is None:
+            break
+        node = nxt
+        wlen = j - i + 1
+        word_end = j + 1
+        if not node.has or wlen < min_wlen or word_end <= end:
+            continue
+        return True
+    return False
+
+
+def _idiom_overflow(root: _Node, text: str, start: int, end: int) -> bool:
+    """Two-character span covers the first character of a curated idiom."""
+    if end - start != 2 or end >= len(text):
+        return False
+    tail = end - 1
+    if text[tail : tail + 4] not in _IDIOMS:
+        return False
+    return _longest_word_len(root, text, tail) >= 4
+
+
+def _name_function_glue(root: _Node, text: str, start: int, end: int) -> bool:
+    """Name glued to 已经. Split so the name and 已经 match apart."""
+    name_end = _protected_name_end(root, text, start)
+    if name_end is None or name_end <= start or name_end >= end:
+        return False
+    return text[name_end:end] in _NAME_GLUE_REST
+
+
+def _is_custom_name_node(node: _Node, source: str) -> bool:
+    return (
+        node.has
+        and node.p >= 999
+        and bool(node.v)
+        and node.v[:1].isupper()
+        and not _NAME_PARTICLES.intersection(source)
+    )
+
+
+def _custom_name_collision(root: _Node, text: str, start: int, end: int) -> bool:
+    """Glue of at most 3 characters steals the head of a Custom name."""
+    if end - start > 3:
+        return False
+    n = len(text)
+    for i in range(start + 1, end):
+        node = root
+        j = i
+        while j < n:
+            nxt = node.c.get(text[j])
+            if nxt is None:
+                break
+            node = nxt
+            j += 1
+            if j - i < 2 or j <= end:
+                continue
+            if _is_custom_name_node(node, text[i:j]):
+                return True
+    return False
+
+
+def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
+    if _swallows_protected_name(root, text, step.start, step.end, step.pri, step.value):
+        return True
+    if _is_protected_name(step.pri, step.value):
+        return False
+    start, end = step.start, step.end
+    return (
+        _stolen_compound(root, text, start, end)
+        or _protected_overflow(text, start, end)
+        or _stolen_bu(root, text, start, end)
+        or _stolen_pronoun_np(root, text, start, end)
+        or _idiom_overflow(root, text, start, end)
+        or _name_function_glue(root, text, start, end)
+        or _custom_name_collision(root, text, start, end)
+    )
+
+
 def _trie_match(root: _Node, text: str, pos: int, end_limit: int) -> _Step | None:
     node = root
     found: list[_Step] = []
@@ -617,9 +854,98 @@ def _trie_match(root: _Node, text: str, pos: int, end_limit: int) -> _Step | Non
         if node.has:
             found.append(_Step("trie", pos, j, node.v, node.p))
     for step in reversed(found):
-        if not _swallows_protected_name(root, text, step.start, step.end, step.pri, step.value):
+        if not _reject_trie_span(root, text, step):
             return step
     return None
+
+
+def _is_possessive_head(tok: _Tok) -> bool:
+    if not tok.value or tok.kind == "pattern":
+        return False
+    if tok.zh in PRONOUNS or tok.zh == "自己":
+        return True
+    if any(tok.zh.endswith(k) for k in _KIN_TITLES):
+        return True
+    return tok.value[:1].isupper()
+
+
+def _is_clan_name(tok: _Tok) -> bool:
+    zh = tok.zh
+    if tok.kind == "pattern" or not (2 <= len(zh) <= 3 and zh.endswith("家")):
+        return False
+    if zh in _CLAN_SKIP:
+        return False
+    if not tok.value or not tok.value[:1].isupper():
+        return False
+    if tok.pri >= 999 and not _NAME_PARTICLES.intersection(zh):
+        return True
+    return tok.pri >= 20
+
+
+def _merge_clan(toks: list[_Tok]) -> list[_Tok]:
+    """Pronoun + surname X家 -> 'X gia của pronoun'."""
+    out: list[_Tok] = []
+    i = 0
+    n = len(toks)
+    while i < n:
+        tok = toks[i]
+        if tok.zh in PRONOUNS and tok.value and i + 1 < n:
+            nxt = toks[i + 1]
+            if nxt.start == tok.end and _is_clan_name(nxt):
+                out.append(
+                    _Tok(
+                        tok.start,
+                        nxt.end,
+                        tok.zh + nxt.zh,
+                        f"{nxt.value} của {tok.value}",
+                        nxt.pri,
+                        False,
+                        "trie",
+                    )
+                )
+                i += 2
+                continue
+        out.append(tok)
+        i += 1
+    return out
+
+
+def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
+    """Name or pronoun + 的 + noun -> 'noun của name'. Time nouns use ở."""
+    out: list[_Tok] = []
+    i = 0
+    n = len(toks)
+    while i < n:
+        tok = toks[i]
+        if tok.zh in ("的", "旳") and tok.end - tok.start == 1 and out and i + 1 < n:
+            left = out[-1]
+            right = toks[i + 1]
+            if (
+                left.end == tok.start
+                and tok.end == right.start
+                and right.value
+                and right.kind != "pattern"
+                and _is_possessive_head(left)
+                and right.zh not in _DE_SKIP_RIGHT
+            ):
+                if right.zh in _TIME_AFTER_DE:
+                    joined = f"{right.value} ở {left.value}"
+                else:
+                    joined = f"{right.value} của {left.value}"
+                out[-1] = _Tok(
+                    left.start,
+                    right.end,
+                    left.zh + tok.zh + right.zh,
+                    joined,
+                    right.pri,
+                    False,
+                    "trie",
+                )
+                i += 2
+                continue
+        out.append(tok)
+        i += 1
+    return out
 
 
 def _better(nxt: _Step | None, best: _Step | None) -> _Step | None:

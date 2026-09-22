@@ -43,10 +43,11 @@ def test_first_vietphrase_variant_wins():
 def test_particle_dropped_and_suffix_pattern():
     rows = [
         ("他", "hắn", 10, "VietPhrase_1.txt"),
+        ("好", "tốt", 10, "VietPhrase_1.txt"),
         ("人", "người", 10, "VietPhrase_1.txt"),
         ("{0}的人", "người của {0}", 15, "LuatNhan.txt"),
     ]
-    assert _engine(rows, luat_nhan=0).translate("他的人") == "Hắn người"
+    assert _engine(rows, luat_nhan=0).translate("好的人") == "Tốt người"
     assert _engine(rows, luat_nhan=1).translate("他的人") == "Người của hắn"
 
 
@@ -54,10 +55,11 @@ def test_name_capture_needs_level_two():
     rows = [
         ("张三", "Trương Tam", 20, "Names.txt"),
         ("剑", "kiếm", 10, "VietPhrase_1.txt"),
-        ("{0}的剑", "kiếm của {0}", 15, "LuatNhan.txt"),
+        ("之", "chi", 10, "VietPhrase_1.txt"),
+        ("{0}之剑", "kiếm của {0}", 15, "LuatNhan.txt"),
     ]
-    assert _engine(rows, luat_nhan=1).translate("张三的剑") == "Trương Tam kiếm"
-    assert _engine(rows, luat_nhan=2).translate("张三的剑") == "Kiếm của Trương Tam"
+    assert _engine(rows, luat_nhan=1).translate("张三之剑") == "Trương Tam chi kiếm"
+    assert _engine(rows, luat_nhan=2).translate("张三之剑") == "Kiếm của Trương Tam"
 
 
 def test_longer_exact_phrase_blocks_suffix_pattern():
