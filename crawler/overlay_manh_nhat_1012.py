@@ -24,7 +24,7 @@ from zhvi.document import CHAPTER_PRESET_RE, MAX_HEADING_CHARS  # noqa: E402
 
 SLUG = "manh-nhat-tu-tien-hoc-sinh-tieu-hoc"
 ZH = ROOT / "zhvi/workspace/manh-nhat-from-1012.zh.txt"
-VI = ROOT / "zhvi/workspace/dist/manh-nhat-from-1012.vi.txt"
+VI = ROOT / "zhvi/workspace/manh-nhat-from-1012.zh.vi.txt"
 SRC_DIR = ROOT / "crawler/data/xtruyen" / SLUG
 WEB_DIR = ROOT / "web/public/data/xtruyen" / SLUG
 MIN_NUM = 1012
