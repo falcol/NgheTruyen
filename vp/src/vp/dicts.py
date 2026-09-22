@@ -62,6 +62,22 @@ def read_custom(path: Path) -> list[tuple[str, str]]:
     return rows
 
 
+_REVIEW_CATEGORIES = frozenset(
+    {"character", "title_alias", "sect_org", "location", "item", "technique", "other"}
+)
+
+
+def _review_row_priority(fields: list[str]) -> int | None:
+    """Novel-scan review lines are zh=vi, category, count, score."""
+    if len(fields) < 4 or fields[1].strip() not in _REVIEW_CATEGORIES:
+        return None
+    try:
+        float(fields[3].strip())
+    except ValueError:
+        return None
+    return 30 if fields[1].strip() == "character" else 25
+
+
 def read_overlay(path: Path) -> list[tuple[str, str, int]]:
     rows: list[tuple[str, str, int]] = []
     text = path.read_text(encoding="utf-8-sig")
@@ -74,16 +90,23 @@ def read_overlay(path: Path) -> list[tuple[str, str, int]]:
             continue
         zh = line[:eq].strip()
         rest = line[eq + 1 :].strip()
-        kind = "Book Names"
-        tab = rest.rfind("\t")
-        if tab != -1:
-            label = rest[tab + 1 :].strip().lower()
-            rest = rest[:tab].strip()
-            if label in ("vietphrase", "book vietphrase", "phrase"):
-                kind = "Book VietPhrase"
-        pri = 30 if kind == "Book Names" else 25
-        if zh and rest:
-            rows.append((zh, rest, pri))
+        fields = rest.split("\t")
+        review_pri = _review_row_priority(fields)
+        if review_pri is not None:
+            vi = fields[0].strip()
+            pri = review_pri
+        else:
+            kind = "Book Names"
+            tab = rest.rfind("\t")
+            vi = rest
+            if tab != -1:
+                label = rest[tab + 1 :].strip().lower()
+                vi = rest[:tab].strip()
+                if label in ("vietphrase", "book vietphrase", "phrase"):
+                    kind = "Book VietPhrase"
+            pri = 30 if kind == "Book Names" else 25
+        if zh and vi:
+            rows.append((zh, vi, pri))
     return rows
 
 

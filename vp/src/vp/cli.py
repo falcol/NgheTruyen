@@ -15,6 +15,7 @@ from vp.dicts import (
 )
 from vp.filetrans import translate_file
 from vp.ner_model import scan_file
+from vp.novel_scan import scan_file as novel_scan_file
 from vp.textutil import decode_source
 
 
@@ -58,6 +59,24 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Một lệnh: quét tên trên GPU rồi dịch luôn bằng các tên đã duyệt",
     )
     file_cmd.add_argument(
+        "--encoding",
+        choices=("auto", "utf-8", "gbk", "big5"),
+        default="auto",
+    )
+    scan_cmd = sub.add_parser(
+        "scan",
+        help="Quét Novel Scan và ghi file cần xem cùng file bỏ, để sửa rồi dùng --overlay",
+    )
+    scan_cmd.add_argument("input", type=Path, help="File tiếng Trung")
+    scan_cmd.add_argument("--dict-dir", help="Thư mục từ điển local. Mặc định: crawler/vietphrase/dicts")
+    scan_cmd.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=Path.home() / ".cache" / "vp-dicts",
+        help="Nơi lưu model Novel Scan",
+    )
+    scan_cmd.add_argument("--refresh", action="store_true", help="Tải lại script và model Novel Scan")
+    scan_cmd.add_argument(
         "--encoding",
         choices=("auto", "utf-8", "gbk", "big5"),
         default="auto",
@@ -176,11 +195,35 @@ def translate_path(args: argparse.Namespace) -> int:
     return 0
 
 
+def scan_path(args: argparse.Namespace) -> int:
+    src: Path = args.input
+    if not src.is_file():
+        print(f"Không thấy file: {src}", file=sys.stderr)
+        return 1
+    try:
+        review_path, reject_path, review_count, reject_count = novel_scan_file(
+            src,
+            encoding=args.encoding,
+            dict_dir=args.dict_dir,
+            cache_dir=args.cache_dir,
+            refresh=args.refresh,
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"Novel Scan thất bại: {exc}", file=sys.stderr)
+        return 1
+    print(f"Đã ghi {review_path} ({review_count} cần xem)", file=sys.stderr)
+    print(f"Đã ghi {reject_path} ({reject_count} bỏ)", file=sys.stderr)
+    print("Sửa cột tiếng Việt trong file cần xem, rồi dịch bằng --overlay file đó.", file=sys.stderr)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
     if args.cmd == "file":
         return translate_path(args)
+    if args.cmd == "scan":
+        return scan_path(args)
     parser.error("lệnh không hỗ trợ")
     return 2
 
