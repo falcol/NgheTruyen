@@ -527,3 +527,109 @@ def test_clan_possessive_skips_huijia():
     home = _low(rows, "送我回家")
     assert "về nhà" in home
     assert "của" not in home
+
+
+def test_name_dehua_is_words_unless_conditional():
+    rows = [
+        ("听到", "nghe thấy", 10, "VietPhrase_1.txt"),
+        ("赵福德", "Triệu Phúc Đức", 20, "Names.txt"),
+        ("的话", "nếu", 19, "QualityOverrides.txt"),
+        ("要是", "nếu là", 10, "VietPhrase_1.txt"),
+        ("他们", "bọn họ", 10, "VietPhrase_1.txt"),
+        ("说", "nói", 10, "VietPhrase_1.txt"),
+        ("有", "có", 10, "VietPhrase_1.txt"),
+        ("介入", "tham gia", 10, "VietPhrase_1.txt"),
+    ]
+    heard = _low(rows, "听到赵福德的话")
+    assert "lời của triệu phúc đức" in heard
+    assert "nếu" not in heard
+    said = _low(rows, "他们说的话")
+    assert "nói lời" in said
+    assert "nếu" not in said
+    cond = _low(rows, "要是赵福德的话")
+    assert cond.startswith("nếu là triệu phúc đức")
+    assert cond.count("nếu") == 1
+    assert "lời của" not in cond
+    hypo = _low(rows, "有介入的话")
+    assert "nếu" in hypo
+    assert "lời" not in hypo
+
+
+def test_corrupt_gloss_and_stolen_spans_fall_back():
+    rows = [
+        ("这些人是", "những ngững người này", 10, "VietPhrase_3.txt"),
+        ("这些人", "những người này", 10, "VietPhrase_2.txt"),
+        ("是", "là", 10, "VietPhrase_1.txt"),
+        ("真的", "thật sự", 10, "VietPhrase_1.txt"),
+        ("太当", "quá sảng khoái", 10, "VietPhrase_4.txt"),
+        ("没", "không", 10, "VietPhrase_1.txt"),
+        ("太", "quá", 10, "VietPhrase_1.txt"),
+        ("当回事", "coi ra gì", 10, "VietPhrase_2.txt"),
+        ("个小孩", "đứa con nít", 10, "VietPhrase_3.txt"),
+        ("小孩子", "đứa trẻ", 10, "VietPhrase_2.txt"),
+        ("子", "tử", 5, "ChinesePhienAmWords.txt"),
+        ("欺负", "khi dễ", 10, "VietPhrase_1.txt"),
+    ]
+    people = _low(rows, "这些人是真的")
+    assert "những người này là" in people
+    assert "ngững" not in people
+    shrug = _low(rows, "没太当回事")
+    assert "sảng khoái" not in shrug
+    assert "coi ra gì" in shrug
+    kid = _low(rows, "欺负个小孩子")
+    assert "đứa trẻ" in kid
+    assert "tử" not in kid
+
+
+def test_subject_pai_over_is_not_send_the_subject():
+    rows = [
+        ("是", "là", 10, "VietPhrase_1.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("过来的", "tới", 10, "VietPhrase_3.txt"),
+        ("狗", "chó", 10, "VietPhrase_1.txt"),
+        ("派", "phái", 10, "VietPhrase_1.txt"),
+        ("{0}派", "phái {0}", 15, "LuatNhan.txt"),
+        ("{0}派过来的狗", "chó của {0} phái tới", 15, "LuatNhan.txt"),
+        ("把", "đem", 10, "VietPhrase_1.txt"),
+        ("把{0}派过来", "phái {0} tới", 15, "LuatNhan.txt"),
+    ]
+    sent = _low(rows, "是凌天派过来的狗")
+    assert "chó của lăng thiên phái tới" in sent
+    assert "phái lăng thiên" not in sent
+    assert "phái lăng thiên tới" in _low(rows, "把凌天派过来")
+
+
+def test_jige_sheng_is_provinces_but_keeps_shengting():
+    rows = [
+        ("好几个省", "mấy tỉnh", 999, "Custom.txt"),
+        ("几个省", "mấy tỉnh", 999, "Custom.txt"),
+        ("好几个", "mấy cái", 10, "VietPhrase_2.txt"),
+        ("几个", "mấy cái", 10, "VietPhrase_3.txt"),
+        ("省", "bớt", 10, "VietPhrase_2.txt"),
+        ("省厅", "tỉnh thính", 10, "VietPhrase_2.txt"),
+        ("都", "đều", 10, "VietPhrase_1.txt"),
+    ]
+    assert "mấy tỉnh" in _low(rows, "在好几个省都有")
+    assert "bớt" not in _low(rows, "在好几个省都有")
+    office = _low(rows, "几个省厅")
+    assert "tỉnh thính" in office
+    assert "mấy tỉnh" not in office
+
+
+def test_kao_before_name_is_handcuff_and_quote_sense():
+    rows = [
+        ("拷", "khảo", 10, "VietPhrase_2.txt"),
+        ("拷问", "tra hỏi", 10, "VietPhrase_2.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("恩", "ân", 5, "ChinesePhienAmWords.txt"),
+        ("喂", "uy", 5, "ChinesePhienAmWords.txt"),
+        ("有", "có", 10, "VietPhrase_1.txt"),
+        ("还", "co\u0300n", 10, "VietPhrase_2.txt"),
+    ]
+    assert "còng" in _low(rows, "拷凌天")
+    assert "tra hỏi" in _low(rows, "拷问凌天")
+    assert "khảo" not in _low(rows, "拷问凌天")
+    engine = _engine(rows)
+    assert engine.translate("“恩，有") == "“Ừ, có"
+    assert engine.translate("“喂") == "“Alo"
+    assert engine.translate("还") == "Còn"

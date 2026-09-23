@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
 CN_PUNCT = {
     "，": ",",
@@ -30,6 +31,8 @@ _CN_PUNCT_RE = re.compile("[" + "".join(CN_PUNCT) + "]")
 _VI_LOWER = "a-zàáạảãăắằặẳẵâấầậẩẫđèéẹẻẽêếềệểễìíịỉĩòóọỏõôốồộổỗơớờợởỡùúụủũưứừựửữỳýỵỷỹ"
 _CAP_SENTENCE_RE = re.compile(rf"(^|[.!?\n]\s*)([{_VI_LOWER}])")
 _CAP_DIALOG_RE = re.compile(rf"([:：]\s*[\"'“‘「『]\s*)([{_VI_LOWER}])")
+# Opening quote at line start or after a sentence break. Colon+quote is _CAP_DIALOG_RE.
+_CAP_QUOTE_RE = re.compile(rf"(^|[\n.!?,:;]\s*)([“\"「『]\s*)([{_VI_LOWER}])")
 _CAP_CHAPTER_RE = re.compile(rf"(\bChương\s+\d+\s*:\s*)([{_VI_LOWER}])")
 _DIALOG_SPACE_RE = re.compile(r"([:：])(?=[\"'“‘「『])")
 _SPACE_BEFORE_CLOSE_RE = re.compile(r" ([.,!?;:)\]\u00bb\u201d\u2019>])")
@@ -157,6 +160,7 @@ def capitalize_sentences(text: str) -> str:
     text = _DIALOG_SPACE_RE.sub(r"\1 ", text)
     text = _CAP_SENTENCE_RE.sub(lambda m: m.group(1) + m.group(2).upper(), text)
     text = _CAP_DIALOG_RE.sub(lambda m: m.group(1) + m.group(2).upper(), text)
+    text = _CAP_QUOTE_RE.sub(lambda m: m.group(1) + m.group(2) + m.group(3).upper(), text)
     text = _CAP_CHAPTER_RE.sub(lambda m: m.group(1) + m.group(2).upper(), text)
     return text
 
@@ -166,6 +170,7 @@ def title_case_vietnamese(raw: str) -> str:
 
 
 def finish_legacy(text: str) -> str:
+    text = unicodedata.normalize("NFC", text)
     text = normalize_punctuation(text)
     text = _SPACE_BEFORE_CLOSE_RE.sub(r"\1", text)
     text = _SPACE_AFTER_OPEN_RE.sub(r"\1", text)
@@ -177,6 +182,7 @@ def finish_legacy(text: str) -> str:
 
 
 def finish_hanviet(text: str) -> str:
+    text = unicodedata.normalize("NFC", text)
     text = _MULTI_SPACE_RE.sub(" ", text)
     text = normalize_punctuation(text)
     text = _SPACE_BEFORE_CLOSE_RE.sub(r"\1", text)

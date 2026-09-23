@@ -427,7 +427,8 @@ class Engine:
                 start = i
                 while i < n and is_cjk(text[i]):
                     i += 1
-                run = self._translate_run(text[start:i], index, text[i:])
+                lead = text[start - 1] if start else ""
+                run = self._translate_run(text[start:i], index, text[i:], lead)
                 if run.strip() == "đứng" and _station_noun(text, start):
                     run = "trạm"
                 parts.append(run)
@@ -499,6 +500,7 @@ class Engine:
         text: str,
         overlay: dict[str, list[tuple[str, str, int]]] | None,
         follow: str = "",
+        lead: str = "",
     ) -> str:
         toks: list[_Tok] = []
         i = 0
@@ -517,6 +519,9 @@ class Engine:
             else:
                 particle = len(zh) == 1 and zh in _PARTICLES
                 value = "" if particle else (step.value if step.value is not None else zh)
+                if not toks and zh in _QUOTE_SENSE and lead in _QUOTE_LEAD:
+                    value = _QUOTE_SENSE[zh]
+                    particle = False
                 if zh == "独子" and _duzi_adverb(text, step.end):
                     alone = self.exact_entry("独自")
                     value = alone[0] if alone and alone[0] else "một mình"
@@ -528,6 +533,33 @@ class Engine:
                     value = "về"
                 elif zh == "开了" and _dismissed_person(text, step.end):
                     value = "đuổi"
+                elif zh == "拷" and _capital_name_follows(self, text, step.end):
+                    value = "còng"
+                elif (
+                    zh == "的话"
+                    and value.casefold() == "nếu"
+                    and toks
+                    and toks[-1].end == step.start
+                ):
+                    prev = toks[-1]
+                    if not _dehua_conditional(toks) and (
+                        _is_possessive_head(prev) or _dehua_say(prev.zh)
+                    ):
+                        if _is_possessive_head(prev):
+                            toks[-1] = _Tok(
+                                prev.start,
+                                step.end,
+                                prev.zh + zh,
+                                f"lời của {prev.value}",
+                                step.pri,
+                                False,
+                                "trie",
+                            )
+                            i += step.length
+                            continue
+                        value = "lời"
+                    elif _dehua_conditional(toks):
+                        value = ""
                 elif (
                     zh == "在意"
                     and toks
@@ -588,16 +620,23 @@ class Engine:
             suffix = _suffix_pattern(self.pat_suffix, text, pos + base.length, end_limit)
             if suffix:
                 suf_len, template = suffix
-                return _Step(
-                    "pattern",
-                    pos,
+                # 凌天派过来 is "Lăng Thiên phái", not "phái Lăng Thiên".
+                # 把/将{0}派过来 stays on the prefix pattern.
+                follows_dispatch = text.startswith(
+                    ("过来", "来", "过去", "去", "出去", "出"),
                     pos + base.length + suf_len,
-                    "",
-                    base.pri,
-                    pos,
-                    pos + base.length,
-                    template,
                 )
+                if not (template == "phái {0}" and follows_dispatch):
+                    return _Step(
+                        "pattern",
+                        pos,
+                        pos + base.length + suf_len,
+                        "",
+                        base.pri,
+                        pos,
+                        pos + base.length,
+                        template,
+                    )
         return base
 
     def _suffix_capture_ok(self, text: str, pos: int, base: _Step) -> bool:
@@ -950,6 +989,31 @@ def _bad_de_glue(text: str, start: int, end: int) -> bool:
     return text[start:end] in {"的实力", "巅峰的"}
 
 
+def _bad_vi_gloss(value: str) -> bool:
+    """Corrupt corpora glosses. A shorter entry then applies."""
+    return "ngững" in (value or "").casefold()
+
+
+def _taidang_steals(text: str, start: int, end: int) -> bool:
+    """太当=quá sảng khoái steals 当 from 当回事."""
+    return text[start:end] == "太当" and text.startswith("回事", end)
+
+
+def _count_sheng_steals_office(text: str, start: int, end: int) -> bool:
+    """几个省 must not eat 省 of 省厅/省内/省份/省里/省长."""
+    return text[start:end] in {"几个省", "好几个省"} and end < len(text) and text[end] in "厅内份里长"
+
+
+def _kid_zi_split(text: str, start: int, end: int) -> bool:
+    """个小孩 steals 孩 from 孩子, leaving 子=tử."""
+    return (
+        end - start >= 3
+        and text[start:end].endswith("小孩")
+        and end < len(text)
+        and text[end] == "子"
+    )
+
+
 def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
     if _swallows_protected_name(root, text, step.start, step.end, step.pri, step.value):
         return True
@@ -967,6 +1031,10 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _bad_de_glue(text, start, end)
         or _splits_standing(text, start, end)
         or _splits_plural_pronoun(text, start, end)
+        or _bad_vi_gloss(step.value)
+        or _taidang_steals(text, start, end)
+        or _count_sheng_steals_office(text, start, end)
+        or _kid_zi_split(text, start, end)
     )
 
 
@@ -1265,6 +1333,38 @@ def _speech_words(text: str, start: int) -> bool:
     if text[i] in _SPEECH_PREV:
         return True
     return i >= 1 and text[i - 1 : i + 1] in _SPEECH_BIGRAM
+
+
+_QUOTE_LEAD = frozenset({"", "\n", "\r", "“", '"', "「", "『"})
+_QUOTE_SENSE = {"恩": "ừ", "嗯": "ừ", "喂": "alo"}
+_DEHUA_COND = ("如果", "要是", "假如", "倘若", "若是", "万一", "如若", "就算", "即使", "哪怕")
+_DEHUA_SAY = frozenset({"说", "讲", "道", "问", "喊", "叫", "言"})
+
+
+def _dehua_say(zh: str) -> bool:
+    return zh in _DEHUA_SAY or zh.endswith("说") or zh.endswith("讲")
+
+
+def _dehua_conditional(toks: list[_Tok]) -> bool:
+    """如果/要是 in the same clause keeps 的话 as 'nếu'."""
+    parts: list[str] = []
+    for tok in reversed(toks):
+        if tok.value and _CLAUSE_BOUNDARY_RE.search(tok.value):
+            break
+        parts.append(tok.zh)
+    blob = "".join(reversed(parts))
+    return any(mark in blob for mark in _DEHUA_COND)
+
+
+def _capital_name_follows(engine: Engine, text: str, end: int) -> bool:
+    """拷 before a capitalized name is the handcuff verb, not 拷问."""
+    for length in (2, 3, 4):
+        if end + length > len(text):
+            continue
+        hit = engine.exact_entry(text[end : end + length])
+        if hit and hit[1] >= 20 and hit[0][:1].isupper():
+            return True
+    return False
 
 
 def _duzi_adverb(text: str, end: int) -> bool:

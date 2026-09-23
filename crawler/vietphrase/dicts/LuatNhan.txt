@@ -1176,6 +1176,8 @@
 {0}没走之前=trước khi {0} chưa đi
 {0}洲国籍=quốc tịch {0}
 {0}派来的人=người của {0} phái tới
+{0}派过来的人=người của {0} phái tới
+{0}派过来的狗=chó của {0} phái tới
 {0}派的人=người của {0} phái tới
 {0}流出了血泪的眼睛=mắt của {0} chảy ra lệ máu
 {0}流势力=thế lực {0} lưu

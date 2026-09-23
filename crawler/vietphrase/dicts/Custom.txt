@@ -169,7 +169,14 @@
 教師=lão sư
 那名=cái kia
 小胖子=Tiểu Bàn tử
-小屁孩=tiểu thí hài
+小屁孩=thằng nhóc
+小屁孩了=thằng nhóc rồi
+小屁孩的=thằng nhóc
+小屁孩的时候=lúc còn là thằng nhóc
+小屁孩呢=thằng nhóc
+小屁孩们=bọn nhóc
+小屁孩儿=thằng nhóc
+小屁孩子=thằng nhóc
 白髮=tóc trắng
 白髮老者=bạch phát lão giả
 這白髮老者=bạch phát lão giả này
@@ -680,6 +687,7 @@
 离开水月的路上=trên đường rời Thủy Nguyệt
 离开水月=rời Thủy Nguyệt
 是以，=vì vậy,
+是以=vì vậy
 强到没边=mạnh không tưởng
 内劲初期=nội kình sơ kỳ
 内劲后期=nội kình hậu kỳ
@@ -870,6 +878,26 @@
 以这样和稀泥的方式=theo cách ba phải
 她姐姐的主人=chủ nhân của tỷ tỷ nàng
 画外音=hàm ý
+一清二楚=rõ mồn một
+一清二楚的=rõ mồn một
+一清二楚了=đã rõ mồn một
+重头戏=màn chính
+被推=bị đẩy
+任人宰割=mặc người xâu xé
+要脸=biết xấu hổ
+要脸吗=có biết xấu hổ không
+穿得=mặc
+三五个人=dăm ba người
+三五个=dăm ba
+棒棒哒=tuyệt lắm
+一缕敌意=một tia địch ý
+没太当回事=không quá để tâm
+太当回事=quá để tâm
+笑笑=cười cười
+小孩子=đứa trẻ
+赵福德=Triệu Phúc Đức
+好几个省=mấy tỉnh
+几个省=mấy tỉnh
 
 
 
