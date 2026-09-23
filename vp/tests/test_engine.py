@@ -40,6 +40,47 @@ def test_first_vietphrase_variant_wins():
     assert other[0][1] == "một"
 
 
+def test_english_vietphrase_gloss_is_skipped():
+    skipped = parse_dict_lines("杀了我=Kill Me\n", 10, "VietPhrase_4.txt")
+    assert skipped == []
+    later = parse_dict_lines("秒杀=one hit one kill/miểu sát\n", 10, "VietPhrase_4.txt")
+    assert later[0][1] == "miểu sát"
+    kept = parse_dict_lines("杀了我=Kill Me\n", 20, "Names.txt")
+    assert kept[0][1] == "Kill Me"
+    plain = parse_dict_lines("出来=ra\n融灵=Dung Linh\n", 10, "VietPhrase_2.txt")
+    assert [row[1] for row in plain] == ["ra", "Dung Linh"]
+
+
+def test_kill_me_falls_through_to_shorter_match():
+    rows = []
+    rows += parse_dict_lines("你=ngươi\n", 10, "VietPhrase_1.txt")
+    rows += parse_dict_lines("杀了=giết\n", 10, "VietPhrase_3.txt")
+    rows += parse_dict_lines("我=ta\n", 10, "VietPhrase_2.txt")
+    rows += parse_dict_lines("杀了我=Kill Me\n", 10, "VietPhrase_4.txt")
+    assert _engine(rows).translate("你杀了我。") == "Ngươi giết ta."
+
+
+def test_grammar_overlay_does_not_replace_function_phrase():
+    engine = _engine(
+        [
+            ("这个时候", "lúc này", 10, "VietPhrase_2.txt"),
+            ("这个", "cái này", 10, "VietPhrase_2.txt"),
+            ("时候", "thời điểm", 10, "VietPhrase_2.txt"),
+            ("千万别", "tuyệt đối đừng", 10, "VietPhrase_2.txt"),
+            ("武者", "võ giả", 10, "VietPhrase_2.txt"),
+        ]
+    )
+    overlay = [
+        ("时候", "Thời Gian", 30),
+        ("千万别", "Thiên Vạn Biệt", 30),
+        ("武者", "Vũ Giả", 30),
+    ]
+    assert engine.translate("这个时候。", overlay) == "Lúc này."
+    assert engine.translate("时候。", overlay) == "Thời điểm."
+    assert engine.translate("千万别。", overlay) == "Tuyệt đối đừng."
+    assert engine.translate("武者。", overlay) == "Vũ Giả."
+
+
 def test_particle_dropped_and_suffix_pattern():
     rows = [
         ("他", "hắn", 10, "VietPhrase_1.txt"),

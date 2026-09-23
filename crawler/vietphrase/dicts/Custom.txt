@@ -764,6 +764,8 @@
 人力资源经理=Trưởng phòng Nhân sự
 怼了=xích mích với
 草药=dược liệu
+这些草药=những dược liệu này
+现在就要=muốn ngay bây giờ
 水到渠成=thủy đáo cừ thành
 水到渠成了=nước chảy thành sông rồi
 听风=Thính Phong

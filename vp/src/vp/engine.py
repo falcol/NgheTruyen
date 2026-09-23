@@ -32,7 +32,33 @@ _NUMERIC_CAPTURE_RE = re.compile(
     r"^[零〇一二两兩三四五六七八九十百千万萬亿億半几幾多\d点點刻分秒时時小时小時天日月年岁歲余餘來来上下左右前后後余餘]+$"
 )
 _NUMERIC_VALUE_RE = re.compile(r"[零〇一二两兩三四五六七八九十百千万萬亿億半几幾多\d]")
-_VIETPHRASE_SOURCE_RE = re.compile(r"^VietPhrase_[12]\.txt$", re.IGNORECASE)
+_VIETPHRASE_SOURCE_RE = re.compile(r"^VietPhrase_[1-4]\.txt$", re.IGNORECASE)
+# Whole-gloss English leaks in the phrase corpora, e.g. 杀了我=Kill Me.
+# A gloss is dropped only when every word is in this set, so undiacritic
+# Vietnamese ("ra", "mang theo") and Hán Việt names ("Dung Linh") stay.
+_ENGLISH_GLOSS_WORDS = frozenset(
+    {
+        "attack",
+        "boss",
+        "cooldown",
+        "damage",
+        "hit",
+        "kill",
+        "killer",
+        "me",
+        "one",
+        "penta",
+        "quadra",
+        "quest",
+        "skill",
+        "skills",
+    }
+)
+# Dictionary glosses of function phrases. A novel-scan name must not replace these.
+_GRAMMAR_GLOSS_RE = re.compile(
+    r"^(?:thời điểm|thời gian|lúc|khi|tuyệt đối|hoàn toàn|vô duyên vô cớ|trong thời gian|thông cảm)\b",
+    re.IGNORECASE,
+)
 _PAREN_RE = re.compile(r"\s*\(.*?\)\s*")
 _CLAUSE_BOUNDARY_RE = re.compile(r"[，。？！；：,.!?;:…—)\]\u00bb\u201d\u2019>」』】〉]")
 _LATIN_NUM_RE = re.compile(r"[A-Za-z0-9]")
@@ -42,6 +68,13 @@ _NEXT_STATION_PARTICLE_RE = re.compile(r"^(?:呗|唄|吧|啊|呀|嘛|呢|啦)$")
 _BOUND_COMPOUND_TAILS = frozenset("脉力气云术丹阵魄灵光界门乎意")
 _LOCATIVE_EDGE_ENDS = frozenset("中上下内外前后里间")
 _CLOSED_YOU = frozenset({"没有", "所有", "只有", "还有"})
+# Bare 独子 before a verb is the homophone of 独自. 他的独子 is a longer
+# dictionary key and stays "only son". Clause-final 独子 stays a noun.
+_DUZI_ADVERB_NEXT = frozenset(
+    "一站走坐去来回行立留在闯进入出跑飞躲藏看望听等往向离返归居住"
+    "战守待练修开说笑哭赶追逃停靠躺跪跳爬骑奔至到喝沉摆活饮呆"
+    "占乱为作面玩斩缠扔前弹"
+)
 _CLOSED_BU = frozenset({"要不", "这不", "那不", "毫不", "莫不", "并不"})
 _PRONOUN_SKIP_TAIL = frozenset("们們的")
 _NAME_GLUE_REST = frozenset({"已经", "已經"})
@@ -49,6 +82,9 @@ _NAME_PARTICLES = frozenset("的得地了着过")
 _KIN_TITLES = ("姐姐", "哥哥", "妹妹", "弟弟")
 _CLAN_SKIP = frozenset({"回家", "国家", "全家"})
 _DE_SKIP_RIGHT = frozenset({"话", "話", "时候", "時候"})
+# Adjective + 的 + 地方 stays Chinese order ("mùi ngon chỗ"). These two
+# are modifiers, not owners: 味道好的地方, 太差的地方.
+_PLACE_MODIFIER = frozenset({"味道好", "太差"})
 _TIME_AFTER_DE = frozenset(
     {"晚上", "夜晚", "早上", "中午", "下午", "白天", "夜里", "夜裏", "清晨", "傍晚", "凌晨"}
 )
@@ -181,6 +217,35 @@ def extract_meaning(raw: str) -> str:
     return first[: alt.start()].strip() if alt else first
 
 
+def _english_gloss(value: str) -> bool:
+    if not value or any(ord(ch) > 127 for ch in value):
+        return False
+    words = re.findall(r"[A-Za-z]+", value)
+    return bool(words) and all(word.lower() in _ENGLISH_GLOSS_WORDS for word in words)
+
+
+def _grammar_gloss(value: str) -> bool:
+    return bool(value) and bool(_GRAMMAR_GLOSS_RE.match(value.strip()))
+
+
+def _overlay_hides_peak(key: str, value: str) -> bool:
+    """内劲巅峰=Nội Kình Điên Phong must not replace 巅峰=đỉnh phong."""
+    return key.endswith("巅峰") and "đỉnh phong" not in value.casefold()
+
+
+def _overlay_replaces_grammar(engine: Engine, key: str, value: str) -> bool:
+    """A name overlay must not replace a function-phrase dictionary gloss."""
+    hit = engine.exact_entry(key)
+    if hit is None:
+        return False
+    gloss, pri = hit
+    if pri >= 20 or not gloss or gloss[:1].isupper():
+        return False
+    if value.casefold() == gloss.casefold():
+        return False
+    return _grammar_gloss(gloss)
+
+
 def first_meaning(raw: str, key_len: int, source: str) -> str:
     if "\u271a[" in raw or "+[" in raw:
         return extract_meaning(raw)
@@ -188,16 +253,14 @@ def first_meaning(raw: str, key_len: int, source: str) -> str:
     first = raw[:dslash].strip() if dslash != -1 else raw.strip()
     if not first:
         return ""
-    if not (_VIETPHRASE_SOURCE_RE.match(source or "") and key_len >= 2):
+    vietphrase = bool(_VIETPHRASE_SOURCE_RE.match(source or "")) and key_len >= 2
+    if not vietphrase:
         return _normalize_variant(extract_meaning(first))
-    parts = re.split(r"[/|]", first)
-    if len(parts) <= 1:
-        return _normalize_variant(first)
-    for part in parts:
+    for part in re.split(r"[/|]", first):
         norm = _normalize_variant(part)
-        if norm:
+        if norm and not _english_gloss(norm):
             return norm
-    return _normalize_variant(first)
+    return ""
 
 
 def parse_dict_lines(text: str, priority: int, source: str) -> list[tuple[str, str, int, str]]:
@@ -334,7 +397,7 @@ class Engine:
     def convert(self, text: str) -> str:
         return convert_to_simplified(text, self.trad_map, self.simplified)
 
-    def exact_priority(self, key: str) -> int | None:
+    def exact_entry(self, key: str) -> tuple[str, int] | None:
         node = self.root
         for ch in key:
             nxt = node.c.get(ch)
@@ -342,8 +405,12 @@ class Engine:
                 return None
             node = nxt
         if node.has:
-            return node.p
+            return node.v, node.p
         return None
+
+    def exact_priority(self, key: str) -> int | None:
+        hit = self.exact_entry(key)
+        return None if hit is None else hit[1]
 
     def translate(self, text: str, overlay: list[tuple[str, str, int]] | None = None) -> str:
         if text is None:
@@ -360,7 +427,7 @@ class Engine:
                 start = i
                 while i < n and is_cjk(text[i]):
                     i += 1
-                run = self._translate_run(text[start:i], index)
+                run = self._translate_run(text[start:i], index, text[i:])
                 if run.strip() == "đứng" and _station_noun(text, start):
                     run = "trạm"
                 parts.append(run)
@@ -431,6 +498,7 @@ class Engine:
         self,
         text: str,
         overlay: dict[str, list[tuple[str, str, int]]] | None,
+        follow: str = "",
     ) -> str:
         toks: list[_Tok] = []
         i = 0
@@ -449,6 +517,55 @@ class Engine:
             else:
                 particle = len(zh) == 1 and zh in _PARTICLES
                 value = "" if particle else (step.value if step.value is not None else zh)
+                if zh == "独子" and _duzi_adverb(text, step.end):
+                    alone = self.exact_entry("独自")
+                    value = alone[0] if alone and alone[0] else "một mình"
+                elif zh == "一般" and _simile_yiban(text, step.start, step.end):
+                    value = "vậy"
+                elif zh in _WORDS_OF and value in _BARE_PRONOUN and _speech_words(text, step.start):
+                    value = _WORDS_OF[zh]
+                elif zh == "会" and text[step.end : step.end + 2] == "水月":
+                    value = "về"
+                elif zh == "开了" and _dismissed_person(text, step.end):
+                    value = "đuổi"
+                elif (
+                    zh == "在意"
+                    and toks
+                    and toks[-1].zh == "再"
+                    and toks[-1].end == step.start
+                    and step.end == len(text)
+                    and _follow_still(follow)
+                ):
+                    prev = toks[-1]
+                    toks[-1] = _Tok(
+                        prev.start,
+                        step.end,
+                        "再在意",
+                        "dù để ý đến mấy",
+                        step.pri,
+                        False,
+                        "trie",
+                    )
+                    i += step.length
+                    continue
+                elif (
+                    zh == "有效"
+                    and toks
+                    and toks[-1].zh == "绝对"
+                    and toks[-1].end == step.start
+                ):
+                    prev = toks[-1]
+                    toks[-1] = _Tok(
+                        prev.start,
+                        step.end,
+                        "绝对有效",
+                        "tuyệt đối có hiệu lực",
+                        step.pri,
+                        False,
+                        "trie",
+                    )
+                    i += step.length
+                    continue
                 toks.append(_Tok(step.start, step.end, zh, value, step.pri, particle, step.kind))
             i += step.length
         toks = _merge_clan(toks)
@@ -663,7 +780,11 @@ def _swallows_protected_name(root: _Node, text: str, start: int, end: int, pri: 
         return False
     for i in range(start + 1, end):
         name_end = _protected_name_end(root, text, i)
-        if name_end is not None and name_end > end and name_end - i >= 3:
+        if name_end is None or name_end <= end:
+            continue
+        # 琉璃宫 is 3+ and may start mid-span. A 2-char name is only
+        # 水月: 回水/会水 must not eat 水 (nước đọng, biết bơi).
+        if name_end - i >= 3 or (i == end - 1 and text[i:name_end] == "水月"):
             return True
     return False
 
@@ -824,6 +945,11 @@ def _custom_name_collision(root: _Node, text: str, start: int, end: int) -> bool
     return False
 
 
+def _bad_de_glue(text: str, start: int, end: int) -> bool:
+    """的实力 and 巅峰的 hide the noun and the stage word."""
+    return text[start:end] in {"的实力", "巅峰的"}
+
+
 def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
     if _swallows_protected_name(root, text, step.start, step.end, step.pri, step.value):
         return True
@@ -838,6 +964,9 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _idiom_overflow(root, text, start, end)
         or _name_function_glue(root, text, start, end)
         or _custom_name_collision(root, text, start, end)
+        or _bad_de_glue(text, start, end)
+        or _splits_standing(text, start, end)
+        or _splits_plural_pronoun(text, start, end)
     )
 
 
@@ -859,6 +988,12 @@ def _trie_match(root: _Node, text: str, pos: int, end_limit: int) -> _Step | Non
     return None
 
 
+_STAGE_HEAD_RE = re.compile(
+    r"(?:^|\s)(?:sơ|trung|hậu|tiền|đỉnh)\s+(?:kỳ|phong)\b",
+    re.IGNORECASE,
+)
+
+
 def _is_possessive_head(tok: _Tok) -> bool:
     if not tok.value or tok.kind == "pattern":
         return False
@@ -866,6 +1001,11 @@ def _is_possessive_head(tok: _Tok) -> bool:
         return True
     if any(tok.zh.endswith(k) for k in _KIN_TITLES):
         return True
+    # 先天中期 / 内劲巅峰 / 先天境界 are realms, not owners.
+    if tok.zh.endswith("期") or tok.zh.endswith("巅峰") or _STAGE_HEAD_RE.search(tok.value):
+        return False
+    if "cảnh giới" in tok.value.casefold():
+        return False
     return tok.value[:1].isupper()
 
 
@@ -923,6 +1063,24 @@ def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
             if (
                 left.end == tok.start
                 and tok.end == right.start
+                and right.zh == "地方"
+                and left.zh in _PLACE_MODIFIER
+                and left.value
+            ):
+                out[-1] = _Tok(
+                    left.start,
+                    right.end,
+                    left.zh + tok.zh + right.zh,
+                    f"{right.value} {left.value}",
+                    right.pri,
+                    False,
+                    "trie",
+                )
+                i += 2
+                continue
+            if (
+                left.end == tok.start
+                and tok.end == right.start
                 and right.value
                 and right.kind != "pattern"
                 and _is_possessive_head(left)
@@ -942,6 +1100,13 @@ def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
                     "trie",
                 )
                 i += 2
+                if (
+                    i < n
+                    and toks[i].zh == "更强"
+                    and toks[i].start == right.end
+                    and out[-1].zh.endswith("实力")
+                ):
+                    toks[i].value = "mạnh hơn"
                 continue
         out.append(tok)
         i += 1
@@ -970,7 +1135,7 @@ def _overlay_index(
     for zh, vi, pri in entries:
         key = engine.convert(zh.strip())
         value = vi.strip()
-        if not key or not value:
+        if not key or not value or _overlay_hides_peak(key, value) or _overlay_replaces_grammar(engine, key, value):
             continue
         buckets.setdefault(key[0], []).append((key, value, pri))
     return buckets or None
@@ -1030,6 +1195,80 @@ def _suffix_pattern(root: _PatNode, text: str, pos: int, end_limit: int) -> tupl
             if best is None or length > best[0]:
                 best = (length, template)
     return best
+
+
+def _splits_plural_pronoun(text: str, start: int, end: int) -> bool:
+    """送我 must not eat 我 of 我们 and leave 们 as 'nhóm'."""
+    if end - start < 2 or end >= len(text) or text[end] != "们":
+        return False
+    return text[end - 1] in "我你他她它"
+
+
+def _follow_still(follow: str) -> bool:
+    nxt = follow.lstrip(" \t")
+    return nxt.startswith(("，依然", "，还是"))
+
+
+def _dismissed_person(text: str, end: int) -> bool:
+    """开了他 is 'fire him'. 开了他的手 is a longer word such as 切开了."""
+    if end >= len(text) or text[end] not in "他她你我":
+        return False
+    after = text[end + 1] if end + 1 < len(text) else ""
+    return after != "的"
+
+
+def _splits_standing(text: str, start: int, end: int) -> bool:
+    """前站着 is standing in front, not the station 前站.
+
+    A span that ends on 门 and leaves 前站着 has taken 门 away from 门前站着.
+    大门前 stays, because that span already includes 前.
+    """
+    if text[start:end] == "前站" and end < len(text) and text[end] == "着":
+        return True
+    return end - start >= 2 and text[end - 1] == "门" and text[end : end + 3] == "前站着"
+
+
+_SIMILE_OPEN = ("好像", "仿佛", "如同", "犹如", "宛如", "宛若", "好似", "活像", "就像", "像是", "像")
+_ORDINARY_YIBAN = frozenset("很太挺更最非不")
+_BARE_PRONOUN = frozenset({"ta", "ngươi", "hắn", "nàng", "nó", "tôi", "mình"})
+_WORDS_OF = {
+    "我的话": "lời của ta",
+    "你的话": "lời của ngươi",
+    "他的话": "lời của hắn",
+    "她的话": "lời của nàng",
+    "它的话": "lời của nó",
+}
+_SPEECH_PREV = frozenset("听信把记当但断")
+_SPEECH_BIGRAM = frozenset({"记住", "相信", "听到", "要听", "会听", "须听", "别把", "打断"})
+
+
+def _simile_yiban(text: str, start: int, end: int) -> bool:
+    """好像/仿佛/像 …一般 is 'like', not 一般=bình thường. 很一般 stays ordinary."""
+    if text[start:end] != "一般":
+        return False
+    nxt = text[end] if end < len(text) else ""
+    if nxt and nxt != "的":
+        return False
+    if start > 0 and text[start - 1] in _ORDINARY_YIBAN:
+        return False
+    window = text[:start]
+    return any(op in window for op in _SIMILE_OPEN)
+
+
+def _speech_words(text: str, start: int) -> bool:
+    """听/但/clause-initial 我的话 is 'my words'. 要是我的话 stays the pronoun."""
+    i = start - 1
+    while i >= 0 and text[i] in "了着过的":
+        i -= 1
+    if i < 0:
+        return True
+    if text[i] in _SPEECH_PREV:
+        return True
+    return i >= 1 and text[i - 1 : i + 1] in _SPEECH_BIGRAM
+
+
+def _duzi_adverb(text: str, end: int) -> bool:
+    return end < len(text) and text[end] in _DUZI_ADVERB_NEXT
 
 
 def _station_noun(text: str, start: int) -> bool:

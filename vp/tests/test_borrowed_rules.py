@@ -257,6 +257,262 @@ def test_possessive_de_name_pronoun_time_and_skips():
     assert "của" not in speech
 
 
+def test_realm_stage_de_stays_in_source_order():
+    rows = [
+        ("先天中期", "Tiên Thiên trung kỳ", 20, "Names.txt"),
+        ("先天巅峰", "Tiên Thiên đỉnh phong", 20, "Names.txt"),
+        ("先天后期", "Tiên Thiên Hậu Kỳ", 10, "VietPhrase_4.txt"),
+        ("先天境界", "Tiên Thiên cảnh giới", 20, "Names.txt"),
+        ("武者", "võ giả", 10, "VietPhrase_1.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("女人", "người phụ nữ", 10, "VietPhrase_1.txt"),
+    ]
+    mid = _low(rows, "先天中期的武者")
+    assert "của" not in mid
+    assert mid.index("tiên thiên trung kỳ") < mid.index("võ giả")
+    peak = _low(rows, "先天巅峰的武者")
+    assert "của" not in peak
+    assert peak.index("đỉnh phong") < peak.index("võ giả")
+    late = _low(rows, "先天后期的武者")
+    assert "của" not in late
+    realm = _low(rows, "先天境界的武者")
+    assert "của" not in realm
+    assert realm.index("cảnh giới") < realm.index("võ giả")
+    assert "người phụ nữ của lăng thiên" in _low(rows, "凌天的女人")
+
+
+def test_strength_comparative_stays_outside_possessive():
+    rows = [
+        ("等到", "đợi đến", 10, "VietPhrase_1.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("实力", "thực lực", 10, "VietPhrase_2.txt"),
+        ("的实力", "thực lực", 10, "VietPhrase_4.txt"),
+        ("更强", "càng mạnh", 10, "VietPhrase_2.txt"),
+    ]
+    out = _low(rows, "等到凌天的实力更强")
+    assert "thực lực của lăng thiên mạnh hơn" in out
+    assert "càng mạnh của" not in out
+
+
+def test_zhexie_cao_keeps_herb_compound():
+    rows = [
+        ("这些草", "những cỏ này", 10, "VietPhrase_3.txt"),
+        ("草药", "dược liệu", 999, "Custom.txt"),
+        ("这些草药", "những dược liệu này", 999, "Custom.txt"),
+        ("药", "thuốc", 10, "VietPhrase_1.txt"),
+    ]
+    out = _low(rows, "这些草药")
+    assert out == "những dược liệu này"
+    assert "thuốc" not in out
+
+
+def test_neijin_peak_is_not_a_possessive_name():
+    rows = [
+        ("内劲", "nội kình", 10, "VietPhrase_2.txt"),
+        ("巅峰", "đỉnh phong", 999, "Custom.txt"),
+        ("巅峰的", "tột cùng", 10, "VietPhrase_3.txt"),
+        ("武者", "võ giả", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows)
+    out = engine.translate("内劲巅峰的武者", [("内劲巅峰", "Nội Kình Điên Phong", 25)])
+    assert out == "Nội kình đỉnh phong võ giả"
+    assert "Điên Phong" not in out
+    assert "của" not in out
+
+
+def test_xianzai_jiuyao_is_not_sap():
+    rows = [
+        ("您", "ngài", 10, "VietPhrase_1.txt"),
+        ("现在", "hiện tại", 10, "VietPhrase_1.txt"),
+        ("就要", "sắp", 19, "QualityOverrides.txt"),
+        ("现在就要", "muốn ngay bây giờ", 999, "Custom.txt"),
+    ]
+    out = _low(rows, "您现在就要？")
+    assert "muốn ngay bây giờ" in out
+    assert "sắp" not in out
+
+
+def test_qianzhan_before_zhe_is_standing_not_station():
+    rows = [
+        ("看着", "nhìn xem", 10, "VietPhrase_2.txt"),
+        ("别墅门", "cửa biệt thự", 10, "VietPhrase_3.txt"),
+        ("别墅", "biệt thự", 10, "VietPhrase_2.txt"),
+        ("门前站着", "trước cửa đứng đấy", 10, "VietPhrase_2.txt"),
+        ("前站", "tiền trạm", 10, "VietPhrase_2.txt"),
+        ("站着", "đứng", 10, "VietPhrase_2.txt"),
+        ("前", "trước", 10, "VietPhrase_2.txt"),
+        ("保镖", "bảo tiêu", 10, "VietPhrase_2.txt"),
+        ("大门前", "trước cổng chính", 10, "VietPhrase_2.txt"),
+        ("大门", "cổng lớn", 10, "VietPhrase_2.txt"),
+        ("两个", "hai", 10, "VietPhrase_1.txt"),
+        ("守卫", "thủ vệ", 10, "VietPhrase_1.txt"),
+        ("晶石", "tinh thạch", 10, "VietPhrase_2.txt"),
+        ("不少人", "không ít người", 10, "VietPhrase_1.txt"),
+        ("先遣队", "đội tiền trạm", 10, "VietPhrase_2.txt"),
+        ("面前", "trước mặt", 10, "VietPhrase_2.txt"),
+        ("一个人", "một người", 10, "VietPhrase_1.txt"),
+    ]
+    door = _low(rows, "看着别墅门前站着的保镖")
+    assert "trước cửa đứng" in door
+    assert "biệt thự" in door
+    assert "tiền trạm" not in door
+    assert "cửa biệt thự" not in door
+    gate = _low(rows, "大门前站着两个守卫")
+    assert "trước cổng chính" in gate
+    assert "tiền trạm" not in gate
+    stone = _low(rows, "晶石前站着不少人")
+    assert "tiền trạm" not in stone
+    assert "trước" in stone and "đứng" in stone
+    assert "đội tiền trạm" in _low(rows, "先遣队")
+    front = _low(rows, "面前站着一个人")
+    assert "trước mặt" in front
+    assert "tiền trạm" not in front
+
+
+def test_chapter_1089_spans_stay_narrow():
+    rows = [
+        ("但", "nhưng", 10, "VietPhrase_1.txt"),
+        ("他们", "bọn hắn", 10, "VietPhrase_2.txt"),
+        ("他", "hắn", 10, "VietPhrase_1.txt"),
+        ("再", "lại", 10, "VietPhrase_2.txt"),
+        ("在意", "để ý", 10, "VietPhrase_2.txt"),
+        ("不再", "không còn", 10, "VietPhrase_2.txt"),
+        ("依然", "vẫn", 10, "VietPhrase_2.txt"),
+        ("不是", "không phải", 10, "VietPhrase_1.txt"),
+        ("送我", "tặng cho ta", 10, "VietPhrase_4.txt"),
+        ("送", "đưa", 10, "VietPhrase_2.txt"),
+        ("我们", "chúng ta", 10, "VietPhrase_2.txt"),
+        ("们", "nhóm", 10, "VietPhrase_2.txt"),
+        ("过去", "đi qua", 19, "QualityOverrides.txt"),
+        ("味道好", "mùi ngon", 10, "VietPhrase_3.txt"),
+        ("太差", "quá kém", 10, "VietPhrase_2.txt"),
+        ("地方", "chỗ", 19, "QualityOverrides.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("开了", "mở", 10, "VietPhrase_3.txt"),
+        ("切开了", "cắt mở", 10, "VietPhrase_2.txt"),
+        ("手", "tay", 10, "VietPhrase_1.txt"),
+        ("打开", "mở ra", 10, "VietPhrase_2.txt"),
+        ("门", "cửa", 10, "VietPhrase_2.txt"),
+    ]
+    care = _low(rows, "但他们再在意，依然不是")
+    assert "dù để ý đến mấy" in care
+    assert "lại để ý" not in care
+    still = _low(rows, "不再在意")
+    assert "không còn" in still
+    assert "dù để ý" not in still
+    trip = _low(rows, "送我们过去")
+    assert "tặng" not in trip
+    assert "nhóm" not in trip
+    assert "chúng ta" in trip
+    assert "đưa" in trip
+    place = _low(rows, "味道好的地方")
+    assert place.startswith("chỗ ")
+    assert "mùi ngon" in place
+    assert not place.startswith("mùi")
+    assert _low(rows, "太差的地方").startswith("chỗ ")
+    owned = _low(rows, "凌天的地方")
+    assert "của" in owned
+    assert "chỗ của" in owned
+    fired = _low(rows, "然后开了他")
+    assert "đuổi" in fired
+    assert "mở hắn" not in fired
+    cut = _low(rows, "切开了他的手")
+    assert "đuổi" not in cut
+    assert "mở" in _low(rows, "打开门")
+
+
+def test_simile_yiban_is_not_ordinary():
+    rows = [
+        ("好像", "hình như", 19, "QualityOverrides.txt"),
+        ("韩梅", "Hàn Mai", 20, "Names.txt"),
+        ("要", "muốn", 10, "VietPhrase_1.txt"),
+        ("找麻烦", "tìm phiền phức", 10, "VietPhrase_2.txt"),
+        ("一般", "bình thường", 20, "QualityOverrides.txt"),
+        ("很", "rất", 10, "VietPhrase_1.txt"),
+        ("他", "hắn", 10, "VietPhrase_1.txt"),
+    ]
+    like = _low(rows, "好像韩梅要找麻烦一般")
+    assert "vậy" in like
+    assert "bình thường" not in like
+    ordinary = _low(rows, "他很一般")
+    assert "bình thường" in ordinary
+    assert "vậy" not in ordinary
+
+
+def test_my_words_keep_speech_and_orders_count():
+    rows = [
+        ("但", "nhưng", 10, "VietPhrase_1.txt"),
+        ("我的话", "ta", 10, "VietPhrase_2.txt"),
+        ("要是", "nếu là", 10, "VietPhrase_1.txt"),
+        ("听", "nghe", 10, "VietPhrase_1.txt"),
+        ("绝对", "tuyệt đối", 10, "VietPhrase_2.txt"),
+        ("有效", "hữu hiệu", 10, "VietPhrase_2.txt"),
+    ]
+    words = _low(rows, "但我的话，绝对有效")
+    assert "lời của ta" in words
+    assert "tuyệt đối có hiệu lực" in words
+    assert "hữu hiệu" not in words
+    conditional = _low(rows, "要是我的话")
+    assert "lời của ta" not in conditional
+    assert "ta" in conditional
+    assert "lời của ta" in _low(rows, "听我的话")
+
+
+def test_shuiyue_is_not_split_by_huishui_or_huishui():
+    rows = [
+        ("我要", "ta muốn", 10, "VietPhrase_1.txt"),
+        ("带你", "mang ngươi", 10, "VietPhrase_2.txt"),
+        ("回水", "nước đọng", 10, "VietPhrase_2.txt"),
+        ("回", "về", 10, "VietPhrase_2.txt"),
+        ("会水", "biết bơi", 10, "VietPhrase_2.txt"),
+        ("会", "sẽ", 10, "VietPhrase_2.txt"),
+        ("水月", "Thủy Nguyệt", 20, "Names_2.txt"),
+        ("月", "nguyệt", 5, "ChinesePhienAmWords.txt"),
+        ("水", "nước", 5, "ChinesePhienAmWords.txt"),
+    ]
+    back = _low(rows, "我要带你回水月")
+    assert "thủy nguyệt" in back
+    assert "về" in back
+    assert "nước đọng" not in back
+    assert "nguyệt" not in back.replace("thủy nguyệt", "")
+    hui = _low(rows, "我带你会水月")
+    assert "thủy nguyệt" in hui
+    assert "biết bơi" not in hui
+    assert "về" in hui
+    # A random 2-char Names hit must not split 开始.
+    kept = _low(
+        [
+            ("开始", "bắt đầu", 10, "VietPhrase_2.txt"),
+            ("始炼", "Thủy Luyện", 20, "Names.txt"),
+            ("炼丹", "luyện đan", 10, "VietPhrase_2.txt"),
+            ("开", "mở", 10, "VietPhrase_2.txt"),
+        ],
+        "开始炼丹",
+    )
+    assert "bắt đầu" in kept
+    assert "thủy luyện" not in kept
+
+
+def test_bare_duzi_before_verb_is_alone():
+    rows = [
+        ("独子", "con trai độc nhất", 10, "VietPhrase_2.txt"),
+        ("独自", "một mình", 10, "VietPhrase_2.txt"),
+        ("站在了", "đứng ở", 10, "VietPhrase_2.txt"),
+        ("门前", "trước cửa", 10, "VietPhrase_2.txt"),
+        ("他的独子", "con trai độc nhất của hắn", 10, "VietPhrase_1.txt"),
+        ("很好", "rất tốt", 10, "VietPhrase_1.txt"),
+        ("去", "đi", 10, "VietPhrase_1.txt"),
+    ]
+    stood = _low(rows, "凌天说着话，独子站在了门前")
+    assert "một mình" in stood
+    assert "con trai" not in stood
+    assert "một mình" in _low(rows, "独子去")
+    assert "con trai độc nhất của hắn" in _low(rows, "他的独子")
+    noun = _low(rows, "独子很好")
+    assert "con trai độc nhất" in noun
+    assert "một mình" not in noun
+
+
 def test_clan_possessive_skips_huijia():
     rows = [
         ("灭", "diệt", 10, "VietPhrase_1.txt"),

@@ -77,6 +77,39 @@ Cụm dài hơn thắng cụm ngắn hơn. Cùng độ dài thì ưu tiên cao h
 
 `--refresh` tải lại script và model Novel Scan. Cache nằm ở `~/.cache/vp-dicts/novel-scan`.
 
+## Đổ Mạnh nhất lên reader, từ chương 1012
+
+Chạy từ thư mục gốc repo. `vp` cần Python 3.10.
+
+File:
+
+- Trung: `zhvi/workspace/manh-nhat-from-1012.zh.txt`
+- Glossary, điểm trên 0.5: `zhvi/workspace/manh-nhat-from-1012.novel-review.gt05.txt`
+- Việt: `zhvi/workspace/manh-nhat-from-1012.zh.vi.gt05.txt`
+
+Dịch:
+
+```bash
+PYTHONPATH=vp/src python -m vp file \
+  zhvi/workspace/manh-nhat-from-1012.zh.txt \
+  -o zhvi/workspace/manh-nhat-from-1012.zh.vi.gt05.txt \
+  --overlay zhvi/workspace/manh-nhat-from-1012.novel-review.gt05.txt
+```
+
+Hai bản phải cùng số dòng. Rồi đổ lên JSON reader. Script `crawler/overlay_manh_nhat_1012.py` mặc định đọc `manh-nhat-from-1012.zh.vi.txt`. Không sửa dòng `VI` trong script. Gán đường dẫn rồi chạy:
+
+```bash
+python3 -c 'import crawler.overlay_manh_nhat_1012 as o; o.VI = o.ROOT / "zhvi/workspace/manh-nhat-from-1012.zh.vi.gt05.txt"; raise SystemExit(o.main())'
+```
+
+Script làm các việc này:
+
+- Khớp chương theo số in trên tiêu đề Hán và tiêu đề «Chương N», không theo index trong JSON.
+- Chỉ ghi từ chương 1012. Chương 1–1011 giữ nguyên.
+- Bỏ chương có số in bị trùng, chương không có đoạn, và chương lệch số đoạn. Những chương lệch giữ nguyên chữ cũ. Lần đổ gt05 bỏ 1174, 1473, 1477, 1575, 1637, 1661, 1663, 1664, 2311.
+- Ghi `crawler/data/xtruyen/manh-nhat-tu-tien-hoc-sinh-tieu-hoc/vol-*.json.gz`, rồi copy các volume vừa đổi sang `web/public/data/xtruyen/manh-nhat-tu-tien-hoc-sinh-tieu-hoc/`.
+- Trên reader đang mở, bấm Ctrl+Shift+R.
+
 ## Test
 
 ```bash

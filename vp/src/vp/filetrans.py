@@ -47,6 +47,14 @@ def build_base_chunks(text: str) -> list[dict[str, str]]:
     return chunks
 
 
+def _needs_gap(parts: list[str], piece: str) -> bool:
+    """Space after a sentence or closing quote before the next piece."""
+    if not parts or not piece or piece[0].isspace():
+        return False
+    prev = parts[-1]
+    return bool(prev) and not prev[-1].isspace()
+
+
 def _boundary_end(source: str, idx: int) -> int:
     end = idx + 1
     while end < len(source) and source[end] in TRAILING_QUOTES:
@@ -127,7 +135,10 @@ def translate_piecewise(text: str, translate: Callable[[str], str]) -> str:
         if end > start:
             part = source[start:end]
             if part:
-                translated.append(translate(part))
+                piece = translate(part)
+                if _needs_gap(translated, piece):
+                    translated.append(" ")
+                translated.append(piece)
         sep_start = end
         while end < n and source[end].isspace():
             end += 1
@@ -143,7 +154,10 @@ def translate_piecewise(text: str, translate: Callable[[str], str]) -> str:
     if start < n:
         part = source[start:]
         if part:
-            translated.append(translate(part))
+            piece = translate(part)
+            if _needs_gap(translated, piece):
+                translated.append(" ")
+            translated.append(piece)
     return "".join(translated)
 
 
@@ -158,7 +172,11 @@ def translate_chunks(
         piece = translate_piecewise(chunk.get("text") or "", translate) if chunk.get("text") else ""
         if i > 0:
             glue = chunk.get("glue")
-            out.append(glue if isinstance(glue, str) else "\n")
+            if not isinstance(glue, str):
+                glue = "\n"
+            if glue == "" and _needs_gap(out, piece):
+                glue = " "
+            out.append(glue)
         out.append(piece)
         if on_progress:
             on_progress(i + 1, total)
