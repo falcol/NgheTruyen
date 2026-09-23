@@ -63,22 +63,33 @@ a.reader-muted:hover { color: var(--color-accent); }
   color: var(--color-text);
   letter-spacing: 0.01em;
   border-radius: 0 0.375rem 0.375rem 0;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  /* Giữ sẵn viền + padding trong suốt để hover/speaking chỉ đổi màu,
+     không làm nhảy bố cục chữ khi vuốt/chạm trên mobile. */
+  border-left: 3px solid transparent;
+  padding-left: 1rem;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 @media (hover: hover) {
   .reader-paragraph:hover:not(.speaking) {
     background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
-    border-left: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
-    padding-left: 1rem;
+    border-left-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+}
+
+/* Cảm ứng: chỉ sáng nền rất nhẹ khi chạm, không thêm viền/padding. */
+@media (hover: none) {
+  .reader-paragraph:hover:not(.speaking),
+  .reader-paragraph:active:not(.speaking) {
+    background-color: color-mix(in srgb, var(--color-accent) 4%, transparent);
+    border-left-color: transparent;
   }
 }
 
 .reader-paragraph.speaking {
-  background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
-  border-left: 3px solid var(--color-accent);
-  padding-left: 1rem;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent) 10%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-left-color: var(--color-accent);
 }
 
 .chapter-item {
