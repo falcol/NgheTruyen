@@ -27,7 +27,8 @@ export default function EpubListPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12 pb-8 border-b border-[var(--color-border)] animate-slide-up stagger-1">
         <div>
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[var(--color-accent)] mb-3 opacity-80">
-            ✦ Kho Sách Chất Lượng
+            <span aria-hidden="true" className="mr-1 inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] align-middle" />
+            Kho Sách Chất Lượng
           </p>
           <h1
             style={{ fontFamily: "var(--font-ui-serif)" }}
@@ -57,15 +58,7 @@ export default function EpubListPage() {
       {books.length === 0 && (
         <div className="p-10 rounded-2xl text-center border border-dashed border-[var(--color-border)]">
           <p className="text-[var(--color-text-muted)] text-lg">
-            Chưa có file EPUB nào. Thêm file{" "}
-            <code className="bg-black/30 px-1.5 py-0.5 rounded text-[var(--color-accent)]">
-              .epub
-            </code>{" "}
-            vào thư mục{" "}
-            <code className="bg-black/30 px-1.5 py-0.5 rounded text-[var(--color-accent)]">
-              epub/
-            </code>
-            .
+            Chưa có sách nào trong kho.
           </p>
         </div>
       )}
@@ -95,7 +88,7 @@ export default function EpubListPage() {
                 <Link
                   key={meta.slug}
                   href={meta.detailHref}
-                  className="book-card block focus:outline-none"
+                  className="book-card block rounded-xl"
                 >
                   <div
                     className="book-card-inner aspect-[2/3] border border-[var(--color-border)] group

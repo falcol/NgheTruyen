@@ -7,8 +7,8 @@ export async function GET(
   context: { params: Promise<{ slug: string; chapterIdx: string }> },
 ) {
   const { slug, chapterIdx: idxStr } = await context.params;
-  const chapterIdx = parseInt(idxStr, 10);
-  if (isNaN(chapterIdx)) {
+  const chapterIdx = Number(idxStr);
+  if (!Number.isInteger(chapterIdx) || chapterIdx < 0) {
     return new Response("Invalid chapter index", { status: 400 });
   }
 

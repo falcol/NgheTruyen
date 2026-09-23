@@ -192,7 +192,8 @@ export function makeDataDir(baseDir: string) {
     if (!isSafeSlug(slug)) return 0;
     const index = getChapterIndex(slug);
     if (!index || index.length === 0) return 0;
-    return index[index.length - 1].index + 1;
+    // Max-based (not last-element-based) so an unsorted index can't shrink the total.
+    return index.reduce((m, c) => Math.max(m, c.index), -1) + 1;
   }
 
   return {

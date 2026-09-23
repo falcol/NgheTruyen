@@ -17,7 +17,7 @@ export default async function EpubReaderPage({
   const meta = getEpubMeta(decodedFilename);
   if (!meta) return notFound();
 
-  const chapter = meta.chapters[chapterIdx];
+  const chapter = meta.chapters.find((c) => c.index === chapterIdx);
   if (!chapter) return notFound();
 
   const readHref = `/epub/${encodeURIComponent(decodedFilename)}/read`;

@@ -173,21 +173,6 @@ export const READER_FONTS: ReaderFont[] = [
     family: "var(--font-lora), Georgia, serif",
   },
   {
-    id: "merriweather",
-    name: "Merriweather",
-    family: "var(--font-merriweather), Georgia, serif",
-  },
-  {
-    id: "noto-serif",
-    name: "Noto Serif",
-    family: "var(--font-noto-serif), serif",
-  },
-  {
-    id: "source-serif",
-    name: "Source Serif 4",
-    family: "var(--font-source-serif), Georgia, serif",
-  },
-  {
     id: "be-vietnam",
     name: "Be Vietnam Pro",
     family: "var(--font-be-vietnam), system-ui, sans-serif",

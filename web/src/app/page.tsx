@@ -38,7 +38,8 @@ export default function HomePage() {
         <div>
           {/* Eyebrow */}
           <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-[var(--color-accent)] mb-3 opacity-80">
-            ✦ Thư Viện Cá Nhân
+            <span aria-hidden="true" className="mr-1 inline-block w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] align-middle" />
+            Thư Viện Cá Nhân
           </p>
           <h1
             style={{ fontFamily: "var(--font-ui-serif)" }}
@@ -126,7 +127,7 @@ function StoryCard({ meta }: { meta: StoryMeta }) {
   const gradient = getGradientFromString(slug);
 
   return (
-    <Link href={`/story/${slug}`} className="book-card block focus:outline-none">
+    <Link href={`/story/${slug}`} className="book-card block rounded-xl">
       <div
         className="book-card-inner aspect-[2/3] border border-[var(--color-border)] group
           hover:border-[var(--color-accent)]/40 transition-colors duration-300 active:scale-[0.98]"

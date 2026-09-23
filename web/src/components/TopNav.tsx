@@ -9,7 +9,7 @@ export default function TopNav() {
   const isEpubActive = pathname.startsWith("/epub");
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 smart-header">
+    <header className="fixed top-0 left-0 right-0 z-50 smart-header [padding-top:env(safe-area-inset-top)]">
       <div className="glass-panel border-b border-[var(--color-border)]">
         <nav className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           {/* Logo */}

@@ -78,16 +78,21 @@ export function useProgress(slug: string) {
 
   const saveScroll = useCallback(
     (chapterIdx: number, scrollY: number) => {
+      const y = Math.max(0, Math.round(scrollY));
       setProgress((prev) => {
         const next: ReadingProgress = {
           chapterIdx,
           scrollByChapter: {
             ...(prev?.scrollByChapter ?? {}),
-            [String(chapterIdx)]: Math.max(0, Math.round(scrollY)),
+            [String(chapterIdx)]: y,
           },
           timestamp: Date.now(),
         };
         localStorage.setItem(key, JSON.stringify(next));
+        // Scroll position is consumed via fresh loadProgress() reads, never from
+        // this state — skip the re-render when the chapter didn't change so the
+        // whole reader tree isn't re-rendered ~5x/sec while scrolling.
+        if (prev && prev.chapterIdx === chapterIdx) return prev;
         return next;
       });
     },

@@ -26,7 +26,7 @@ export default async function StoryPage({
     <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
       <Link
         href="/"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors duration-200 mb-8 group font-medium"
+        className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors duration-200 mb-8 group font-medium"
       >
         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform duration-200" /> Thư Viện Nghe
       </Link>
@@ -37,13 +37,13 @@ export default async function StoryPage({
 
         <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center md:items-start">
           {/* Big book cover representation */}
-          <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
-            <h2
+          <div aria-hidden="true" className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-2xl bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
+            <p
               style={{ fontFamily: "var(--font-ui-serif)" }}
               className="font-bold text-center text-white/95 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] text-xl leading-snug line-clamp-6"
             >
               {storyTitle}
-            </h2>
+            </p>
           </div>
 
           <div className="flex-1 text-center md:text-left flex flex-col h-full justify-center">

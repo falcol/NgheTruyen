@@ -3,9 +3,6 @@ import {
   Be_Vietnam_Pro,
   Literata,
   Lora,
-  Merriweather,
-  Noto_Serif,
-  Source_Serif_4,
 } from "next/font/google";
 import "./globals.css";
 import NavWrapper from "@/components/NavWrapper";
@@ -31,34 +28,10 @@ const lora = Lora({
   display: "swap",
 });
 
-const merriweather = Merriweather({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "700"],
-  variable: "--font-merriweather",
-  display: "swap",
-});
-
-const notoSerif = Noto_Serif({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "600", "700"],
-  variable: "--font-noto-serif",
-  display: "swap",
-});
-
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "600", "700"],
-  variable: "--font-source-serif",
-  display: "swap",
-});
-
 const fontVariables = [
   beVietnam.variable,
   literata.variable,
   lora.variable,
-  merriweather.variable,
-  notoSerif.variable,
-  sourceSerif.variable,
 ].join(" ");
 
 export const metadata: Metadata = {
@@ -69,7 +42,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0f0f0f",
+  themeColor: "#080810",
 };
 
 export default function RootLayout({

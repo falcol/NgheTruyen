@@ -41,7 +41,7 @@ function Chip({
       type="button"
       onClick={onClick}
       title={title}
-      className={`px-3 py-1.5 text-xs rounded-full transition-all duration-200 active:scale-95 ${className} ${
+      className={`px-4 py-1.5 min-h-[44px] inline-flex items-center justify-center text-xs rounded-full transition-all duration-200 active:scale-95 ${className} ${
         active
           ? "bg-[var(--color-accent)] text-black font-semibold"
           : "bg-[var(--color-surface-2)] text-[var(--color-text-muted)] border border-[var(--color-border)] hover:opacity-90"
@@ -101,7 +101,9 @@ export default function Player({
   } = useReaderSettingsContext();
 
   const progress =
-    currentIdx >= 0 ? Math.round((currentIdx / totalParagraphs) * 100) : 0;
+    totalParagraphs > 0 && currentIdx >= 0
+      ? Math.round((currentIdx / totalParagraphs) * 100)
+      : 0;
 
   useEffect(() => {
     if (hidden && showSettings) {
@@ -110,10 +112,19 @@ export default function Player({
     }
   }, [hidden, showSettings]);
 
+  useEffect(() => {
+    if (!showSettings) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowSettings(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showSettings]);
+
   return (
     <>
       {/* Floating player bar */}
-      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel rounded-2xl z-40 transition-all duration-500 ease-out ${hidden ? "translate-y-32 opacity-0 md:translate-y-0 md:opacity-100" : "translate-y-0 opacity-100"}`}>
+      <div className={`fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel rounded-2xl z-40 transition-all duration-500 ease-out ${hidden ? "translate-y-32 opacity-0 md:translate-y-0 md:opacity-100" : "translate-y-0 opacity-100"}`}>
         {playing && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-border)] rounded-t-2xl overflow-hidden">
             <div
@@ -129,7 +140,7 @@ export default function Player({
               <button
                 type="button"
                 onClick={onPlayFromHere}
-                className="px-3 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center gap-1.5 justify-center text-xs font-medium transition-all duration-200 active:scale-90 border border-white/5 whitespace-nowrap"
+                className="px-3 h-11 rounded-full bg-black/20 hover:bg-black/40 flex items-center gap-1.5 justify-center text-xs font-medium transition-all duration-200 active:scale-90 border border-white/5 whitespace-nowrap"
                 aria-label="Đọc từ đoạn đang xem"
                 title="Đọc từ đoạn đang xem"
               >
@@ -141,7 +152,7 @@ export default function Player({
               <button
                 type="button"
                 onClick={onSkipBackward}
-                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-11 h-11 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Quay lại đoạn trước"
               >
                 <SkipBack size={20} />
@@ -174,7 +185,7 @@ export default function Player({
               <button
                 type="button"
                 onClick={onSkipForward}
-                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-11 h-11 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Chuyển đoạn tiếp"
               >
                 <SkipForward size={20} />
@@ -185,7 +196,7 @@ export default function Player({
               <button
                 type="button"
                 onClick={onStop}
-                className="w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-11 h-11 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Dừng"
               >
                 <Stop size={20} />
@@ -204,7 +215,7 @@ export default function Player({
           <button
             type="button"
             onClick={() => setShowSettings(true)}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 bg-black/20 text-[var(--color-text-muted)] border border-white/5 hover:bg-white/10 hover:text-white"
+            className="w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 bg-black/20 text-[var(--color-text-muted)] border border-white/5 hover:bg-white/10 hover:text-white"
             aria-label="Cài đặt"
             aria-expanded={showSettings}
           >
@@ -220,12 +231,17 @@ export default function Player({
             className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowSettings(false)}
           />
-          <div className="relative w-full sm:max-w-2xl bg-[var(--color-surface)] sm:rounded-2xl rounded-t-2xl border border-[var(--color-border)] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tùy chỉnh đọc"
+            className="relative w-full sm:max-w-2xl bg-[var(--color-surface)] sm:rounded-2xl rounded-t-2xl border border-[var(--color-border)] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[85vh]"
+          >
             <div className="flex justify-between items-center p-5 border-b border-[var(--color-border)]">
               <h3 className="text-lg font-bold">Tùy chỉnh</h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-8 h-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
+                className="w-11 h-11 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center transition-all duration-200 active:scale-90 border border-white/5"
                 aria-label="Đóng"
               >
                 <X size={18} />
@@ -295,7 +311,7 @@ export default function Player({
                       type="button"
                       onClick={() => setFontId(f.id)}
                       style={{ fontFamily: f.family }}
-                      className={`px-4 py-2.5 text-sm rounded-full transition-all duration-200 active:scale-95 ${
+                      className={`px-4 py-2.5 min-h-[44px] inline-flex items-center justify-center text-sm rounded-full transition-all duration-200 active:scale-95 ${
                         settings.fontId === f.id
                           ? "bg-[var(--color-accent)] text-black font-semibold"
                           : "bg-[var(--color-surface-2)] text-[var(--color-text)] border border-[var(--color-border)] hover:opacity-90"

@@ -192,24 +192,29 @@ export default function ChapterList({
             setRangeStart(range.start);
             setVisibleCount(range.count);
           }}
-          className="text-xs text-[var(--color-accent)] hover:underline mb-3 flex items-center gap-1 transition-opacity"
+          className="min-h-[44px] inline-flex items-center text-xs text-[var(--color-accent)] hover:underline mb-3 flex items-center gap-1 transition-opacity"
         >
           <CaretDown size={12} /> Đến chương đang đọc
         </button>
       )}
 
       <div className="relative mb-4">
+        <label htmlFor="chapter-list-search" className="sr-only">
+          Tìm chương
+        </label>
         <input
           ref={searchBoxRef}
+          id="chapter-list-search"
           type="search"
           value={query}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Tìm chương..."
-          className="w-full pl-9 pr-9 py-2.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]/50 transition-colors scroll-mt-20"
+          aria-label="Tìm chương"
+          className="w-full pl-9 pr-12 py-2.5 min-h-[44px] rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)] text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]/50 transition-colors scroll-mt-20"
         />
-        <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+        <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none" aria-hidden="true" />
         {query && (
-          <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
+          <button onClick={() => setSearchQuery("")} aria-label="Xóa tìm kiếm" className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors">
             <X size={14} />
           </button>
         )}

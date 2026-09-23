@@ -526,6 +526,12 @@ function ReaderClientInner({
     if (hasPrev) router.prefetch(prevHref);
   }, [hasNext, hasPrev, nextHref, prevHref, router]);
 
+  // Tracks picker visibility for the global keyboard handler without rebinding it.
+  const pickerOpenRef = useRef(pickerOpen);
+  useEffect(() => {
+    pickerOpenRef.current = pickerOpen;
+  }, [pickerOpen]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tgt = e.target as HTMLElement | null;
@@ -533,8 +539,16 @@ function ReaderClientInner({
         tgt &&
         (tgt.tagName === "INPUT" ||
           tgt.tagName === "TEXTAREA" ||
+          tgt.tagName === "SELECT" ||
           tgt.isContentEditable)
       ) {
+        return;
+      }
+      // Settings sheet open — let it own the keyboard (Escape closes it).
+      if (tgt?.closest?.('[role="dialog"]')) return;
+      // Chapter picker open — chapters list owns arrows/space; Escape closes.
+      if (pickerOpenRef.current) {
+        if (e.key === "Escape") setPickerOpen(false);
         return;
       }
       if (e.key === "ArrowLeft") {
@@ -542,6 +556,9 @@ function ReaderClientInner({
       } else if (e.key === "ArrowRight") {
         navRef.current.goNext();
       } else if (e.key === " " || e.code === "Space") {
+        // Native Space activation (focused button/link) must win — otherwise one
+        // press both clicks the control AND toggles TTS.
+        if (tgt && (tgt.tagName === "BUTTON" || tgt.tagName === "A")) return;
         e.preventDefault();
         const { tts: t, paragraphs: p, chapterKey: k } = latestRef.current;
         if (t.playing && !t.paused) t.pause();
@@ -689,7 +706,7 @@ function ReaderClientInner({
           style={{ width: "0%" }}
         />
       </div>
-      <div className={`fixed top-0 left-0 right-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown && !pickerOpen ? "-translate-y-full" : "translate-y-0"}`}>
+      <div className={`sticky top-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown && !pickerOpen ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="max-w-2xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -699,7 +716,7 @@ function ReaderClientInner({
             <Link
               href={backHref ?? `/story/${slug}`}
               aria-label="Đóng và quay lại danh sách"
-              className="shrink-0 w-9 h-9 rounded-full bg-black/20 border border-white/5 flex items-center justify-center hover:bg-black/40 active:scale-90 transition-all duration-200"
+              className="shrink-0 w-11 h-11 rounded-full bg-black/20 border border-white/5 flex items-center justify-center hover:bg-black/40 active:scale-90 transition-all duration-200"
             >
               <X size={16} />
             </Link>
@@ -707,7 +724,7 @@ function ReaderClientInner({
           <div className="mt-3 relative" ref={pickerContainerRef}>
             <button
               onClick={() => { setPickerOpen((o) => !o); setFilter(""); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
-              className="text-xs font-medium px-3 py-1.5 rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between gap-1 cursor-pointer w-full"
+              className="text-xs font-medium px-3 py-1.5 min-h-[44px] rounded-full bg-black/20 border border-white/5 hover:bg-white/10 transition-colors flex items-center justify-between gap-1 cursor-pointer w-full"
             >
               <span>Chương {activeChapterIdx + 1} / {totalChapters}</span>
               <CaretDown size={14} className={`transition-transform duration-200 ${pickerOpen ? "rotate-180" : ""}`} />
@@ -717,11 +734,16 @@ function ReaderClientInner({
                 <div className="fixed inset-0 top-16 bg-black/50 backdrop-blur-sm z-40" onClick={() => setPickerOpen(false)} />
                 <div ref={pickerRef} className="absolute top-full left-0 right-0 mt-2 rounded-2xl max-h-[60vh] flex flex-col z-50 overflow-hidden shadow-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
                   <div className="relative p-3 border-b border-white/5">
-                    <MagnifyingGlass size={16} className="absolute left-6 top-1/2 -translate-y-1/2 opacity-40" />
+                    <MagnifyingGlass size={16} className="absolute left-6 top-1/2 -translate-y-1/2 opacity-40 pointer-events-none" aria-hidden="true" />
+                    <label htmlFor="chapter-search" className="sr-only">
+                      Tìm chương
+                    </label>
                     <input
                       autoFocus
+                      id="chapter-search"
                       type="text"
                       placeholder="Tìm chương..."
+                      aria-label="Tìm chương"
                       value={filter}
                       onChange={(e) => { setFilter(e.target.value); setPickerExtraBefore(0); setPickerExtraAfter(0); }}
                       className="pl-9 pr-4 py-2.5 text-sm rounded-lg bg-black/20 border border-white/5 outline-none w-full placeholder-white/40 focus:border-[var(--color-accent)]/50 transition-colors"
@@ -787,7 +809,7 @@ function ReaderClientInner({
         </div>
       </div>
 
-      <main className="max-w-2xl mx-auto px-5 md:px-6 pt-48 md:pt-36 pb-40 reader-content relative">
+      <main className="max-w-2xl mx-auto px-5 md:px-6 pt-6 md:pt-8 pb-[calc(10rem+env(safe-area-inset-bottom))] reader-content relative">
 
         {chapterState.status === "loading" && (
           <div className="space-y-3" aria-busy="true">
@@ -808,7 +830,7 @@ function ReaderClientInner({
             </p>
             <button
               onClick={() => setRetryNonce((n) => n + 1)}
-              className="px-3 py-1.5 text-sm rounded reader-accent hover:underline cursor-pointer"
+              className="px-3 py-1.5 min-h-[44px] text-sm rounded reader-accent hover:underline cursor-pointer"
             >
               Thử lại
             </button>
@@ -885,14 +907,17 @@ function ReaderClientInner({
 
         {hasNext && (
           <div className="text-center mt-12 pb-8 opacity-50 reader-muted text-sm flex flex-col items-center gap-2">
-            <CaretDown size={14} />
+            <CaretDown size={14} aria-hidden="true" />
             <span>Cuộn xuống để sang chương sau</span>
+            <span className="text-xs opacity-70">
+              Phím tắt: ← chương trước · → chương sau · Space phát/dừng · F đọc từ đoạn đang xem
+            </span>
           </div>
         )}
       </main>
 
       <Player
-        hidden={isScrollingDown && !tts.playing}
+        hidden={false}
         playing={tts.playing}
         paused={tts.paused}
         loading={tts.loading}

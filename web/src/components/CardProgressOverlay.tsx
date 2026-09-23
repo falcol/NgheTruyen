@@ -36,7 +36,7 @@ export default function CardProgressOverlay({
 
       {/* Chapter badge — floating pill, top-right */}
       <div className="absolute top-2 right-2 z-30 pointer-events-none">
-        <span className="inline-flex items-center gap-0.5 bg-black/55 backdrop-blur-xl text-[var(--color-accent)] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[var(--color-accent)]/40 shadow-[0_0_8px_rgba(0,0,0,0.4)]">
+        <span className="inline-flex items-center gap-0.5 bg-black/70 backdrop-blur-xl text-[var(--color-accent)] text-[10px] font-bold px-2 py-0.5 rounded-full border border-[var(--color-accent)]/40 shadow-[0_0_8px_rgba(0,0,0,0.4)]">
           CH {chapterIdx + 1}
           {totalChapters > 0 && (
             <span className="text-white/40 font-normal">/{totalChapters}</span>

@@ -12,13 +12,13 @@
   --color-border: #252535;
   --color-border-soft: #1e1e2e;
   --color-text: #e8e6f0;
-  --color-text-muted: #8b8b9e;
-  --color-text-dim: #55556a;
+  --color-text-muted: #a7a7bd;
+  --color-text-dim: #8e8ea6;
 
   /* Sakura-rose accent — AA contrast on surface */
   --color-accent: #e07a9f;
-  --color-accent-strong: #c9607f;
-  --color-accent-dim: #c9607f;
+  --color-accent-strong: #b84a6f;
+  --color-accent-dim: rgba(224, 122, 159, 0.14);
 
   /* Warm reading lamp ambient */
   --color-lamp: rgba(224, 122, 159, 0.06);
@@ -69,6 +69,8 @@ a.reader-muted:hover { color: var(--color-accent); }
 @media (hover: hover) {
   .reader-paragraph:hover:not(.speaking) {
     background-color: color-mix(in srgb, var(--color-accent) 5%, transparent);
+    border-left: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+    padding-left: 1rem;
   }
 }
 

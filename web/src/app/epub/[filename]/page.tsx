@@ -4,6 +4,8 @@ import { getEpubMeta } from "@/lib/epub";
 import ChapterList from "@/components/ChapterList";
 import ReadCTA from "@/components/ReadCTA";
 import { getGradientFromString } from "@/lib/color";
+import SiteFooter from "@/components/SiteFooter";
+import { ArrowLeft } from "@/components/icons";
 
 export const revalidate = 86400;
 
@@ -24,9 +26,9 @@ export default async function EpubBookPage({
     <main className="max-w-4xl mx-auto px-4 py-8 md:py-12">
       <Link
         href="/epub"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl glass-panel hover:bg-white/10 text-sm text-[var(--color-text-muted)] hover:text-white transition-all mb-8 group font-medium"
+        className="inline-flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl glass-panel hover:bg-white/10 text-sm text-[var(--color-text-muted)] hover:text-white transition-all mb-8 group font-medium"
       >
-        <span className="group-hover:-translate-x-1 transition-transform">←</span> Kho EPUB
+        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kho EPUB
       </Link>
 
       <div className={`relative overflow-hidden rounded-[2rem] mb-12 shadow-2xl glass-panel border border-white/10`}>
@@ -34,14 +36,14 @@ export default async function EpubBookPage({
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         
         <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center md:items-start">
-          {/* Big book cover representation */}
-          <div className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
+          {/* Big book cover representation (decorative — title is the h1 below) */}
+          <div aria-hidden="true" className={`w-40 md:w-56 aspect-[2/3] shrink-0 rounded-xl shadow-[0_15px_40px_rgba(0,0,0,0.5)] bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center p-5 border border-white/10`}>
             <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-white/20 to-transparent"></div>
             <div className="absolute left-0 top-0 bottom-0 w-[1px] bg-white/40"></div>
             <div className="absolute left-1.5 top-0 bottom-0 w-[1px] bg-black/20"></div>
-            <h2 className="font-serif font-bold text-center text-white/95 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] text-xl leading-snug line-clamp-6">
+            <p className="font-serif font-bold text-center text-white/95 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] text-xl leading-snug line-clamp-6">
               {meta.title || meta.filename}
-            </h2>
+            </p>
           </div>
 
           <div className="flex-1 text-center md:text-left flex flex-col h-full justify-center">
@@ -68,16 +70,28 @@ export default async function EpubBookPage({
       </div>
 
       <div className="max-w-2xl mx-auto">
-        <h3 className="text-xl font-bold mb-6 flex items-center gap-3 text-white/90">
-          <span className="w-8 h-[2px] bg-[var(--color-accent)] rounded-full"></span>
-          Mục lục
-        </h3>
+        <div className="ornament-divider mb-6">
+          <span className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent)] candle-glow" />
+            <span
+              style={{ fontFamily: "var(--font-ui-serif)" }}
+              className="text-[11px] font-semibold text-[var(--color-text-muted)] tracking-[0.25em]"
+            >
+              Mục Lục
+            </span>
+            <span className="text-[var(--color-accent)] text-[10px] opacity-50">
+              {meta.chapters.length}
+            </span>
+          </span>
+        </div>
         <ChapterList
           slug={`epub-${decodedFilename}`}
           chapters={meta.chapters}
           readHref={readHref}
         />
       </div>
+
+      <SiteFooter />
     </main>
   );
 }
