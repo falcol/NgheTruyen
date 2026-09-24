@@ -33,15 +33,17 @@ _NUMERIC_CAPTURE_RE = re.compile(
 )
 _NUMERIC_VALUE_RE = re.compile(r"[零〇一二两兩三四五六七八九十百千万萬亿億半几幾多\d]")
 _VIETPHRASE_SOURCE_RE = re.compile(r"^VietPhrase_[1-4]\.txt$", re.IGNORECASE)
-# Whole-gloss English leaks in the phrase corpora, e.g. 杀了我=Kill Me.
-# A gloss is dropped only when every word is in this set, so undiacritic
-# Vietnamese ("ra", "mang theo") and Hán Việt names ("Dung Linh") stay.
+# Whole-gloss English leaks in the phrase corpora, e.g. 杀了我=Kill Me,
+# 数据整理=Data Wrangling. A gloss is dropped only when every word is in
+# this set, so undiacritic Vietnamese ("ra", "mang theo") and Hán Việt
+# names ("Dung Linh") stay.
 _ENGLISH_GLOSS_WORDS = frozenset(
     {
         "attack",
         "boss",
         "cooldown",
         "damage",
+        "data",
         "hit",
         "kill",
         "killer",
@@ -52,6 +54,7 @@ _ENGLISH_GLOSS_WORDS = frozenset(
         "quest",
         "skill",
         "skills",
+        "wrangling",
     }
 )
 # Dictionary glosses of function phrases. A novel-scan name must not replace these.

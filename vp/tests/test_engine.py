@@ -60,6 +60,19 @@ def test_kill_me_falls_through_to_shorter_match():
     assert _engine(rows).translate("你杀了我。") == "Ngươi giết ta."
 
 
+def test_data_wrangling_falls_through_to_shorter_match():
+    skipped = parse_dict_lines("数据整理=Data Wrangling\n", 10, "VietPhrase_4.txt")
+    assert skipped == []
+    kept = parse_dict_lines("数据整理=Data Wrangling\n", 20, "Names.txt")
+    assert kept[0][1] == "Data Wrangling"
+    rows = []
+    rows += parse_dict_lines("把=đem\n", 10, "VietPhrase_2.txt")
+    rows += parse_dict_lines("数据=số liệu\n", 10, "VietPhrase_2.txt")
+    rows += parse_dict_lines("整理=chỉnh lý/sửa sang lại\n", 10, "VietPhrase_2.txt")
+    rows += parse_dict_lines("数据整理=Data Wrangling\n", 10, "VietPhrase_4.txt")
+    assert _engine(rows).translate("把数据整理。") == "Đem số liệu chỉnh lý."
+
+
 def test_grammar_overlay_does_not_replace_function_phrase():
     engine = _engine(
         [

@@ -440,10 +440,11 @@ function ReaderClientInner({
     else tts.playFromParagraph(chapterKey, paragraphs, idx);
   };
 
-  /** Click a paragraph → play from that paragraph (Read Aloud-style). Skip if user is selecting text. */
+  /** Click a paragraph → seek TTS to that paragraph. Only when TTS is active (user pressed Play first) — otherwise plain reading/selection. */
   const handleParagraphClick = useCallback(
     (idx: number) => {
       if (!paragraphs) return;
+      if (!tts.playing) return;
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) return;
       tts.playFromParagraph(chapterKey, paragraphs, idx);
@@ -846,8 +847,8 @@ function ReaderClientInner({
                   if (el) paragraphRefs.current[i] = el;
                 }}
                 onClick={() => handleParagraphClick(i)}
-                title="Phát từ đoạn này"
-                className={`reader-paragraph cursor-pointer ${i === 0 ? "drop-cap" : ""} ${
+                title={tts.playing ? "Phát từ đoạn này" : undefined}
+                className={`reader-paragraph ${tts.playing ? "cursor-pointer" : ""} ${i === 0 ? "drop-cap" : ""} ${
                   tts.activeRange &&
                   i >= tts.activeRange.start &&
                   i <= tts.activeRange.end
