@@ -904,6 +904,10 @@
 蓄积=tích tụ
 能摸爬滚打=đã lăn lộn
 摸爬滚打=lăn lộn
+在云端=trên đám mây
+在云端上=trên đám mây
+草他妈=con mẹ nó
+嘎吱=cọt kẹt
 
 
 

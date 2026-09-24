@@ -1037,11 +1037,26 @@ def _kid_zi_split(text: str, start: int, end: int) -> bool:
     )
 
 
+def _protected_name_steals_word(root: _Node, text: str, start: int, end: int) -> bool:
+    """A 2-char protected name must not eat the head of a longer word.
+
+    和一=Kazuichi (Names_2.txt) otherwise wins longest-match at 和 in
+    和一枚/和一些/和一群 (and + one viên/some/a group) and leaks
+    "Kazuichi Mai/chút/bầy" into Vietnamese. Split so 和 matches alone
+    and 一枚/一些/... match apart. A standalone name (no longer word
+    at the tail) is kept.
+    """
+    if end - start != 2 or start + 1 >= len(text):
+        return False
+    tail_len = _longest_word_len(root, text, start + 1)
+    return tail_len >= 2 and start + 1 + tail_len > end
+
+
 def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
     if _swallows_protected_name(root, text, step.start, step.end, step.pri, step.value):
         return True
     if _is_protected_name(step.pri, step.value):
-        return False
+        return _protected_name_steals_word(root, text, step.start, step.end)
     start, end = step.start, step.end
     return (
         _stolen_compound(root, text, start, end)

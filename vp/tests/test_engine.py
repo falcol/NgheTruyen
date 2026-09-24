@@ -205,6 +205,39 @@ def test_generic_phrase_does_not_swallow_name_tail():
     assert engine.translate("七彩琉璃") == "Lưu ly bảy màu"
 
 
+def test_protected_name_does_not_eat_yi_measure_word():
+    engine = _engine(
+        [
+            ("和", "cùng", 10, "VietPhrase_2.txt"),
+            ("和一", "Kazuichi", 20, "Names_2.txt"),
+            ("一枚", "một viên", 10, "VietPhrase_2.txt"),
+            ("一些", "một chút", 10, "VietPhrase_2.txt"),
+            ("丹药", "đan dược", 10, "VietPhrase_1.txt"),
+        ]
+    )
+    assert engine.translate("和一枚丹药") == "Cùng một viên đan dược"
+    assert engine.translate("和一些") == "Cùng một chút"
+
+
+def test_custom_overrides_junk_corpus_glosses():
+    engine = _engine(
+        [
+            ("在云端", "trên đám mây - Up In The Air", 10, "VietPhrase_4.txt"),
+            ("草他妈", "xxx mẹ nó", 10, "VietPhrase_2.txt"),
+            ("嘎吱", "cọt kẹt..t..tttt", 20, "Names_2.txt"),
+            ("云", "mây", 10, "VietPhrase_1.txt"),
+        ],
+        custom=[
+            ("在云端", "trên đám mây"),
+            ("草他妈", "con mẹ nó"),
+            ("嘎吱", "cọt kẹt"),
+        ],
+    )
+    assert engine.translate("在云端") == "Trên đám mây"
+    assert engine.translate("草他妈") == "Con mẹ nó"
+    assert engine.translate("嘎吱") == "Cọt kẹt"
+
+
 def test_kinship_title_alias():
     engine = _engine([("张", "trương", 0, "dict-default.json")])
     assert engine.hanviet("师兄") == "Sư huynh"
