@@ -525,6 +525,9 @@ class Engine:
                 if zh == "独子" and _duzi_adverb(text, step.end):
                     alone = self.exact_entry("独自")
                     value = alone[0] if alone and alone[0] else "một mình"
+                elif zh == "原因" and _yuanyin_willing(self, text, step.start, step.end, follow):
+                    willing = self.exact_entry("愿意")
+                    value = willing[0] if willing and willing[0] else "đồng ý"
                 elif zh == "一般" and _simile_yiban(text, step.start, step.end):
                     value = "vậy"
                 elif zh in _WORDS_OF and value in _BARE_PRONOUN and _speech_words(text, step.start):
@@ -602,6 +605,7 @@ class Engine:
             i += step.length
         toks = _merge_clan(toks)
         toks = _merge_possessive(toks)
+        toks = _nest_dantian_locative(toks)
         return " ".join(tok.value for tok in toks if not tok.drop and tok.value)
 
     def _step_at(
@@ -866,6 +870,10 @@ def _stolen_compound(root: _Node, text: str, start: int, end: int) -> bool:
                 continue
             if text[word_end - 1] not in _BOUND_COMPOUND_TAILS:
                 continue
+            # 着气=xả giận is a noisy bigram. It must not veto 看着/跟着
+            # the way 力气/灵气 veto a real stolen head.
+            if text[i:word_end] == "着气":
+                continue
             if (
                 i == end - 1
                 and wlen == 2
@@ -989,9 +997,21 @@ def _bad_de_glue(text: str, start: int, end: int) -> bool:
     return text[start:end] in {"的实力", "巅峰的"}
 
 
+def _de_steals_dantian(text: str, start: int, end: int) -> bool:
+    """心脏的=tim must not swallow 的 before 丹田."""
+    return end - start >= 2 and text[end - 1] == "的" and text.startswith("丹田", end)
+
+
 def _bad_vi_gloss(value: str) -> bool:
     """Corrupt corpora glosses. A shorter entry then applies."""
     return "ngững" in (value or "").casefold()
+
+
+def _zheqi_steals_qi(root: _Node, text: str, start: int, end: int) -> bool:
+    """着气=xả giận steals 气 from 气势/气息/气旋/气派/气泡."""
+    if text[start:end] != "着气":
+        return False
+    return _longest_word_len(root, text, start + 1) >= 2
 
 
 def _taidang_steals(text: str, start: int, end: int) -> bool:
@@ -1029,10 +1049,12 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _name_function_glue(root, text, start, end)
         or _custom_name_collision(root, text, start, end)
         or _bad_de_glue(text, start, end)
+        or _de_steals_dantian(text, start, end)
         or _splits_standing(text, start, end)
         or _splits_plural_pronoun(text, start, end)
         or _bad_vi_gloss(step.value)
         or _taidang_steals(text, start, end)
+        or _zheqi_steals_qi(root, text, start, end)
         or _count_sheng_steals_office(text, start, end)
         or _kid_zi_split(text, start, end)
     )
@@ -1115,6 +1137,97 @@ def _merge_clan(toks: list[_Tok]) -> list[_Tok]:
                 continue
         out.append(tok)
         i += 1
+    return out
+
+
+_DANTIAN_LOC = {
+    "丹田内": "đan điền",
+    "丹田中": "đan điền",
+    "丹田之中": "đan điền",
+    "丹田之内": "đan điền",
+    "丹田之里": "đan điền",
+}
+_BODY_SITE = frozenset({"腹部", "胸口", "眉心", "手臂", "头部", "小腹", "心口"})
+_COUNT_GE = frozenset("一二两三四五六七八九十百千几数多")
+_PLACE_PREFIXES = ("tại chính ", "ở chính ", "tại ", "ở ", "nơi ")
+
+
+def _strip_place_prefix(value: str) -> str:
+    text = value.strip()
+    folded = text.casefold()
+    for prefix in _PLACE_PREFIXES:
+        if folded.startswith(prefix):
+            return text[len(prefix) :].strip()
+    return text
+
+
+def _dantian_owner_phrase(left: _Tok, noun: str) -> str | None:
+    """丹田内=trong đan điền leaves the owner outside «trong»."""
+    val = (left.value or "").strip()
+    if not val or left.drop:
+        return None
+    zh = left.zh
+    folded = val.casefold()
+    if zh.endswith("处") or folded.startswith("nơi "):
+        place = _strip_place_prefix(val)
+        if not place:
+            return None
+        return f"trong {noun} ở {place}"
+    if zh.startswith("在") and len(zh) > 1:
+        core = _strip_place_prefix(val)
+        if core and core.casefold() != folded:
+            return f"trong {noun} của {core}"
+    if zh == "心脏":
+        return f"trong {noun} của {val}"
+    if zh in _BODY_SITE:
+        return f"trong {noun} ở {val}"
+    if zh.startswith("第") or folded.startswith("thứ "):
+        return f"trong {noun} {val}"
+    if zh.endswith("个") and all(ch in _COUNT_GE for ch in zh[:-1]):
+        return f"trong {val} {noun}"
+    if _is_possessive_head(left) or zh in {"自己", "自身"}:
+        return f"trong {noun} của {val}"
+    return None
+
+
+def _loc_owner_index(out: list[_Tok], dantian_start: int) -> int | None:
+    if not out:
+        return None
+    last = out[-1]
+    if last.zh in ("的", "旳") and last.end == dantian_start and len(out) >= 2:
+        owner = out[-2]
+        if owner.end == last.start and owner.value and not owner.drop:
+            return len(out) - 2
+        return None
+    if last.end == dantian_start and last.value and not last.drop and last.zh not in ("的", "旳"):
+        return len(out) - 1
+    return None
+
+
+def _nest_dantian_locative(toks: list[_Tok]) -> list[_Tok]:
+    out: list[_Tok] = []
+    for tok in toks:
+        noun = _DANTIAN_LOC.get(tok.zh)
+        if not noun or not tok.value or not tok.value.casefold().startswith("trong"):
+            out.append(tok)
+            continue
+        owner_i = _loc_owner_index(out, tok.start)
+        if owner_i is None:
+            out.append(tok)
+            continue
+        phrase = _dantian_owner_phrase(out[owner_i], noun)
+        if not phrase:
+            out.append(tok)
+            continue
+        start = out[owner_i].start
+        if " của " not in phrase and owner_i > 0:
+            name = out[owner_i - 1]
+            if name.end == start and name.value and (_is_possessive_head(name) or name.zh in {"自己", "自身"}):
+                phrase = f"{phrase} của {name.value}"
+                start = name.start
+                owner_i -= 1
+        del out[owner_i:]
+        out.append(_Tok(start, tok.end, tok.zh, phrase, tok.pri, False, "trie"))
     return out
 
 
@@ -1369,6 +1482,28 @@ def _capital_name_follows(engine: Engine, text: str, end: int) -> bool:
 
 def _duzi_adverb(text: str, end: int) -> bool:
     return end < len(text) and text[end] in _DUZI_ADVERB_NEXT
+
+
+_YUANYIN_WILLING_END = set("，。！？,.!?;；")
+
+
+def _yuanyin_willing(engine: Engine, text: str, start: int, end: int, follow: str = "") -> bool:
+    """只要 + tên + 原因 trước dấu câu là lỗi gõ 愿意, không phải «nguyên nhân»."""
+    if text[start:end] != "原因":
+        return False
+    nxt = text[end] if end < len(text) else (follow[:1] if follow else "")
+    if nxt not in _YUANYIN_WILLING_END:
+        return False
+    idx = text.rfind("只要", 0, start)
+    if idx < 0:
+        return False
+    if idx > 0 and "\u4e00" <= text[idx - 1] <= "\u9fff":
+        return False
+    mid = text[idx + 2 : start]
+    if not mid or len(mid) > 4 or any(ch in mid for ch in "的得地了着过"):
+        return False
+    hit = engine.exact_entry(mid)
+    return bool(hit and hit[1] >= 20 and hit[0][:1].isupper())
 
 
 def _station_noun(text: str, start: int) -> bool:

@@ -898,6 +898,12 @@
 赵福德=Triệu Phúc Đức
 好几个省=mấy tỉnh
 几个省=mấy tỉnh
+凌天放弃=Lăng Thiên từ bỏ
+形成气旋=hình thành luồng khí xoáy
+形成了气旋=tạo thành luồng khí xoáy
+蓄积=tích tụ
+能摸爬滚打=đã lăn lộn
+摸爬滚打=lăn lộn
 
 
 

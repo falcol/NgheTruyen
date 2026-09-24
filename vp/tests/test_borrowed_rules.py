@@ -73,6 +73,104 @@ def test_stolen_compound_keeps_closed_locative_and_real_noun():
     assert "nhân đan" not in dan
 
 
+def test_zheqi_does_not_split_qi_compound():
+    rows = [
+        ("看着", "nhìn", 10, "VietPhrase_2.txt"),
+        ("看", "xem", 10, "VietPhrase_2.txt"),
+        ("跟着", "đi theo", 10, "VietPhrase_2.txt"),
+        ("跟", "cùng", 10, "VietPhrase_2.txt"),
+        ("着气", "xả giận", 10, "VietPhrase_4.txt"),
+        ("着", "đang", 10, "VietPhrase_2.txt"),
+        ("气势", "khí thế", 10, "VietPhrase_2.txt"),
+        ("气息", "khí tức", 10, "VietPhrase_2.txt"),
+        ("气", "khí", 10, "VietPhrase_2.txt"),
+        ("势", "thế", 5, "ChinesePhienAmWords.txt"),
+        ("息", "tức", 5, "ChinesePhienAmWords.txt"),
+        ("蓄积", "súc tích", 10, "VietPhrase_2.txt"),
+        ("冒着", "bốc lên", 10, "VietPhrase_2.txt"),
+        ("冒", "mạo", 10, "VietPhrase_2.txt"),
+        ("气泡", "bọt khí", 10, "VietPhrase_2.txt"),
+        ("泡", "ngâm", 10, "VietPhrase_2.txt"),
+        ("喘着气", "thở hổn hển", 10, "VietPhrase_2.txt"),
+        ("喘", "thở", 10, "VietPhrase_2.txt"),
+        ("生着气", "đang tức giận", 10, "VietPhrase_2.txt"),
+        ("力气", "sức lực", 10, "VietPhrase_2.txt"),
+        ("力", "lực", 10, "VietPhrase_2.txt"),
+        ("没力", "không sức", 10, "VietPhrase_2.txt"),
+        ("没", "không", 10, "VietPhrase_2.txt"),
+    ]
+    kan = _low(rows, "看着气势")
+    assert "khí thế" in kan
+    assert "xả giận" not in kan
+    gen = _low(rows, "跟着气息")
+    assert "đi theo" in gen
+    assert "khí tức" in gen
+    assert "xả giận" not in gen
+    xu = _low(rows, "蓄积着气势")
+    assert xu == "súc tích khí thế"
+    custom = _low(rows + [("蓄积", "tích tụ", 999, "Custom.txt")], "蓄积着气势")
+    assert custom == "tích tụ khí thế"
+    pao = _low(rows, "冒着气泡")
+    assert "bọt khí" in pao
+    assert "xả giận" not in pao
+    assert "ngâm" not in pao
+    assert _low(rows, "喘着气") == "thở hổn hển"
+    assert _low(rows, "生着气") == "đang tức giận"
+    assert _low(rows, "着气") == "xả giận"
+    mei = _low(rows, "没力气")
+    assert "sức lực" in mei
+    assert "khí" not in mei
+
+
+def test_dantian_locative_keeps_owner_inside():
+    rows = [
+        ("进入", "tiến vào", 10, "VietPhrase_2.txt"),
+        ("心脏的", "tim", 10, "VietPhrase_3.txt"),
+        ("心脏", "trái tim", 10, "VietPhrase_2.txt"),
+        ("的", "đích", 10, "VietPhrase_2.txt"),
+        ("丹田之中", "trong đan điền", 10, "VietPhrase_1.txt"),
+        ("丹田内", "trong đan điền", 10, "VietPhrase_2.txt"),
+        ("丹田", "đan điền", 10, "VietPhrase_2.txt"),
+        ("第二", "thứ hai", 10, "VietPhrase_2.txt"),
+        ("涌入", "tràn vào", 10, "VietPhrase_2.txt"),
+        ("董鹏", "Đổng Bằng", 20, "Names.txt"),
+        ("在", "tại", 10, "VietPhrase_2.txt"),
+        ("七个", "bảy", 10, "VietPhrase_2.txt"),
+        ("腹部", "phần bụng", 10, "VietPhrase_2.txt"),
+        ("心脏处的", "nơi buồng tim", 10, "VietPhrase_3.txt"),
+        ("心脏处", "nơi buồng tim", 10, "VietPhrase_2.txt"),
+        ("冲进", "xông vào", 10, "VietPhrase_2.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+    ]
+    heart = _low(rows, "进入心脏的丹田之中")
+    assert heart == "tiến vào trong đan điền của trái tim"
+    assert "tim trong" not in heart
+    assert _low(rows, "涌入第二丹田内") == "tràn vào trong đan điền thứ hai"
+    assert _low(rows, "在董鹏丹田内") == "tại trong đan điền của đổng bằng"
+    assert _low(rows, "进入腹部丹田内") == "tiến vào trong đan điền ở phần bụng"
+    assert _low(rows, "七个丹田内") == "trong bảy đan điền"
+    place = _low(rows, "冲进凌天心脏处的丹田之中")
+    assert place == "xông vào trong đan điền ở buồng tim của lăng thiên"
+    assert _low(rows, "进入丹田内") == "tiến vào trong đan điền"
+
+
+def test_mocapgunda_is_past_struggle_not_groping():
+    rows = [
+        ("能摸爬滚打", "đã lăn lộn", 999, "Custom.txt"),
+        ("摸爬滚打", "lăn lộn", 999, "Custom.txt"),
+        ("摸爬滚打", "sờ soạng lần mò", 10, "VietPhrase_1.txt"),
+        ("能", "có thể", 10, "VietPhrase_2.txt"),
+        ("成为", "trở thành", 10, "VietPhrase_2.txt"),
+        ("先天武者", "Tiên Thiên võ giả", 20, "Names_2.txt"),
+    ]
+    out = _low(rows, "能摸爬滚打成为先天武者")
+    assert "đã lăn lộn" in out
+    assert "trở thành" in out
+    assert "tiên thiên võ giả" in out
+    assert "sờ soạng" not in out
+    assert "có thể" not in out
+
+
 def test_eat_phrase_not_forced_by_custom_overflow():
     rows = [
         ("在吃", "đang ăn", 10, "VietPhrase_2.txt"),
@@ -491,6 +589,30 @@ def test_shuiyue_is_not_split_by_huishui_or_huishui():
     )
     assert "bắt đầu" in kept
     assert "thủy luyện" not in kept
+
+
+def test_zhiyao_name_yuanyin_before_punct_is_willing():
+    rows = [
+        ("只要", "chỉ cần", 10, "VietPhrase_1.txt"),
+        ("原因", "nguyên nhân", 10, "VietPhrase_1.txt"),
+        ("愿意", "đồng ý", 999, "Custom.txt"),
+        ("董鹏", "Đổng Bằng", 999, "Custom.txt"),
+        ("这把剑", "thanh kiếm này", 10, "VietPhrase_1.txt"),
+        ("因为", "bởi vì", 10, "VietPhrase_1.txt"),
+        ("自己", "mình", 10, "VietPhrase_1.txt"),
+        ("的", "của", 10, "VietPhrase_1.txt"),
+        ("她", "nàng", 10, "VietPhrase_1.txt"),
+        ("来", "đến", 10, "VietPhrase_1.txt"),
+    ]
+    out = _low(rows, "只要董鹏原因，这把剑")
+    assert "đổng bằng đồng ý" in out
+    assert "nguyên nhân" not in out
+    real = _low(rows, "因为自己的原因，")
+    assert "nguyên nhân" in real
+    assert "đồng ý" not in real
+    come = _low(rows, "只要她原因来")
+    assert "nguyên nhân" in come
+    assert "đồng ý" not in come
 
 
 def test_bare_duzi_before_verb_is_alone():

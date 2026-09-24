@@ -917,7 +917,7 @@ function ReaderClientInner({
       </main>
 
       <Player
-        hidden={false}
+        hidden={isScrollingDown && !pickerOpen}
         playing={tts.playing}
         paused={tts.paused}
         loading={tts.loading}
