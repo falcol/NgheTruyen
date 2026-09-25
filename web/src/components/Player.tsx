@@ -21,7 +21,9 @@ import {
 } from "@/components/icons";
 import type { TTSVoice } from "@/lib/tts-voices";
 
-const RATES = [0.75, 1, 1.25, 1.5, 2];
+const MIN_RATE = 1;
+const MAX_RATE = 6;
+const RATE_STEP = 0.1;
 
 function Chip({
   active,
@@ -105,12 +107,11 @@ export default function Player({
       ? Math.round((currentIdx / totalParagraphs) * 100)
       : 0;
 
-  useEffect(() => {
-    if (hidden && showSettings) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- pre-existing sync of internal sheet state to external `hidden` prop; not in scope for this presentation-only pass.
-      setShowSettings(false);
-    }
-  }, [hidden, showSettings]);
+  // Bar must stay visible while TTS is active (playing/paused/loading) or the
+  // settings sheet is open. Otherwise auto-follow scrolling during playback
+  // sets `hidden` (scroll down) → the settings button slides away unreachable,
+  // and the sheet can never be opened while TTS reads.
+  const barHidden = hidden && !showSettings && !playing && !loading;
 
   useEffect(() => {
     if (!showSettings) return;
@@ -124,7 +125,7 @@ export default function Player({
   return (
     <>
       {/* Floating player bar */}
-      <div className={`fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel rounded-2xl z-40 transition-all duration-500 ease-out ${hidden ? "translate-y-32 opacity-0 md:translate-y-0 md:opacity-100" : "translate-y-0 opacity-100"}`}>
+      <div className={`fixed bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl glass-panel rounded-2xl z-40 transition-all duration-500 ease-out ${barHidden ? "translate-y-32 opacity-0 md:translate-y-0 md:opacity-100" : "translate-y-0 opacity-100"}`}>
         {playing && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-border)] rounded-t-2xl overflow-hidden">
             <div
@@ -361,16 +362,34 @@ export default function Player({
                       </Chip>
                     ))}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {RATES.map((r) => (
-                      <Chip
-                        key={r}
-                        active={rate === r}
-                        onClick={() => onRateChange(r)}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">
+                        Tốc độ
+                      </span>
+                      <span
+                        className="text-sm font-semibold text-[var(--color-accent)] tabular-nums"
+                        aria-live="polite"
                       >
-                        {r}x
-                      </Chip>
-                    ))}
+                        {rate.toFixed(1)}x
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={MIN_RATE}
+                      max={MAX_RATE}
+                      step={RATE_STEP}
+                      value={rate}
+                      onChange={(e) =>
+                        onRateChange(parseFloat(e.target.value))
+                      }
+                      aria-label="Tốc độ đọc"
+                      className="w-full min-h-[44px] accent-[var(--color-accent)] cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[10px] text-[var(--color-text-muted)] font-medium">
+                      <span>{MIN_RATE.toFixed(1)}x</span>
+                      <span>{MAX_RATE.toFixed(1)}x</span>
+                    </div>
                   </div>
                 </div>
               </div>

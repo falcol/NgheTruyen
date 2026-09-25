@@ -903,11 +903,13 @@ export function useTTS() {
   }, [playChunkAt, stopAudio]);
 
   const setRate = useCallback((newRate: number) => {
-    if (rateRef.current === newRate) return;
-    rateRef.current = newRate;
-    setRateState(newRate);
-    if (primaryRef.current) primaryRef.current.playbackRate = newRate;
-    if (secondaryRef.current) secondaryRef.current.playbackRate = newRate;
+    if (!Number.isFinite(newRate)) return;
+    const clamped = Math.min(6, Math.max(1, Math.round(newRate * 10) / 10));
+    if (rateRef.current === clamped) return;
+    rateRef.current = clamped;
+    setRateState(clamped);
+    if (primaryRef.current) primaryRef.current.playbackRate = clamped;
+    if (secondaryRef.current) secondaryRef.current.playbackRate = clamped;
   }, []);
 
   const setVoice = useCallback(

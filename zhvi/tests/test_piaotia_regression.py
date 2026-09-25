@@ -148,3 +148,27 @@ def test_real_dict_kept_improvements(real_dict):
     xi = _low(real_dict, "深吸了一口气")
     assert "hít" in xi
     assert "hút thở ra" not in xi
+
+
+def test_real_dict_yibaidu_temperature_not_baidu(real_dict):
+    # manh-nhat l.18245: 超过一百度 là nhiệt độ (>100 độ); Names_2.txt có
+    # 一百度=Baidu sai — Custom.txt override 一百度=một trăm độ.
+    low = _low(real_dict, "超过一百度")
+    assert "trăm độ" in low
+    assert "baidu" not in low
+
+
+def test_real_dict_baidu_search_verb_kept(real_dict):
+    # 百度 đứng riêng (động từ "tra Baidu") vẫn giữ Baidu.
+    low = _low(real_dict, "拿出手机，快速百度")
+    assert "baidu" in low
+
+
+def test_real_dict_qianbaidu_temperature_not_baidu(real_dict):
+    # Cùng lớp với 一百度: 千百度 là nghìn độ, không phải Baidu.
+    # Cụm thơ dài đã có entry riêng (VietPhrase_3) nên longest-match không đổi.
+    low = _low(real_dict, "火焰温度高达千百度")
+    assert "nghìn độ" in low
+    assert "baidu" not in low
+    poetic = _low(real_dict, "众里寻他千百度")
+    assert "baidu" not in poetic

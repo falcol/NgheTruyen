@@ -908,6 +908,14 @@
 在云端上=trên đám mây
 草他妈=con mẹ nó
 嘎吱=cọt kẹt
+# 2026-09-25 manh-nhat ch.1318: nguồn typo 接机 (=借机), đè VietPhrase_2 接机=nhận điện thoại
+接机领悟剑意=nhân cơ hội lĩnh ngộ kiếm ý
+# 2026-09-25 manh-nhat ch.1318: nguồn nghi typo 凝视 (=凝实), cụm dài chỉ khớp ngữ cảnh thần niệm
+神念更凝视=thần niệm càng ngưng thực
+# 2026-09-25 manh-nhat l.18245: 超过一百度 là nhiệt độ (>100 độ), không phải Baidu; override Names_2.txt:101454 (一百度=Baidu). 百度 đứng riêng (VD 快速百度) vẫn giữ Baidu.
+一百度=một trăm độ
+# 2026-09-25 cùng lớp: 千百度 là nghìn độ/nghìn lần, không phải Baidu; override Names_2.txt:102008 (千百度=Baidu). Cụm thơ dài 众里寻他千百度 đã có entry riêng nên không ảnh hưởng.
+千百度=nghìn độ
 
 
 
