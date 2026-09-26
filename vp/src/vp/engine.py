@@ -974,8 +974,32 @@ def _is_custom_name_node(node: _Node, source: str) -> bool:
     )
 
 
-def _custom_name_collision(root: _Node, text: str, start: int, end: int) -> bool:
-    """Glue of at most 3 characters steals the head of a Custom name."""
+def _capital_ascii_tokens(value: str) -> set[str]:
+    """Whole tokens written as capitalized ASCII, such as John or USD."""
+    found: set[str] = set()
+    for token in (value or "").split():
+        core = token.strip(".,;:!?\"'()[]")
+        if len(core) < 2 or not core.isascii() or not core[:1].isupper():
+            continue
+        if any(ch.isalpha() for ch in core):
+            found.add(core.casefold())
+    return found
+
+
+def _custom_name_collision(
+    root: _Node,
+    text: str,
+    start: int,
+    end: int,
+    span_value: str = "",
+) -> bool:
+    """Glue of at most 3 characters steals a Custom name.
+
+    The name may run past the glue (是小|美). It may also sit inside a
+    longer compound whose gloss still uses a capitalized English name
+    (和约翰=cùng John). Compounds without that English token stay, so
+    走大道 and 泡小美 are not split.
+    """
     if end - start > 3:
         return False
     n = len(text)
@@ -988,9 +1012,13 @@ def _custom_name_collision(root: _Node, text: str, start: int, end: int) -> bool
                 break
             node = nxt
             j += 1
-            if j - i < 2 or j <= end:
+            if j - i < 2 or not _is_custom_name_node(node, text[i:j]):
                 continue
-            if _is_custom_name_node(node, text[i:j]):
+            if j > end:
+                return True
+            if j == end and (
+                _capital_ascii_tokens(span_value) - _capital_ascii_tokens(node.v or "")
+            ):
                 return True
     return False
 
@@ -1025,6 +1053,25 @@ def _taidang_steals(text: str, start: int, end: int) -> bool:
 def _count_sheng_steals_office(text: str, start: int, end: int) -> bool:
     """几个省 must not eat 省 of 省厅/省内/省份/省里/省长."""
     return text[start:end] in {"几个省", "好几个省"} and end < len(text) and text[end] in "厅内份里长"
+
+
+def _jian_shan_not_place(root: _Node, text: str, start: int, end: int) -> bool:
+    """见山=Miyama is a place name. It must not eat 山贼, nor the proverb 见山不是山."""
+    if text[start:end] != "见山":
+        return False
+    if text.startswith(("不是山", "是山"), end):
+        return True
+    tail = _longest_word_len(root, text, start + 1)
+    return tail >= 2 and start + 1 + tail > end
+
+
+def _splits_kaimen_jianshan(text: str, start: int, end: int) -> bool:
+    """就开门=sẽ mở cửa must not cut 开 off 开门见山."""
+    idiom = "开门见山"
+    idx = text.find(idiom, start, end + len(idiom))
+    if idx < 0:
+        return False
+    return idx < end and idx + len(idiom) > end
 
 
 def _kid_zi_split(text: str, start: int, end: int) -> bool:
@@ -1065,7 +1112,7 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _stolen_pronoun_np(root, text, start, end)
         or _idiom_overflow(root, text, start, end)
         or _name_function_glue(root, text, start, end)
-        or _custom_name_collision(root, text, start, end)
+        or _custom_name_collision(root, text, start, end, step.value)
         or _bad_de_glue(text, start, end)
         or _de_steals_dantian(text, start, end)
         or _splits_standing(text, start, end)
@@ -1074,6 +1121,8 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _taidang_steals(text, start, end)
         or _zheqi_steals_qi(root, text, start, end)
         or _count_sheng_steals_office(text, start, end)
+        or _jian_shan_not_place(root, text, start, end)
+        or _splits_kaimen_jianshan(text, start, end)
         or _kid_zi_split(text, start, end)
     )
 
@@ -1249,6 +1298,23 @@ def _nest_dantian_locative(toks: list[_Tok]) -> list[_Tok]:
     return out
 
 
+# 握着青割的秦书宝: the name after 的 does the action. Not 青割's 秦书宝.
+# 想着/看着 stay possessive (想着凌天的灭元弩, 看着凌天的手).
+_ZHE_AGENT = frozenset("握拿持牵拉抱搂扶背扛护守跟带陪追拦挡骑抓捏提")
+
+
+def _agentive_relative(toks: list[_Tok], left: _Tok) -> bool:
+    if len(toks) < 2:
+        return False
+    verb = toks[-2]
+    if verb.end != left.start or not verb.zh:
+        return False
+    zh = verb.zh
+    if len(zh) < 2 or zh[-1] not in "着著":
+        return False
+    return zh[-2] in _ZHE_AGENT
+
+
 def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
     """Name or pronoun + 的 + noun -> 'noun của name'. Time nouns use ở."""
     out: list[_Tok] = []
@@ -1285,6 +1351,25 @@ def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
                 and _is_possessive_head(left)
                 and right.zh not in _DE_SKIP_RIGHT
             ):
+                if (
+                    _agentive_relative(out, left)
+                    and right.value[:1].isupper()
+                    and right.zh not in _TIME_AFTER_DE
+                ):
+                    verb = out[-2]
+                    phrase = f"{right.value} {verb.value} {left.value}"
+                    out[-2] = _Tok(
+                        verb.start,
+                        right.end,
+                        verb.zh + left.zh + tok.zh + right.zh,
+                        phrase,
+                        right.pri,
+                        False,
+                        "trie",
+                    )
+                    out.pop()
+                    i += 2
+                    continue
                 if right.zh in _TIME_AFTER_DE:
                     joined = f"{right.value} ở {left.value}"
                 else:

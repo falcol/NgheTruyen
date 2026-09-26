@@ -311,6 +311,43 @@ def test_de_phrase_is_not_split_into_shorter_stem():
     assert "nếu" not in speech
 
 
+def test_he_yuehan_keeps_custom_name_not_english():
+    """和约翰=cùng John is longer than 约翰 and used to hide Ước Hàn.
+
+    和约=hòa ước is the shorter fallback and must be rejected too, because
+    约翰 continues past it. 走大道 and 泡小美 have no English name token.
+    """
+    rows = [
+        ("和", "cùng", 10, "VietPhrase_2.txt"),
+        ("和约", "hòa ước", 10, "VietPhrase_2.txt"),
+        ("和约翰", "cùng John", 10, "VietPhrase_2.txt"),
+        ("约翰", "John", 20, "Names.txt"),
+        ("约翰", "Ước Hàn", 999, "Custom.txt"),
+        ("约", "ước", 5, "ChinesePhienAmWords.txt"),
+        ("翰", "hàn", 5, "ChinesePhienAmWords.txt"),
+        ("走进了", "đi vào", 10, "VietPhrase_1.txt"),
+        ("老", "lão", 10, "VietPhrase_1.txt"),
+        ("老约翰", "lão John", 10, "VietPhrase_3.txt"),
+        ("小", "tiểu", 10, "VietPhrase_1.txt"),
+        ("小约翰", "Little John", 10, "VietPhrase_4.txt"),
+        ("走", "đi", 10, "VietPhrase_1.txt"),
+        ("走大道", "đi đường lớn", 10, "VietPhrase_2.txt"),
+        ("大道", "Đại Đạo", 999, "Custom.txt"),
+        ("泡小美", "cua gái đẹp", 10, "VietPhrase_2.txt"),
+        ("小美", "Tiểu Mỹ", 999, "Custom.txt"),
+        ("叫", "gọi", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert engine.translate("和约翰走进了") == "Cùng Ước Hàn đi vào"
+    assert engine.translate("叫约翰") == "Gọi Ước Hàn"
+    assert "john" not in engine.translate("老约翰").lower()
+    assert "ước hàn" in engine.translate("老约翰").lower()
+    assert "john" not in engine.translate("小约翰").lower()
+    assert "ước hàn" in engine.translate("小约翰").lower()
+    assert engine.translate("走大道") == "Đi đường lớn"
+    assert engine.translate("泡小美") == "Cua gái đẹp"
+
+
 def test_custom_name_beats_short_glue():
     rows = [
         ("左边", "bên trái", 10, "VietPhrase_1.txt"),
@@ -324,6 +361,58 @@ def test_custom_name_beats_short_glue():
     assert "tiểu mỹ" in text
     assert "nhỏ đẹp" not in text
     assert "là nhỏ" not in text
+
+
+def test_miyama_does_not_eat_bandit_or_idiom():
+    rows = [
+        ("见山", "Miyama", 10, "VietPhrase_4.txt"),
+        ("见", "thấy", 10, "VietPhrase_1.txt"),
+        ("山", "núi", 10, "VietPhrase_1.txt"),
+        ("山贼们", "bọn sơn tặc", 10, "VietPhrase_2.txt"),
+        ("贼", "tặc", 10, "VietPhrase_1.txt"),
+        ("们", "nhóm", 10, "VietPhrase_1.txt"),
+        ("服服帖帖", "ngoan ngoãn", 10, "VietPhrase_1.txt"),
+        ("不是", "không phải", 10, "VietPhrase_1.txt"),
+        ("是", "là", 10, "VietPhrase_1.txt"),
+        ("就开门", "sẽ mở cửa", 10, "VietPhrase_1.txt"),
+        ("就开", "sẽ mở", 10, "VietPhrase_1.txt"),
+        ("就", "sẽ", 10, "VietPhrase_1.txt"),
+        ("开门", "mở cửa", 10, "VietPhrase_1.txt"),
+        ("开门见山道", "nói ngay vào điểm chính", 10, "VietPhrase_1.txt"),
+        ("道", "đạo", 10, "VietPhrase_1.txt"),
+        ("龙见山", "Long Kiến Sơn", 20, "Names.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert engine.translate("见山贼们服服帖帖") == "Thấy bọn sơn tặc ngoan ngoãn"
+    assert "miyama" not in engine.translate("见山不是山，见山是山").lower()
+    assert engine.translate("见山不是山") == "Thấy núi không phải núi"
+    assert engine.translate("见山是山") == "Thấy núi là núi"
+    assert engine.translate("就开门见山道") == "Sẽ nói ngay vào điểm chính"
+    assert engine.translate("龙见山") == "Long Kiến Sơn"
+
+
+def test_zhe_name_de_name_is_relative_not_possessive():
+    """握着青割的秦书宝 is Qin holding the blade, not the blade's Qin."""
+    rows = [
+        ("握着", "cầm", 10, "VietPhrase_1.txt"),
+        ("牵着", "nắm", 10, "VietPhrase_1.txt"),
+        ("想着", "nghĩ", 10, "VietPhrase_1.txt"),
+        ("青割", "Thanh Cát", 30, "Names.txt"),
+        ("秦书宝", "Tần Thư Bảo", 30, "Names.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("手", "tay", 10, "VietPhrase_1.txt"),
+        ("武者", "Vũ Giả", 25, "VietPhrase_1.txt"),
+        ("灭元弩", "Diệt Nguyên Nỗ", 30, "Names.txt"),
+        ("花少", "Hoa thiếu", 20, "Names.txt"),
+        ("耻辱", "sỉ nhục", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert engine.translate("握着青割的秦书宝") == "Tần Thư Bảo cầm Thanh Cát"
+    assert engine.translate("牵着凌天的武者") == "Vũ Giả nắm Lăng Thiên"
+    assert engine.translate("握着凌天的手") == "Cầm tay của Lăng Thiên"
+    assert "của" in engine.translate("想着凌天的灭元弩").lower()
+    assert engine.translate("想着凌天的灭元弩") == "Nghĩ Diệt Nguyên Nỗ của Lăng Thiên"
+    assert "sỉ nhục của hoa thiếu" in engine.translate("花少的耻辱").lower()
 
 
 def test_possessive_de_name_pronoun_time_and_skips():
