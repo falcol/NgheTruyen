@@ -381,6 +381,8 @@
 归元宗=Quy Nguyên Tông
 圣羽宗=Thánh Vũ Tông
 炼剑宗=Luyện Kiếm Tông
+情剑宗=Tình Kiếm Tông
+炎宗=Viêm Tông
 瑶花宗=Dao Hoa Tông
 明乐宗=Minh Nhạc Tông
 柳生家族=Liễu Sinh Gia Tộc
@@ -701,6 +703,10 @@
 再不济=cùng lắm
 基本不可能了=cơ bản không còn khả năng
 也将锈剑收了起来=cũng thu kiếm rỉ vào
+绣剑=Tú Kiếm
+剑灵=Kiếm Linh
+你的剑灵=Kiếm Linh của ngươi
+我的剑灵=Kiếm Linh của ta
 不停在=không ngừng ở
 蹭着=cọ
 仿佛由所持一样=phảng phất như có chỗ dựa

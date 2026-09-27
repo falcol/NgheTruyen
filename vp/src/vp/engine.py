@@ -493,6 +493,18 @@ class Engine:
                 trie = _trie_match(self.root, text, pos, strong)
                 over = _overlay_match(text, pos, strong, overlay)
                 best = _better(over, trie)
+        while best and _eats_jianling(text, best.start, best.end):
+            cut = best.end - 1
+            if cut <= pos:
+                best = None
+                break
+            trie = _trie_match(self.root, text, pos, cut)
+            over = _overlay_match(text, pos, cut, overlay)
+            nxt = _better(over, trie)
+            if nxt is None or nxt.end > cut:
+                best = None
+                break
+            best = nxt
         if best:
             return best
         ch = text[pos]
@@ -1092,11 +1104,58 @@ def _protected_name_steals_word(root: _Node, text: str, start: int, end: int) ->
     "Kazuichi Mai/chút/bầy" into Vietnamese. Split so 和 matches alone
     and 一枚/一些/... match apart. A standalone name (no longer word
     at the tail) is kept.
+
+    宗和=Sowa and 宗的=tông are not that longer word: 炎宗/剑宗 must
+    stay intact before 和 or 的. A real longer hit such as 宗和尚 still
+    splits the name.
     """
     if end - start != 2 or start + 1 >= len(text):
         return False
+    # 绣剑 is the same sword as 锈剑. 剑灵 is its spirit.
+    # 剑的/灵能/灵隐 must not split those names.
+    if text[start:end] in {"绣剑", "剑灵"}:
+        return False
     tail_len = _longest_word_len(root, text, start + 1)
+    if tail_len == 2 and text.startswith(("宗和", "宗的"), start + 1):
+        return False
     return tail_len >= 2 and start + 1 + tail_len > end
+
+
+# 叫宗和 / 名为宗和 is the foreign name, not 宗 + và.
+_ZONGHE_NAME_INTRO = frozenset("叫喊名为称问")
+
+
+def _eats_jianling(text: str, start: int, end: int) -> bool:
+    """锈剑的剑 and 祥符剑 must not eat 剑 of 剑灵."""
+    return (
+        end - start >= 2
+        and end <= len(text)
+        and text[end - 1] == "剑"
+        and end < len(text)
+        and text[end] == "灵"
+    )
+
+
+def _zong_de_swallows(text: str, start: int, end: int) -> bool:
+    """宗的=tông deletes 的. 的人=nhân does the same after a sect ending in 宗.
+
+    炎宗的人 and 暗月门的人 are người của the sect. 来神尊墓地的人 stays
+    in source order, because that 的人 is not glued to 宗 or 门.
+    """
+    if text[start:end] == "宗的":
+        return True
+    return text[start:end] == "的人" and start > 0 and text[start - 1] in "宗门"
+
+
+def _zonghe_sowa(text: str, start: int, end: int) -> bool:
+    """VietPhrase_4 宗和=Sowa must not glue 宗 to 和 'and'.
+
+    Bare 宗和 at the start of a CJK run stays Sowa. So does 叫宗和过来.
+    情剑宗和炎宗, 两大宗和妖族, and 时空宗和时空帝君 split.
+    """
+    if text[start:end] != "宗和" or start == 0 or end >= len(text):
+        return False
+    return text[start - 1] not in _ZONGHE_NAME_INTRO
 
 
 def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
@@ -1124,6 +1183,8 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _jian_shan_not_place(root, text, start, end)
         or _splits_kaimen_jianshan(text, start, end)
         or _kid_zi_split(text, start, end)
+        or _zonghe_sowa(text, start, end)
+        or _zong_de_swallows(text, start, end)
     )
 
 

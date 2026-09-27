@@ -391,6 +391,136 @@ def test_miyama_does_not_eat_bandit_or_idiom():
     assert engine.translate("龙见山") == "Long Kiến Sơn"
 
 
+def test_zonghe_sowa_is_not_and_between_sects():
+    rows = [
+        ("宗和", "Sowa", 10, "VietPhrase_4.txt"),
+        ("宗", "tông", 10, "VietPhrase_1.txt"),
+        ("和", "cùng", 10, "VietPhrase_1.txt"),
+        ("情", "chuyện", 10, "VietPhrase_1.txt"),
+        ("剑", "kiếm", 10, "VietPhrase_1.txt"),
+        ("剑宗", "Kiếm Tông", 999, "Custom.txt"),
+        ("炎宗", "Viêm Tông", 20, "Names.txt"),
+        ("人", "người", 10, "VietPhrase_1.txt"),
+        ("两大", "hai đại", 10, "VietPhrase_1.txt"),
+        ("大宗", "đại tông", 10, "VietPhrase_2.txt"),
+        ("大", "đại", 10, "VietPhrase_1.txt"),
+        ("妖族", "Yêu Tộc", 20, "Names.txt"),
+        ("时空", "thời không", 10, "VietPhrase_1.txt"),
+        ("时空帝君", "Thì Không Đế Quân", 20, "Names.txt"),
+        ("万宝宗", "Vạn Bảo Tông", 20, "Names.txt"),
+        ("叫", "gọi", 10, "VietPhrase_1.txt"),
+        ("过来", "qua đây", 10, "VietPhrase_1.txt"),
+        ("宗和尚", "Tông hòa thượng", 10, "VietPhrase_4.txt"),
+        ("和尚", "hòa thượng", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert engine.translate("情剑宗和炎宗") == "Chuyện Kiếm Tông cùng Viêm Tông"
+    named = _engine(rows + [("情剑宗", "Tình Kiếm Tông", 999, "Custom.txt")], luat_nhan=0)
+    assert named.translate("情剑宗和炎宗") == "Tình Kiếm Tông cùng Viêm Tông"
+    assert named.translate("炎宗和情剑宗的人") == "Viêm Tông cùng người của Tình Kiếm Tông"
+    assert "sowa" not in engine.translate("这两大宗和妖族").lower()
+    assert "sowa" not in engine.translate("时空宗和时空帝君").lower()
+    assert engine.translate("剑宗和万宝宗") == "Kiếm Tông cùng Vạn Bảo Tông"
+    assert engine.translate("宗和") == "Sowa"
+    assert engine.translate("叫宗和过来") == "Gọi Sowa qua đây"
+    assert engine.translate("宗和尚") == "Tông hòa thượng"
+
+
+def test_yanzong_de_keeps_sect_name():
+    rows = [
+        ("炎宗", "Viêm Tông", 999, "Custom.txt"),
+        ("炎", "viêm", 10, "VietPhrase_3.txt"),
+        ("宗", "tông", 10, "VietPhrase_2.txt"),
+        ("宗的", "tông", 10, "VietPhrase_3.txt"),
+        ("的人", "nhân", 10, "VietPhrase_4.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+        ("人", "người", 10, "VietPhrase_1.txt"),
+        ("弟子", "đệ tử", 10, "VietPhrase_1.txt"),
+        ("两个", "hai cái", 10, "VietPhrase_1.txt"),
+        ("情剑宗", "Tình Kiếm Tông", 999, "Custom.txt"),
+        ("和", "cùng", 10, "VietPhrase_1.txt"),
+        ("看着", "nhìn xem", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert engine.translate("炎宗的人") == "Người của Viêm Tông"
+    assert engine.translate("炎宗的弟子") == "Đệ tử của Viêm Tông"
+    assert engine.translate("炎宗两个") == "Viêm Tông hai cái"
+    assert engine.translate("看着情剑宗和炎宗的人") == "Nhìn xem Tình Kiếm Tông cùng người của Viêm Tông"
+
+
+def test_xiujian_is_tu_kiem_not_embroider():
+    rows = [
+        ("绣剑", "Tú Kiếm", 999, "Custom.txt"),
+        ("绣", "thêu", 10, "VietPhrase_1.txt"),
+        ("剑", "kiếm", 10, "VietPhrase_1.txt"),
+        ("剑的", "kiếm", 10, "VietPhrase_3.txt"),
+        ("剑一", "kiếm nhất", 10, "VietPhrase_4.txt"),
+        ("剑来", "kiếm đến", 10, "VietPhrase_4.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+        ("剑灵", "kiếm linh", 10, "VietPhrase_1.txt"),
+        ("一提", "nhấc lên", 10, "VietPhrase_1.txt"),
+        ("来说", "mà nói", 10, "VietPhrase_1.txt"),
+        ("提着", "dẫn theo", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert "thêu" not in engine.translate("提着绣剑").lower()
+    assert engine.translate("提着绣剑") == "Dẫn theo Tú Kiếm"
+    assert engine.translate("绣剑的剑灵") == "Kiếm linh của Tú Kiếm"
+    assert engine.translate("绣剑一提") == "Tú Kiếm nhấc lên"
+    assert engine.translate("绣剑来说") == "Tú Kiếm mà nói"
+
+
+def test_jianling_is_not_split_by_lingneng():
+    rows = [
+        ("绣剑", "Tú Kiếm", 999, "Custom.txt"),
+        ("剑灵", "Kiếm Linh", 999, "Custom.txt"),
+        ("剑", "kiếm", 10, "VietPhrase_1.txt"),
+        ("灵", "linh", 10, "VietPhrase_1.txt"),
+        ("灵能", "linh năng", 10, "VietPhrase_2.txt"),
+        ("灵隐", "linh ẩn", 10, "VietPhrase_2.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+        ("能够", "có thể", 10, "VietPhrase_1.txt"),
+        ("隐隐", "ẩn ẩn", 10, "VietPhrase_1.txt"),
+        ("如果", "nếu như", 10, "VietPhrase_1.txt"),
+        ("剑魂", "Kiếm Hồn", 20, "Names.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    assert engine.translate("剑灵") == "Kiếm Linh"
+    assert engine.translate("如果绣剑的剑灵能够") == "Nếu như Kiếm Linh của Tú Kiếm có thể"
+    assert engine.translate("绣剑剑灵隐隐") == "Tú Kiếm Kiếm Linh ẩn ẩn"
+    assert engine.translate("剑灵剑魂") == "Kiếm Linh Kiếm Hồn"
+    glued = _engine(
+        rows
+        + [
+            ("锈剑", "Tú Kiếm", 25, "Names.txt"),
+            ("唤起", "gọi dậy", 10, "VietPhrase_1.txt"),
+            ("祥", "tường", 10, "VietPhrase_1.txt"),
+            ("符", "phù", 10, "VietPhrase_1.txt"),
+        ],
+        luat_nhan=0,
+    )
+    assert (
+        glued.translate(
+            "唤起锈剑的剑灵",
+            [("锈剑的剑", "Tú Kiếm Đích Kiếm", 25), ("锈剑", "Tú Kiếm", 25)],
+        )
+        == "Gọi dậy Kiếm Linh của Tú Kiếm"
+    )
+    assert "Kiếm Linh" in glued.translate("祥符剑灵", [("祥符剑", "Tường Phù Kiếm", 25)])
+    owned = _engine(
+        [
+            ("你的剑灵", "kiếm linh của ngươi", 10, "VietPhrase_1.txt"),
+            ("我的剑灵", "kiếm linh của ta", 10, "VietPhrase_3.txt"),
+            ("你的剑灵", "Kiếm Linh của ngươi", 999, "Custom.txt"),
+            ("我的剑灵", "Kiếm Linh của ta", 999, "Custom.txt"),
+            ("剑灵", "Kiếm Linh", 999, "Custom.txt"),
+        ],
+        luat_nhan=0,
+    )
+    assert owned.translate("你的剑灵") == "Kiếm Linh của ngươi"
+    assert owned.translate("我的剑灵") == "Kiếm Linh của ta"
+
+
 def test_zhe_name_de_name_is_relative_not_possessive():
     """握着青割的秦书宝 is Qin holding the blade, not the blade's Qin."""
     rows = [
