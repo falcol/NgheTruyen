@@ -19,6 +19,9 @@ describe("tts-server helpers", () => {
     expect(validateTtsText("   ")).toBeNull();
     expect(validateTtsText("x".repeat(801))).toBeNull();
     expect(validateTtsText("x".repeat(800))?.length).toBe(800);
+    expect(validateTtsText("Ngươi... Ngươi")).toBe("Ngươi, Ngươi");
+    expect(validateTtsText("...")).toBeNull();
+    expect(validateTtsText("“...”")).toBeNull();
   });
 
   it("normalizes voice ids across engines", () => {

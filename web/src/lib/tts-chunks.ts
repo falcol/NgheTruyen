@@ -17,6 +17,45 @@ const SENTENCE_SEPARATOR = " ";
 // Must be a character that never appears in story text.
 const PROTECTED_PERIOD = "\x01";
 
+// vi-VN neural and Google Translate both hitch (a short catch, not a clean
+// pause) on ellipsis runs, doubled dashes, middle dots, and stacked !?.
+const ELLIPSIS_RUN = /(?:\.{2,}|…+)/gu;
+
+/**
+ * Rewrite marks the engines stumble on into a comma (phrase continues) or a
+ * period (utterance ends). Real pauses — single comma, period, colon, ! ? —
+ * are left alone.
+ */
+export function softenTtsPunctuation(text: string): string {
+  let out = "";
+  let last = 0;
+  for (const match of text.matchAll(ELLIPSIS_RUN)) {
+    const at = match.index ?? 0;
+    out += text.slice(last, at);
+    const after = text.slice(at + match[0].length);
+    // "Ngươi... Ngươi" keeps going; "vô pháp...." at the end of a line stops.
+    out += /^\s*[\p{L}\p{N}]/u.test(after) ? ", " : ". ";
+    last = at + match[0].length;
+  }
+  out += text.slice(last);
+
+  return out
+    .replace(/[，、]/g, ", ")
+    .replace(/。/g, ". ")
+    .replace(/！/g, "! ")
+    .replace(/？/g, "? ")
+    .replace(/；/g, "; ")
+    .replace(/：/g, ": ")
+    .replace(/[—–―]+/g, ", ")
+    .replace(/(?<=\p{L})[·•∙⋅*](?=\p{L})/gu, "")
+    .replace(/[·•∙⋅【】]/g, " ")
+    .replace(/(?<=\d)~(?=\d)/g, " đến ")
+    .replace(/[!?]+/g, (marks) => (marks.includes("?") ? "?" : "!"))
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.;!?])/g, "$1")
+    .trim();
+}
+
 // Vietnamese academic/professional titles and common abbreviations that should
 // NOT trigger a sentence break when followed by a period.
 const VI_ABBR_PATTERN =
@@ -27,7 +66,7 @@ const VI_ABBR_PATTERN =
 const NUM_LIST_PATTERN = /(\b\d{1,3}|\([a-zA-Zđ\d]{1,2}\))\.\s/g;
 
 function normalizeText(text: string) {
-  return text.replace(/\s+/g, " ").trim();
+  return softenTtsPunctuation(text);
 }
 
 // Protect abbreviation/list periods → split on real sentence endings → restore.
@@ -46,10 +85,12 @@ function splitSentences(text: string): string[] {
 
   const sentences = raw
     .map((s) => s.replace(new RegExp(PROTECTED_PERIOD, "g"), ".").trim())
-    .filter(Boolean);
+    .filter((s) => /\p{L}|\p{N}/u.test(s));
 
-  const parts = sentences.length > 0 ? sentences : [normalized];
-  return parts.flatMap(splitLongSegment);
+  if (sentences.length === 0) {
+    return /\p{L}|\p{N}/u.test(normalized) ? [normalized] : [];
+  }
+  return sentences.flatMap(splitLongSegment);
 }
 
 function splitLongSegment(text: string) {

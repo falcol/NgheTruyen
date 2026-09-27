@@ -5,6 +5,7 @@ import {
   getVoiceEngine,
   isValidTtsVoice,
 } from "@/lib/tts-voices";
+import { softenTtsPunctuation } from "@/lib/tts-chunks";
 import { createLimiter } from "@/lib/tts-limiter";
 
 const MAX_TEXT_CHARS = 800;
@@ -38,8 +39,10 @@ export function normalizeTtsVoice(voice: string | null | undefined): string {
 }
 
 export function validateTtsText(text: string): string | null {
-  const trimmed = text.replace(/\s+/g, " ").trim();
+  const trimmed = softenTtsPunctuation(text);
   if (!trimmed) return null;
+  // Punctuation-only ("...") still makes the engine click. Skip it.
+  if (!/[\p{L}\p{N}]/u.test(trimmed)) return null;
   if (trimmed.length > MAX_TEXT_CHARS) return null;
   return trimmed;
 }
