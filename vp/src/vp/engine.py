@@ -489,7 +489,9 @@ class Engine:
         best = _better(over, trie)
         if best and best.kind == "trie" and best.length >= 2 and best.pri < 20 and overlay:
             strong = _overlay_strong_start(text, pos + 1, best.end, end_limit, overlay)
-            if strong > pos:
+            # 穆宗主=Mục Tông chủ already names the person. Cutting at
+            # overlay 宗主 leaves the surname outside 的实力.
+            if strong > pos and not _surname_title_span(text, best, overlay, strong):
                 trie = _trie_match(self.root, text, pos, strong)
                 over = _overlay_match(text, pos, strong, overlay)
                 best = _better(over, trie)
@@ -645,7 +647,14 @@ class Engine:
                     ("过来", "来", "过去", "去", "出去", "出"),
                     pos + base.length + suf_len,
                 )
-                if not (template == "phái {0}" and follows_dispatch):
+                # 竟然是这种人 is "thế mà là loại người này".
+                # {0}这种人 must not wrap the copula 是.
+                cap_is_copula = (
+                    template == "thứ người như {0} vậy"
+                    and base.length > 0
+                    and text[pos + base.length - 1] == "是"
+                )
+                if not (template == "phái {0}" and follows_dispatch) and not cap_is_copula:
                     return _Step(
                         "pattern",
                         pos,
@@ -1136,6 +1145,15 @@ def _eats_jianling(text: str, start: int, end: int) -> bool:
     )
 
 
+def _nuzi_de_swallows(text: str, start: int, end: int) -> bool:
+    """VietPhrase_3 女子的=đàn bà deletes 的 and calls her đàn bà.
+
+    女子 stays nữ tử. A following 的美貌 entry keeps 的 and is reordered
+    to «khuôn mặt đẹp của nữ tử». Longer keys such as 女子的手 stay.
+    """
+    return text[start:end] == "女子的"
+
+
 def _zong_de_swallows(text: str, start: int, end: int) -> bool:
     """宗的=tông deletes 的. 的人=nhân does the same after a sect ending in 宗.
 
@@ -1185,6 +1203,7 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _kid_zi_split(text, start, end)
         or _zonghe_sowa(text, start, end)
         or _zong_de_swallows(text, start, end)
+        or _nuzi_de_swallows(text, start, end)
     )
 
 
@@ -1376,6 +1395,43 @@ def _agentive_relative(toks: list[_Tok], left: _Tok) -> bool:
     return zh[-2] in _ZHE_AGENT
 
 
+def _strip_trailing_cua(value: str) -> str:
+    text = (value or "").strip()
+    if text.casefold().endswith(" của"):
+        return text[: -len(" của")].strip()
+    return text
+
+
+def _merge_nuzi_de_noun(out: list[_Tok], tok: _Tok) -> bool:
+    """女子 + 的美貌 -> khuôn mặt đẹp của nữ tử.
+
+    Bare 的 is left for the normal possessive pass, so 只收女子的宗门
+    stays in source order. 的时候 and 的话 are not ownership.
+    """
+    if not out or not tok.value or tok.drop:
+        return False
+    if not tok.zh.startswith("的") or len(tok.zh) < 2:
+        return False
+    if tok.zh[1:] in _DE_SKIP_RIGHT:
+        return False
+    left = out[-1]
+    if left.zh != "女子" or left.end != tok.start or not left.value or left.drop:
+        return False
+    noun = _strip_trailing_cua(tok.value)
+    if not noun:
+        return False
+    out[-1] = _Tok(
+        left.start,
+        tok.end,
+        left.zh + tok.zh,
+        f"{noun} của {left.value}",
+        tok.pri,
+        False,
+        "trie",
+    )
+    return True
+
+
 def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
     """Name or pronoun + 的 + noun -> 'noun của name'. Time nouns use ở."""
     out: list[_Tok] = []
@@ -1383,6 +1439,9 @@ def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
     n = len(toks)
     while i < n:
         tok = toks[i]
+        if _merge_nuzi_de_noun(out, tok):
+            i += 1
+            continue
         if tok.zh in ("的", "旳") and tok.end - tok.start == 1 and out and i + 1 < n:
             left = out[-1]
             right = toks[i + 1]
@@ -1504,6 +1563,27 @@ def _overlay_match(
             continue
         best = _better(_Step("trie", pos, end, value, pri), best)
     return best
+
+
+def _surname_title_span(
+    text: str,
+    best: _Step,
+    overlay: dict[str, list[tuple[str, str, int]]],
+    strong: int,
+) -> bool:
+    """Keep a capitalized name that ends on the overlay title.
+
+    穆宗主的实力 is thực lực của Mục Tông chủ. Cutting the name at 宗主
+    renders «mục thực lực của Tông Chủ». A lowercase phrase that only
+    covers the head of a longer name, such as 七彩琉璃 before 琉璃宫,
+    is still cut.
+    """
+    if strong <= best.start or strong >= best.end:
+        return False
+    if not best.value or not best.value[:1].isupper():
+        return False
+    hit = _overlay_match(text, strong, best.end, overlay)
+    return hit is not None and hit.end == best.end
 
 
 def _overlay_strong_start(

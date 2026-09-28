@@ -448,6 +448,97 @@ def test_yanzong_de_keeps_sect_name():
     assert engine.translate("看着情剑宗和炎宗的人") == "Nhìn xem Tình Kiếm Tông cùng người của Viêm Tông"
 
 
+def test_jingran_shi_zhezhongren_not_scrambled():
+    rows = [
+        ("竟然是", "thế mà là", 999, "Custom.txt"),
+        ("竟然", "thế mà", 999, "Custom.txt"),
+        ("是", "là", 10, "VietPhrase_1.txt"),
+        ("这种人", "loại người này", 10, "VietPhrase_2.txt"),
+        ("这种", "loại này", 10, "VietPhrase_2.txt"),
+        ("人", "người", 10, "VietPhrase_1.txt"),
+        ("爷爷", "gia gia", 10, "VietPhrase_1.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+        ("自己", "mình", 10, "VietPhrase_1.txt"),
+        ("凌天", "Lăng Thiên", 20, "Names.txt"),
+        ("你", "ngươi", 10, "VietPhrase_1.txt"),
+        ("{0}这种人", "thứ người như {0} vậy", 15, "LuatNhan.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=2)
+    got = engine.translate("竟然是这种人")
+    assert got == "Thế mà là loại người này"
+    assert "thứ người như" not in got.lower()
+    assert "thứ người như lăng thiên vậy" in engine.translate("凌天这种人").lower()
+    assert "thứ người như ngươi vậy" in engine.translate("你这种人").lower()
+
+
+def test_muzongzhu_strength_keeps_surname_before_title():
+    rows = [
+        ("试一下", "thử một chút", 10, "VietPhrase_1.txt"),
+        ("穆宗主", "Mục Tông chủ", 10, "VietPhrase_2.txt"),
+        ("穆", "mục", 10, "VietPhrase_2.txt"),
+        ("宗主", "tông chủ", 10, "VietPhrase_2.txt"),
+        ("宗主的", "tông chủ", 10, "VietPhrase_3.txt"),
+        ("的实力", "thực lực", 10, "VietPhrase_4.txt"),
+        ("实力", "thực lực", 10, "VietPhrase_2.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+        ("七彩琉璃", "lưu ly bảy màu", 10, "VietPhrase_1.txt"),
+        ("七彩", "thất thải", 10, "VietPhrase_1.txt"),
+        ("琉璃", "lưu ly", 10, "VietPhrase_1.txt"),
+        ("宫", "cung", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    overlay = [("宗主", "Tông Chủ", 30), ("琉璃宫", "Lưu Ly Cung", 30)]
+    got = engine.translate("试一下穆宗主的实力", overlay)
+    assert got == "Thử một chút thực lực của Mục Tông chủ"
+    assert "mục thực lực" not in got.lower()
+    named = _engine(rows + [("穆宗主", "Mục Tông Chủ", 999, "Custom.txt")], luat_nhan=0)
+    assert named.translate("试一下穆宗主的实力", overlay) == "Thử một chút thực lực của Mục Tông Chủ"
+    bare = engine.translate("宗主的实力", overlay)
+    assert bare == "Thực lực của Tông Chủ"
+    glass = engine.translate("七彩琉璃宫", overlay)
+    assert glass == "Thất thải Lưu Ly Cung"
+    assert "lưu ly bảy màu" not in glass.lower()
+
+
+def test_nuzi_de_meimao_not_dan_ba():
+    rows = [
+        ("女子的", "đàn bà", 10, "VietPhrase_3.txt"),
+        ("女子", "nữ tử", 10, "VietPhrase_2.txt"),
+        ("女子的手", "tay của cô gái", 10, "VietPhrase_3.txt"),
+        ("的美貌", "khuôn mặt đẹp", 10, "VietPhrase_4.txt"),
+        ("美貌", "mỹ mạo", 10, "VietPhrase_2.txt"),
+        ("的脸上", "trên mặt", 10, "VietPhrase_4.txt"),
+        ("的脸色", "sắc mặt", 10, "VietPhrase_2.txt"),
+        ("的时候", "thời điểm", 10, "VietPhrase_2.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+        ("女", "nữ", 5, "ChinesePhienAmWords.txt"),
+        ("子", "tử", 5, "ChinesePhienAmWords.txt"),
+        ("也被", "cũng bị", 10, "VietPhrase_1.txt"),
+        ("给", "cho", 10, "VietPhrase_1.txt"),
+        ("惊艳", "kinh diễm", 10, "VietPhrase_1.txt"),
+        ("只收", "chỉ thu", 10, "VietPhrase_1.txt"),
+        ("宗门", "tông môn", 10, "VietPhrase_1.txt"),
+        ("同为", "cùng là", 10, "VietPhrase_1.txt"),
+        ("箫小小", "Tiêu Tiểu Tiểu", 20, "Names.txt"),
+        ("彩裙", "váy lụa màu", 10, "VietPhrase_1.txt"),
+    ]
+    engine = _engine(rows, luat_nhan=0)
+    beauty = engine.translate("也被女子的美貌给惊艳")
+    assert beauty == "Cũng bị khuôn mặt đẹp của nữ tử cho kinh diễm"
+    assert "đàn bà" not in beauty.lower()
+    assert "mỹ mạo" not in beauty.lower()
+    face = engine.translate("彩裙女子的脸上")
+    assert face == "Váy lụa màu trên mặt của nữ tử"
+    assert engine.translate("女子的脸色") == "Sắc mặt của nữ tử"
+    assert engine.translate("女子的手") == "Tay của cô gái"
+    sect = engine.translate("只收女子的宗门")
+    assert sect == "Chỉ thu nữ tử tông môn"
+    assert "của" not in sect.lower()
+    name = engine.translate("同为女子的箫小小")
+    assert name == "Cùng là nữ tử Tiêu Tiểu Tiểu"
+    assert engine.translate("女子的时候") == "Nữ tử thời điểm"
+
+
 def test_xiujian_is_tu_kiem_not_embroider():
     rows = [
         ("绣剑", "Tú Kiếm", 999, "Custom.txt"),
