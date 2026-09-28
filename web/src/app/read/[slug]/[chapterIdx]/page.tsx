@@ -5,6 +5,7 @@ import {
   getStoryTitle,
   getTotalChapters,
 } from "@/lib/data";
+import { crawlChapterIndexUrl, readerFirstChapters } from "@/lib/reader-shell";
 import ReaderClient from "@/components/ReaderClient";
 
 export const revalidate = 3600;
@@ -36,7 +37,8 @@ export default async function ReaderPage({
       totalChapters={totalChapters}
       title={chapterMeta.title}
       chapterContentUrl={crawlChapterApiPath(slug, chapterIdx)}
-      chapters={chapters}
+      chapters={readerFirstChapters(chapterMeta)}
+      chapterIndexUrl={crawlChapterIndexUrl(slug)}
     />
   );
 }

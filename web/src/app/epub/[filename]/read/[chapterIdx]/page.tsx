@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { chapterCacheUrlPath, getEpubMeta } from "@/lib/epub";
+import { epubMetaPublicPath } from "@/lib/epub-urls";
+import { readerFirstChapters } from "@/lib/reader-shell";
 import ReaderClient from "@/components/ReaderClient";
 
 export const revalidate = 86400;
@@ -31,7 +33,8 @@ export default async function EpubReaderPage({
       totalChapters={meta.chapters.length}
       title={chapter.title}
       chapterContentUrl={chapterCacheUrlPath(decodedFilename, chapterIdx)}
-      chapters={meta.chapters}
+      chapters={readerFirstChapters(chapter)}
+      chapterIndexUrl={epubMetaPublicPath(decodedFilename)}
       backHref={backHref}
       readHref={readHref}
     />

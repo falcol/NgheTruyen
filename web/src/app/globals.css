@@ -6,7 +6,7 @@
    --color-bg/-surface/-text/-text-muted/-accent/-accent-dim/-border
    via inline style on <html>. Reader themes keep working unchanged. */
 @theme {
-  --color-bg: #080810;
+  --color-bg: #06070f;
   --color-surface: #10101c;
   --color-surface-2: #18182a;
   --color-border: #252535;
@@ -15,14 +15,14 @@
   --color-text-muted: #a7a7bd;
   --color-text-dim: #8e8ea6;
 
-  /* Sakura-rose accent — AA contrast on surface */
-  --color-accent: #e07a9f;
-  --color-accent-strong: #b84a6f;
-  --color-accent-dim: rgba(224, 122, 159, 0.14);
+  /* Sakura accent — AA contrast on midnight navy */
+  --color-accent: #e879a0;
+  --color-accent-strong: #c45a82;
+  --color-accent-dim: rgba(232, 121, 160, 0.14);
 
   /* Warm reading lamp ambient */
-  --color-lamp: rgba(224, 122, 159, 0.06);
-  --color-lamp-strong: rgba(224, 122, 159, 0.12);
+  --color-lamp: rgba(232, 121, 160, 0.06);
+  --color-lamp-strong: rgba(232, 121, 160, 0.12);
 }
 
 :root {
@@ -57,8 +57,9 @@ a.reader-muted:hover { color: var(--color-accent); }
 .reader-border { border-color: var(--color-border); }
 
 .reader-paragraph {
-  line-height: 1.75;
+  line-height: 1.8;
   font-size: var(--reader-font-size);
+  text-wrap: pretty;
   margin-bottom: 1.75rem;
   color: var(--color-text);
   letter-spacing: 0.01em;

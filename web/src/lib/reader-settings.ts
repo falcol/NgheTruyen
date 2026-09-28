@@ -51,7 +51,7 @@ export const READER_THEMES: ReaderTheme[] = [
   },
   {
     id: "charcoal",
-    name: "Charcoal",
+    name: "Than xám",
     bg: "#141414",
     surface: "#222222",
     text: "#ececec",
@@ -84,7 +84,7 @@ export const READER_THEMES: ReaderTheme[] = [
   },
   {
     id: "amoled",
-    name: "AMOLED",
+    name: "Đen sâu",
     bg: "#000000",
     surface: "#111111",
     text: "#f0f0f0",
@@ -261,6 +261,14 @@ export function parseStoredReaderSettings(raw: string | null): StoredReaderSetti
   } catch {
     return DEFAULT_READER_SETTINGS;
   }
+}
+
+/** Decorative chapter transitions. Off when the reader asks for less motion. */
+export function shouldUseChapterMotion(): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return false;
+  }
+  return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 export function applyReaderThemeToDocument(

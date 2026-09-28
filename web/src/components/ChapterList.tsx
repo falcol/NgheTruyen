@@ -141,10 +141,6 @@ export default function ChapterList({
   );
   /* eslint-enable react-hooks/preserve-manual-memoization, react-hooks/exhaustive-deps */
 
-  useEffect(() => {
-    if (progress) prefetchOnIntent(progress.chapterIdx);
-  }, [progress, prefetchOnIntent]);
-
   return (
     <div className="space-y-1.5">
       {progress && (

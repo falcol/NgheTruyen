@@ -12,6 +12,9 @@ import {
   loadChapterContent,
   prefetchChapterContent,
 } from "@/lib/chapter-prefetch";
+import { parseChapterIndex } from "@/lib/reader-shell";
+import { resumeReaderChapter } from "@/lib/reader-resume";
+import { shouldUseChapterMotion } from "@/lib/reader-settings";
 import { getChapterScrollY, loadProgress, useProgress } from "@/hooks/useProgress";
 import { useTTS } from "@/hooks/useTTS";
 import Player from "@/components/Player";
@@ -55,6 +58,8 @@ type ReaderClientProps = {
   totalChapters: number;
   title: string;
   chapters: ChapterMeta[];
+  /** Loaded after the open chapter can paint. Absent on the first document. */
+  chapterIndexUrl?: string;
   backHref?: string;
   readHref?: string;
 } & (
@@ -80,6 +85,7 @@ function ReaderClientInner({
   paragraphs: paragraphsProp,
   chapterContentUrl,
   chapters,
+  chapterIndexUrl,
   backHref,
   readHref,
 }: ReaderClientProps) {
@@ -133,11 +139,15 @@ function ReaderClientInner({
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const activeChapterMeta = useMemo(() => {
-    return chapters.find((c) => c.index === activeChapterIdx);
-  }, [chapters, activeChapterIdx]);
+  const [chapterCatalog, setChapterCatalog] = useState(chapters);
 
-  const activeTitle = activeChapterMeta ? activeChapterMeta.title : title;
+  const activeChapterMeta = useMemo(() => {
+    return chapterCatalog.find((c) => c.index === activeChapterIdx);
+  }, [chapterCatalog, activeChapterIdx]);
+
+  const activeTitle =
+    activeChapterMeta?.title ??
+    (activeChapterIdx === chapterIdx ? title : `Chương ${activeChapterIdx + 1}`);
 
   const [chapterState, setChapterState] = useState<ChapterState>(() =>
     paragraphsProp
@@ -168,7 +178,7 @@ function ReaderClientInner({
   const [pickerExtraAfter, setPickerExtraAfter] = useState(0);
 
   const pickerList = useMemo(() => {
-    const list = filterChapters(chapters, filter);
+    const list = filterChapters(chapterCatalog, filter);
 
     if (list.length === 0) {
       return {
@@ -197,7 +207,7 @@ function ReaderClientInner({
       hasMoreAfter: endIdx < list.length,
       total: list.length,
     };
-  }, [chapters, filter, activeChapterIdx, pickerExtraBefore, pickerExtraAfter]);
+  }, [chapterCatalog, filter, activeChapterIdx, pickerExtraBefore, pickerExtraAfter]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -260,57 +270,97 @@ function ReaderClientInner({
     return crawlChapterApiPath(slug, activeChapterIdx);
   }, [slug, activeChapterIdx, chapterContentUrl]);
 
+  const showChapter = useCallback((paragraphs: string[], idx: number, animate: boolean) => {
+    const apply = () =>
+      setChapterState({ status: "ready", paragraphs, idx });
+    if (
+      animate &&
+      shouldUseChapterMotion() &&
+      typeof document !== "undefined" &&
+      typeof document.startViewTransition === "function"
+    ) {
+      const transition = document.startViewTransition(() => {
+        flushSync(apply);
+      });
+      transition.ready.catch(() => {});
+      transition.finished.catch(() => {});
+      return;
+    }
+    apply();
+  }, []);
+
+  // Paint stored text before the browser paints and before any body request.
+  useLayoutEffect(() => {
+    if (paragraphsProp || !activeChapterContentUrl) return;
+    const resume = resumeReaderChapter(slug, activeChapterIdx, activeChapterContentUrl);
+    if (resume.paragraphs) {
+      setChapterState((prev) => {
+        if (
+          prev.status === "ready" &&
+          prev.idx === activeChapterIdx &&
+          prev.paragraphs === resume.paragraphs
+        ) {
+          return prev;
+        }
+        return { status: "ready", paragraphs: resume.paragraphs, idx: activeChapterIdx };
+      });
+      return;
+    }
+    setChapterState((prev) => {
+      if (prev.status === "ready" && prev.idx === activeChapterIdx) return prev;
+      if (prev.status === "loading") return prev;
+      return { status: "loading" };
+    });
+  }, [paragraphsProp, activeChapterContentUrl, slug, activeChapterIdx]);
+
   // Fetch chapter content (async mode) whenever URL changes or user retries.
   useEffect(() => {
     if (!activeChapterContentUrl) return;
     const controller = new AbortController();
 
     const cached = getCachedChapter(activeChapterContentUrl);
-    if (cached) {
-      if (typeof document !== 'undefined' && document.startViewTransition) {
-        const transition = document.startViewTransition(() => {
-          flushSync(() => {
-            setChapterState({ status: "ready", paragraphs: cached.paragraphs, idx: activeChapterIdx });
-          });
-        });
-        transition.ready.catch(() => {});
-        transition.finished.catch(() => {});
-      } else {
-        setChapterState({ status: "ready", paragraphs: cached.paragraphs, idx: activeChapterIdx });
-      }
-    } else {
-      setChapterState({ status: "loading" });
-    }
+    if (!cached) setChapterState({ status: "loading" });
 
     loadChapterContent(activeChapterContentUrl, controller.signal)
       .then((payload) => {
-        if (typeof document !== 'undefined' && document.startViewTransition) {
-          const transition = document.startViewTransition(() => {
-            flushSync(() => {
-              setChapterState({ status: "ready", paragraphs: payload.paragraphs, idx: activeChapterIdx });
-            });
-          });
-          transition.ready.catch(() => {});
-          transition.finished.catch(() => {});
-        } else {
-          setChapterState({ status: "ready", paragraphs: payload.paragraphs, idx: activeChapterIdx });
-        }
+        if (cached && cached.paragraphs === payload.paragraphs) return;
+        showChapter(payload.paragraphs, activeChapterIdx, !cached);
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
+        if (getCachedChapter(activeChapterContentUrl)) return;
         const message = err instanceof Error ? err.message : "Unknown error";
         setChapterState({ status: "error", message });
       });
 
     return () => controller.abort();
-  }, [activeChapterContentUrl, retryNonce, activeChapterIdx]);
+  }, [activeChapterContentUrl, retryNonce, activeChapterIdx, showChapter]);
 
-  // Prefetch prev/next chapter JSON while reading (instant Sau/Trước when cached).
+  // Titles for the picker arrive after the open chapter can render.
   useEffect(() => {
-    const { prev, next } = adjacentChapterContentUrls(slug, chapters, activeChapterIdx);
+    if (!chapterIndexUrl) return;
+    if (chapterState.status !== "ready" && chapterState.status !== "error") return;
+    const controller = new AbortController();
+    fetch(chapterIndexUrl, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json() as Promise<unknown>;
+      })
+      .then((data) => {
+        const list = parseChapterIndex(data);
+        if (list.length > 0) setChapterCatalog(list);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [chapterIndexUrl, chapterState.status]);
+
+  // Neighbor bodies start only after this chapter is on screen.
+  useEffect(() => {
+    if (chapterState.status !== "ready" || chapterState.idx !== activeChapterIdx) return;
+    const { prev, next } = adjacentChapterContentUrls(slug, chapterCatalog, activeChapterIdx);
     if (prev) prefetchChapterContent(prev).catch(() => {});
     if (next) prefetchChapterContent(next).catch(() => {});
-  }, [slug, chapters, activeChapterIdx]);
+  }, [slug, chapterCatalog, activeChapterIdx, chapterState]);
 
   // paragraphs is non-null only when the loaded content belongs to the active
   // chapter (idx match). This kills the stale-content flash on navigation: during
@@ -336,7 +386,9 @@ function ReaderClientInner({
   // Restore scroll only after content renders (otherwise the page is empty).
   useLayoutEffect(() => {
     if (!paragraphs) return;
-    const scrollY = getChapterScrollY(loadProgress(slug), activeChapterIdx);
+    const scrollY = activeChapterContentUrl
+      ? resumeReaderChapter(slug, activeChapterIdx, activeChapterContentUrl).scrollY
+      : getChapterScrollY(loadProgress(slug), activeChapterIdx);
     // instant: skip smooth-scroll CSS animation between chapters
     window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
     const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
@@ -353,7 +405,7 @@ function ReaderClientInner({
       setIsScrollingDown(false);
       overscrollNavigating.current = false;
     });
-  }, [slug, activeChapterIdx, paragraphs]);
+  }, [slug, activeChapterIdx, paragraphs, activeChapterContentUrl]);
 
   useEffect(() => {
     const flushScroll = () => {
@@ -708,7 +760,7 @@ function ReaderClientInner({
         />
       </div>
       <div className={`sticky top-0 z-40 bg-[var(--color-surface)] border-b border-[var(--color-border)] smart-header ${isScrollingDown && !pickerOpen ? "-translate-y-full" : "translate-y-0"}`}>
-        <div className="max-w-2xl mx-auto px-4 md:px-6 py-4">
+        <div className="max-w-[40rem] mx-auto px-4 md:px-6 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <p className="text-[10px] md:text-xs reader-accent opacity-80 font-bold tracking-widest uppercase mb-1 break-words leading-snug">{storyTitle}</p>
@@ -810,7 +862,7 @@ function ReaderClientInner({
         </div>
       </div>
 
-      <main className="max-w-2xl mx-auto px-5 md:px-6 pt-6 md:pt-8 pb-[calc(10rem+env(safe-area-inset-bottom))] reader-content relative">
+      <main className="max-w-[40rem] mx-auto px-5 md:px-6 pt-6 md:pt-8 pb-[calc(10rem+env(safe-area-inset-bottom))] reader-content relative">
 
         {chapterState.status === "loading" && (
           <div className="space-y-3" aria-busy="true">
@@ -892,7 +944,7 @@ function ReaderClientInner({
                 Chương tiếp theo
               </p>
               <p className="font-semibold truncate">
-                {chapters[activeChapterIdx + 1]?.title ??
+                {chapterCatalog.find((c) => c.index === activeChapterIdx + 1)?.title ??
                   `Chương ${activeChapterIdx + 2}`}
               </p>
             </div>
