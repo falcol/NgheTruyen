@@ -225,6 +225,7 @@
 嫉妒=ghen ghét
 語氣中=ngữ khí bên trong
 神帝境=Thần Đế cảnh
+神皇境=Thần Hoàng Cảnh
 至大乘境=đến Đại Thừa cảnh
 轉生的是=chuyển kiếp là
 哪片=mảnh nào

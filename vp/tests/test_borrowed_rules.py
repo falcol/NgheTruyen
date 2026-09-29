@@ -1065,3 +1065,104 @@ def test_kao_before_name_is_handcuff_and_quote_sense():
     assert engine.translate("“恩，有") == "“Ừ, có"
     assert engine.translate("“喂") == "“Alo"
     assert engine.translate("还") == "Còn"
+
+
+def test_shenhuangjing_power_is_not_reversed():
+    """神皇境的力量 is lực lượng của Thần Hoàng Cảnh.
+
+    皇境=Hoàng Cảnh is a capitalized owner, so 的力量 used to leave 神
+    in front: Thần lực lượng của Hoàng Cảnh.
+    """
+    rows = [
+        ("神皇境", "Thần Hoàng Cảnh", 999, "Custom.txt"),
+        ("皇境", "Hoàng Cảnh", 10, "VietPhrase_4.txt"),
+        ("神", "Thần", 10, "VietPhrase_2.txt"),
+        ("力量", "lực lượng", 10, "VietPhrase_2.txt"),
+        ("的", "của", 10, "VietPhrase_2.txt"),
+        ("{0}一辈子", "cả đời {0}", 15, "LuatNhan.txt"),
+        ("一辈子", "cả một đời", 10, "VietPhrase_2.txt"),
+        ("凌天", "Lăng Thiên", 999, "Custom.txt"),
+    ]
+    got = _low(rows, "神皇境的力量")
+    assert got == "lực lượng của thần hoàng cảnh"
+    assert "thần lực lượng" not in got
+    life = _low(rows, "神皇境一辈子")
+    assert life == "thần hoàng cảnh cả một đời"
+    assert _low(rows, "凌天一辈子") == "cả đời lăng thiên"
+
+
+def test_shiyongle_de_keeps_possessive():
+    """使用了{0}的 must not swallow 的 before the owned noun.
+
+    使用了神皇境的力量 was «sử dụng Thần Hoàng Cảnh lực lượng».
+    """
+    rows = [
+        ("神皇境", "Thần Hoàng Cảnh", 999, "Custom.txt"),
+        ("力量", "lực lượng", 10, "VietPhrase_2.txt"),
+        ("的", "của", 10, "VietPhrase_2.txt"),
+        ("使用了", "sử dụng", 10, "VietPhrase_2.txt"),
+        ("使用了{0}的", "sử dụng {0}", 15, "LuatNhan.txt"),
+        ("凌天", "Lăng Thiên", 999, "Custom.txt"),
+        ("刀", "đao", 10, "VietPhrase_1.txt"),
+        ("武器", "vũ khí", 10, "VietPhrase_1.txt"),
+        ("人", "người", 10, "VietPhrase_1.txt"),
+        ("话", "lời", 10, "VietPhrase_1.txt"),
+    ]
+    assert _low(rows, "使用了神皇境的力量") == "sử dụng lực lượng của thần hoàng cảnh"
+    assert _low(rows, "使用了凌天的刀") == "sử dụng đao của lăng thiên"
+    kept = _engine(rows, luat_nhan=3).translate("使用了武器的人").lower()
+    assert kept == "sử dụng vũ khí người"
+    speech = _low(rows, "使用了凌天的话")
+    assert "của" not in speech
+
+
+def test_muguang_locative_keeps_ren_inside_modifier():
+    """人的目光=ánh mắt của người must not split 逼人/渗人/众人 before 目光下.
+
+    The 光 tail used to veto those spans and leave 下 as hạ.
+    """
+    rows = [
+        ("凌天", "Lăng Thiên", 999, "Custom.txt"),
+        ("在", "tại", 10, "VietPhrase_2.txt"),
+        ("逼人的", "bức người", 10, "VietPhrase_3.txt"),
+        ("逼人", "bức người", 10, "VietPhrase_2.txt"),
+        ("逼", "bức", 5, "ChinesePhienAmWords.txt"),
+        ("渗人的", "sấm nhân", 10, "VietPhrase_3.txt"),
+        ("渗人", "làm người ta sợ hãi", 10, "VietPhrase_2.txt"),
+        ("渗", "thấm", 5, "ChinesePhienAmWords.txt"),
+        ("在众人的", "đang lúc mọi người", 10, "VietPhrase_3.txt"),
+        ("在众人", "tại mọi người", 10, "VietPhrase_2.txt"),
+        ("在众", "của mọi người", 10, "VietPhrase_3.txt"),
+        ("众人的目光", "ánh mắt của mọi người", 10, "VietPhrase_1.txt"),
+        ("众人的", "mọi người", 10, "VietPhrase_3.txt"),
+        ("众人", "đám người", 10, "VietPhrase_2.txt"),
+        ("众", "chúng", 5, "ChinesePhienAmWords.txt"),
+        ("这么多人", "nhiều người như vậy", 10, "VietPhrase_2.txt"),
+        ("所有人", "tất cả mọi người", 10, "VietPhrase_2.txt"),
+        ("所有", "tất cả", 10, "VietPhrase_2.txt"),
+        ("人的目光", "ánh mắt của người", 10, "VietPhrase_3.txt"),
+        ("目光下", "dưới ánh mắt", 10, "VietPhrase_3.txt"),
+        ("目光中", "trong ánh mắt", 10, "VietPhrase_2.txt"),
+        ("目光", "ánh mắt", 10, "VietPhrase_2.txt"),
+        ("人", "người", 10, "VietPhrase_2.txt"),
+        ("的", "của", 10, "VietPhrase_2.txt"),
+        ("下", "hạ", 5, "ChinesePhienAmWords.txt"),
+        ("中", "trung", 5, "ChinesePhienAmWords.txt"),
+        ("他", "hắn", 10, "VietPhrase_2.txt"),
+        ("严厉", "nghiêm nghị", 10, "VietPhrase_2.txt"),
+        ("冷笑", "cười lạnh", 10, "VietPhrase_2.txt"),
+    ]
+    assert _low(rows, "在凌天逼人的目光下") == "dưới ánh mắt bức người của lăng thiên"
+    assert _low(rows, "在他逼人的目光下") == "dưới ánh mắt bức người của hắn"
+    assert _low(rows, "在渗人的目光下") == "dưới ánh mắt làm người ta sợ hãi"
+    assert "sấm nhân" not in _low(rows, "在渗人的目光下")
+    assert "hạ" not in _low(rows, "在渗人的目光下")
+    assert _low(rows, "在众人的目光下") == "dưới ánh mắt của mọi người"
+    assert _low(rows, "在众人的目光中") == "trong ánh mắt của mọi người"
+    assert _low(rows, "在这么多人的目光下") == "dưới ánh mắt của nhiều người như vậy"
+    bare = _low(rows, "所有人的目光")
+    assert "ánh mắt của người" in bare
+    assert _low(rows, "渗人的冷笑") == "sấm nhân cười lạnh"
+    plain = _low(rows, "在凌天严厉目光下")
+    assert "bức người" not in plain
+    assert "nghiêm nghị" in plain

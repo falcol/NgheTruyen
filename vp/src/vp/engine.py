@@ -623,6 +623,7 @@ class Engine:
         toks = _merge_clan(toks)
         toks = _merge_possessive(toks)
         toks = _nest_dantian_locative(toks)
+        toks = _merge_muguang_locative(toks)
         return " ".join(tok.value for tok in toks if not tok.drop and tok.value)
 
     def _step_at(
@@ -654,7 +655,17 @@ class Engine:
                     and base.length > 0
                     and text[pos + base.length - 1] == "是"
                 )
-                if not (template == "phái {0}" and follows_dispatch) and not cap_is_copula:
+                # 神皇境一辈子 is the realm's cultivators, not "cả đời Thần Hoàng Cảnh".
+                cap_is_realm = (
+                    template == "cả đời {0}"
+                    and base.length > 0
+                    and text[pos + base.length - 1] == "境"
+                )
+                if (
+                    not (template == "phái {0}" and follows_dispatch)
+                    and not cap_is_copula
+                    and not cap_is_realm
+                ):
                     return _Step(
                         "pattern",
                         pos,
@@ -704,6 +715,30 @@ class Engine:
         step = self._plain_step(text, suffix_start, end_limit, overlay)
         return step.kind == "trie" and step.end > suffix_start + suffix_len
 
+    def _possessive_de_after(
+        self,
+        text: str,
+        cap: _Step,
+        right_at: int,
+        end_limit: int,
+        overlay: dict[str, list[tuple[str, str, int]]] | None,
+    ) -> bool:
+        head = _Tok(
+            cap.start,
+            cap.end,
+            text[cap.start : cap.end],
+            cap.value,
+            cap.pri,
+            False,
+            cap.kind,
+        )
+        if not _is_possessive_head(head) or right_at >= end_limit:
+            return False
+        right = self._plain_step(text, right_at, end_limit, overlay)
+        if not right.value or right.kind == "pattern":
+            return False
+        return text[right.start : right.end] not in _DE_SKIP_RIGHT
+
     def _prefix_pattern(
         self,
         text: str,
@@ -737,6 +772,21 @@ class Engine:
                     )
                     if allowed:
                         if self._splits_longer_tail(text, suf_idx, len(suffix), end_limit, overlay):
+                            search_from = suf_idx + 1
+                            continue
+                        # 使用了神皇境的力量: 的 is the realm's possessive,
+                        # not the luật nhân suffix that drops it.
+                        if (
+                            suffix == "的"
+                            and template == "sử dụng {0}"
+                            and self._possessive_de_after(
+                                text,
+                                allowed,
+                                suf_idx + len(suffix),
+                                end_limit,
+                                overlay,
+                            )
+                        ):
                             search_from = suf_idx + 1
                             continue
                         total = (i - pos) + cap_len + len(suffix)
@@ -897,6 +947,15 @@ def _stolen_compound(root: _Node, text: str, start: int, end: int) -> bool:
             # 着气=xả giận is a noisy bigram. It must not veto 看着/跟着
             # the way 力气/灵气 veto a real stolen head.
             if text[i:word_end] == "着气":
+                continue
+            # 人的目光=ánh mắt của người ends in 光, but it is a 的-phrase.
+            # Before 目光下/目光中 it must not veto 逼人的, 渗人, or 众人的,
+            # or 下/中 is left as hạ/bên trong.
+            if (
+                text[i:word_end] == "人的目光"
+                and word_end < n
+                and text[word_end] in "下中"
+            ):
                 continue
             if (
                 i == end - 1
@@ -1145,6 +1204,35 @@ def _eats_jianling(text: str, start: int, end: int) -> bool:
     )
 
 
+def _shenren_de_swallows(text: str, start: int, end: int) -> bool:
+    """渗人的=sấm nhân deletes 的. Before 目光下/目光中, 渗人 stays.
+
+    Other 渗人的 phrases keep the dictionary hit. Only the gaze frame
+    needs 渗人=làm người ta sợ hãi plus 目光下.
+    """
+    if text[start:end] != "渗人的":
+        return False
+    return text.startswith(("目光下", "目光中"), end)
+
+
+def _zai_zhongren_before_gaze(text: str, start: int, end: int) -> bool:
+    """在众=của mọi người leaves 人的目光, and 下 falls out as hạ.
+
+    在众人的=đang lúc mọi người and 在众人=tại mọi người are the longer
+    fallbacks. They eat 在 of the 在…目光下 frame the same way.
+    """
+    if text[start:end] == "在众":
+        return text.startswith(("人的目光下", "人的目光中"), end)
+    if text[start:end] == "在众人的":
+        return text.startswith(("目光下", "目光中"), end)
+    if text[start:end] == "在众人":
+        return text.startswith(("的目光下", "的目光中", "目光下", "目光中"), end)
+    # 众人的目光=ánh mắt của mọi người leaves 下/中 outside 目光下/目光中.
+    if text[start:end] == "众人的目光" and end < len(text) and text[end] in "下中":
+        return True
+    return False
+
+
 def _nuzi_de_swallows(text: str, start: int, end: int) -> bool:
     """VietPhrase_3 女子的=đàn bà deletes 的 and calls her đàn bà.
 
@@ -1204,6 +1292,8 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _zonghe_sowa(text, start, end)
         or _zong_de_swallows(text, start, end)
         or _nuzi_de_swallows(text, start, end)
+        or _shenren_de_swallows(text, start, end)
+        or _zai_zhongren_before_gaze(text, start, end)
     )
 
 
@@ -1349,6 +1439,103 @@ def _loc_owner_index(out: list[_Tok], dantian_start: int) -> int | None:
     if last.end == dantian_start and last.value and not last.drop and last.zh not in ("的", "旳"):
         return len(out) - 1
     return None
+
+
+# 人 is the one pressed by the gaze, not its owner.
+_GAZE_EXPERIENCER = frozenset({"逼人", "渗人", "摄人"})
+_GAZE_LOCATIVE = frozenset({"目光下", "目光中"})
+
+
+def _gaze_stem(zh: str) -> str:
+    if len(zh) > 1 and zh.endswith("的"):
+        return zh[:-1]
+    return zh
+
+
+def _content_before(out: list[_Tok], index: int) -> int | None:
+    i = index
+    while i >= 0:
+        tok = out[i]
+        if tok.value and not tok.drop and tok.zh not in ("的", "旳"):
+            return i
+        i -= 1
+    return None
+
+
+def _gaze_connects(out: list[_Tok], left_i: int, right_start: int) -> bool:
+    pos = out[left_i].end
+    if pos == right_start:
+        return True
+    for tok in out[left_i + 1 :]:
+        if tok.start != pos or tok.end > right_start:
+            return False
+        if tok.zh not in ("的", "旳") or not tok.drop:
+            return False
+        pos = tok.end
+        if pos == right_start:
+            return True
+    return False
+
+
+def _zai_before(out: list[_Tok], idx: int) -> int | None:
+    zai_i = _content_before(out, idx - 1)
+    if zai_i is None:
+        return None
+    tok = out[zai_i]
+    if tok.zh == "在" and _gaze_connects(out, zai_i, out[idx].start):
+        return zai_i
+    return None
+
+
+def _muguang_phrase(out: list[_Tok], gaze: _Tok) -> tuple[int, str] | None:
+    """在渗人的目光下 / 在众人的目光下 / 在凌天逼人的目光下.
+
+    人的目光 no longer eats 人, so the modifier and 目光下 are separate
+    tokens still in source order. Fold the 在…下 frame here.
+    """
+    mod_i = _content_before(out, len(out) - 1)
+    if mod_i is None or not _gaze_connects(out, mod_i, gaze.start):
+        return None
+    mod = out[mod_i]
+    if not mod.value:
+        return None
+    stem = _gaze_stem(mod.zh)
+    loc = gaze.value.strip()
+    if stem in _GAZE_EXPERIENCER:
+        phrase = f"{loc} {mod.value.strip()}"
+        owner_i = _content_before(out, mod_i - 1)
+        if (
+            owner_i is not None
+            and _gaze_connects(out, owner_i, mod.start)
+            and _is_possessive_head(out[owner_i])
+        ):
+            phrase = f"{phrase} của {out[owner_i].value.strip()}"
+            mod_i = owner_i
+    elif stem.endswith("人"):
+        phrase = f"{loc} của {mod.value.strip()}"
+    else:
+        return None
+    zai_i = _zai_before(out, mod_i)
+    if zai_i is not None:
+        mod_i = zai_i
+    return mod_i, phrase
+
+
+def _merge_muguang_locative(toks: list[_Tok]) -> list[_Tok]:
+    out: list[_Tok] = []
+    for tok in toks:
+        if tok.zh not in _GAZE_LOCATIVE or not tok.value:
+            out.append(tok)
+            continue
+        merged = _muguang_phrase(out, tok)
+        if merged is None:
+            out.append(tok)
+            continue
+        start_i, phrase = merged
+        start = out[start_i].start
+        del out[start_i:]
+        out.append(_Tok(start, tok.end, tok.zh, phrase, tok.pri, False, "trie"))
+    return out
 
 
 def _nest_dantian_locative(toks: list[_Tok]) -> list[_Tok]:
