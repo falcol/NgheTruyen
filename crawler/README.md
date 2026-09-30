@@ -20,6 +20,7 @@ pip install -r requirements.txt
 | `metruyencv` | Mê Truyện Chữ CV | `metruyencv.xyz` |
 | `truyenfullmoi` | Truyện Full Mới | `truyenfullmoi.com` |
 | `sitruyencv` | Si Truyện CV | `sitruyencv.com` (JSON API) |
+| `sstruyen` | SSTruyen | `sstruyen.pics` (JSON API) |
 
 ## Chạy
 
@@ -110,6 +111,11 @@ python -m crawler.run sitruyencv \
 python -m crawler.run sitruyencv \
   "https://sitruyencv.com/story/16277-da-tu-da-phuc-con-ta-deu-co-tien-de-chi-tu-convert" \
   --parallel --max 50
+
+# Crawl từ sstruyen (URL trang truyện hoặc URL chương)
+python -m crawler.run sstruyen \
+  "https://sstruyen.pics/truyen/ton-tho-roi-lao-to-tong-nguoi-con-co-bao-nhieu-ban-gai-truoc" \
+  --parallel --workers 3
 ```
 
 ## Tính năng
@@ -127,6 +133,7 @@ python -m crawler.run sitruyencv \
   - truyenqq: Fallback sequential với delay giảm (1.5s thay vì 3s)
   - truyenfullmoi: URL prediction — `/{slug}/chuong-{N}.html`, detect end-of-story qua homepage redirect
   - sitruyencv: JSON API — override `_request()` parse JSON, dùng `versionId` + chapter number prediction
+  - sstruyen: JSON API — novel id từ trang truyện, danh sách `/novels/{id}/chapters`, nội dung `/chapters/{id}`
 - **Early stop** (mới): Parallel mode tự dừng khi cả chunk trả 404 (qua đoạn cuối truyện)
 - **Aggressive preset** (`--aggressive`): Workers=8 + parallel_delay=(0.3, 0.7) → tốc độ tối đa, auto bật `--parallel`. Adaptive multiplier sẽ tự throttle nếu server push back.
 - **Time counter**: Cuối mỗi crawl in tổng thời gian + throughput (`5m 12s | 200 chapters indexed | 0.64 ch/s`)

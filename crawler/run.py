@@ -11,6 +11,7 @@ Sites:
     sitruyencv   - sitruyencv.com (JSON API)
     iqiyi        - wenxue.iqiyi.com (fills missing chapters into --dest)
     piaotia      - piaotia.com (飘天文学, Tor + GBK, follow next_page)
+    sstruyen     - sstruyen.pics (JSON API, story URL or chapter URL)
 
 Options:
     --start INDEX   Starting chapter index (default: 0)
@@ -39,6 +40,9 @@ Examples:
     # piaotia (飘天): TOC catalog then parallel (default 3 workers; --parallel --workers N)
     python -m crawler.run piaotia "https://www.piaotia.com/html/11/11917/"
     python -m crawler.run piaotia "https://www.piaotia.com/html/11/11917/" --parallel --workers 5
+
+    # sstruyen: story page (resolves novel id, then chapter API)
+    python -m crawler.run sstruyen "https://sstruyen.pics/truyen/<slug>" --parallel
 """
 import argparse
 import sys
@@ -52,6 +56,7 @@ from .sitruyencv import SitruyencvCrawler
 from .xtruyen import XtruyenCrawler
 from .iqiyi import IqiyiCrawler
 from .piaotia import PiaotiaCrawler
+from .sstruyen import SstruyenCrawler
 
 CRAWLERS = {
     "truyenqq": TruyenQQCrawler,
@@ -62,6 +67,7 @@ CRAWLERS = {
     "xtruyen": XtruyenCrawler,
     "iqiyi": IqiyiCrawler,
     "piaotia": PiaotiaCrawler,
+    "sstruyen": SstruyenCrawler,
 }
 
 # Preset for --aggressive: maximize throughput, accept higher 429 risk.
