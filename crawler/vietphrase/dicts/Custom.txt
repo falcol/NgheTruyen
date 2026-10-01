@@ -924,6 +924,21 @@
 一百度=một trăm độ
 # 2026-09-25 cùng lớp: 千百度 là nghìn độ/nghìn lần, không phải Baidu; override Names_2.txt:102008 (千百度=Baidu). Cụm thơ dài 众里寻他千百度 đã có entry riêng nên không ảnh hưởng.
 千百度=nghìn độ
+# 2026-10-01 manh-nhat l.37559/41754/83581: A+不过 là nhấn mạnh (cực kỳ A), không phải 不过=bất quá. Bare 正常不过 thiếu key nên bị tách; 最正常不过的事情 đang sai nghĩa trong VietPhrase_4.
+正常不过=hết sức bình thường
+更是正常不过=càng là chuyện hết sức bình thường
+最正常不过的事情=chuyện bình thường nhất
+# 2026-10-01 manh-nhat l.42459: 伤害加成=damage cộng thêm (VietPhrase_4:110030) lọt tiếng Anh.
+伤害加成=sát thương cộng thêm
+# 2026-10-01 manh-nhat l.42638/48862: 深渊里的生物 giữ đúng trật tự sở hữu (engine không đảo N+里+的+N thường).
+深渊里的生物=sinh vật trong vực sâu
+# 2026-10-01 manh-nhat l.42748: nguồn疑typo 很多 (=很熟), ngữ cảnh lính守卫quen thân mới trêu đùa/đá đít cho vào.
+跟邪恶花王很多=quen thân với Tà Ác Hoa Vương
+# 2026-10-01 manh-nhat l.42008/42009: 血祖躯干的意识 bị tách thành 的意=đắc ý (VietPhrase_3:215038) + 识=biết. Thêm key dài để giữ đúng trật tự sở hữu.
+血祖躯干的意识=ý thức của thân thể Huyết Tổ
+躯干的意识=ý thức của thân thể
+# 2026-10-01 manh-nhat l.44275: VietPhrase_4 魂魄出窍=Imperio. Cùng lớp 灵魂出窍/神魂出窍 là xuất khiếu.
+魂魄出窍=hồn phách xuất khiếu
 
 
 

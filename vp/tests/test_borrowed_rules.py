@@ -1166,3 +1166,90 @@ def test_muguang_locative_keeps_ren_inside_modifier():
     plain = _low(rows, "在凌天严厉目光下")
     assert "bức người" not in plain
     assert "nghiêm nghị" in plain
+
+
+def test_deyi_typo_splits_de_particle():
+    rows = [
+        ("的意", "đắc ý", 10, "VietPhrase_3.txt"),
+        ("意识", "ý thức", 10, "VietPhrase_2.txt"),
+        ("意外", "ngoài ý muốn", 10, "VietPhrase_2.txt"),
+        ("得意", "đắc ý", 10, "VietPhrase_2.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+    ]
+    assert _low(rows, "的意识") == "ý thức"
+    assert _low(rows, "的意外") == "ngoài ý muốn"
+    assert "đắc ý" in _low(rows, "得意")
+
+
+def test_zuijiao_chouchu_splits_verb_after_de():
+    rows = [
+        ("嘴角抽搐", "khóe miệng co giật", 10, "VietPhrase_1.txt"),
+        ("嘴角抽", "khóe miệng co quắp", 10, "VietPhrase_2.txt"),
+        ("嘴角", "khóe miệng", 10, "VietPhrase_2.txt"),
+        ("抽搐", "co giật", 10, "VietPhrase_2.txt"),
+        ("凌天", "Lăng Thiên", 30, "overlay"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+    ]
+    got = _engine(rows, luat_nhan=0).translate("凌天的嘴角抽搐")
+    assert got == "Khóe miệng của Lăng Thiên co giật"
+
+
+def test_sinopec_not_eating_kongzhong():
+    rows = [
+        ("中石化", "Sinopec", 20, "Names_2.txt"),
+        ("在空中", "trên không trung", 10, "VietPhrase_2.txt"),
+        ("空中", "không trung", 10, "VietPhrase_2.txt"),
+        ("石化", "hóa đá", 10, "VietPhrase_2.txt"),
+        ("在", "ở", 10, "VietPhrase_1.txt"),
+        ("空", "không", 5, "ChinesePhienAmWords.txt"),
+        ("中", "trung", 5, "ChinesePhienAmWords.txt"),
+    ]
+    got = _low(rows, "在空中石化")
+    assert "sinopec" not in got
+    assert "hóa đá" in got
+    assert "Sinopec" in _engine(rows, luat_nhan=0).translate("中石化")
+
+
+def test_henduo_shen_not_eating_shenyuan():
+    rows = [
+        ("很多深", "rất bao sâu", 10, "VietPhrase_2.txt"),
+        ("很多", "rất nhiều", 10, "VietPhrase_1.txt"),
+        ("深渊里的生物", "sinh vật trong vực sâu", 999, "Custom.txt"),
+        ("深渊", "vực sâu", 10, "VietPhrase_2.txt"),
+    ]
+    got = _low(rows, "现在很多深渊里的生物都跑出来")
+    assert "rất nhiều sinh vật trong vực sâu" in got
+    assert "bao sâu" not in got
+
+
+def test_hunpo_chuqiao_is_soul_exit_not_imperio():
+    rows = [
+        ("魂魄出窍", "Imperio", 10, "VietPhrase_4.txt"),
+        ("魂魄出窍", "hồn phách xuất khiếu", 999, "Custom.txt"),
+        ("魂魄", "hồn phách", 10, "VietPhrase_2.txt"),
+        ("出窍", "xuất khiếu", 10, "VietPhrase_2.txt"),
+        ("马上就", "lập tức", 10, "VietPhrase_2.txt"),
+        ("你", "ngươi", 10, "VietPhrase_1.txt"),
+        ("的", "đích", 10, "VietPhrase_1.txt"),
+    ]
+    bare = _low(rows, "马上就魂魄出窍")
+    assert "hồn phách xuất khiếu" in bare
+    assert "imperio" not in bare
+    owned = _low(rows, "你的魂魄出窍")
+    assert "imperio" not in owned
+    assert "xuất khiếu" in owned
+
+
+def test_jiuda_not_eating_daqu():
+    rows = [
+        ("就打", "đánh liền", 10, "VietPhrase_3.txt"),
+        ("就打算", "liền định", 10, "VietPhrase_2.txt"),
+        ("打趣道", "trêu ghẹo nói", 10, "VietPhrase_2.txt"),
+        ("打趣", "trêu ghẹo", 10, "VietPhrase_2.txt"),
+        ("就", "liền", 10, "VietPhrase_1.txt"),
+        ("打算", "định", 10, "VietPhrase_1.txt"),
+    ]
+    got = _low(rows, "看到它的时候就打趣道")
+    assert "trêu ghẹo nói" in got
+    assert "đánh liền" not in got
+    assert "liền định" in _low(rows, "就打算离开")

@@ -881,6 +881,8 @@ def _protected_name_end(root: _Node, text: str, pos: int) -> int | None:
         node = nxt
         j += 1
         if j - pos >= 2 and node.has and node.p >= 20 and node.v[:1].isupper():
+            if _sinopec_air_petrify(text, pos, j):
+                continue
             last = j
     return last
 
@@ -1264,7 +1266,66 @@ def _zonghe_sowa(text: str, start: int, end: int) -> bool:
     return text[start - 1] not in _ZONGHE_NAME_INTRO
 
 
+def _deyi_typo(text: str, start: int, end: int) -> bool:
+    """的意=đắc ý is a 的/得 typo in the corpus. 得意 is the real word.
+
+    的 must stay a particle so 意识/意义/意外 match apart:
+    的意识=ý thức, not "đắc ý biết".
+    """
+    return text[start:end] == "的意"
+
+
+def _splits_zuijiao_chouchu(text: str, start: int, end: int) -> bool:
+    """嘴角抽搐 must not glue the verb into a 的 possessive.
+
+    凌天的嘴角抽搐 is "khóe miệng của Lăng Thiên co giật",
+    not "khóe miệng co giật của Lăng Thiên". The 嘴角抽 prefix
+    must fall too, or 搐 is left stranded as "súc".
+    """
+    if not (start > 0 and text[start - 1] in ("的", "旳")):
+        return False
+    span = text[start:end]
+    if span == "嘴角抽搐":
+        return True
+    return span == "嘴角抽" and text[end : end + 1] == "搐"
+
+
+def _sinopec_air_petrify(text: str, start: int, end: int) -> bool:
+    """中石化=Sinopec must not eat 中 of 空中石化 (petrify in midair).
+
+    在空中石化 is "giữa không trung hóa đá", not "đang không Sinopec".
+    """
+    return (
+        text[start:end] == "中石化"
+        and start > 0
+        and text[start - 1] == "空"
+    )
+
+
+def _henduo_shen_before_yuan(text: str, start: int, end: int) -> bool:
+    """很多深=rất bao sâu is corpus noise. It must not eat 深 of 深渊.
+
+    很多深渊里的生物 is "rất nhiều sinh vật trong vực sâu",
+    not "rất bao sâu uyên...".
+    """
+    return text[start:end] == "很多深" and text[end : end + 1] == "渊"
+
+
+def _jiuda_steals_da(root: _Node, text: str, start: int, end: int) -> bool:
+    """就打=đánh liền must not eat 打 of a longer 打-word.
+
+    就打趣道 is "liền trêu ghẹo nói", not "đánh liền thú đạo".
+    Longer keys (就打算, 就打开) still win on their own.
+    """
+    if text[start:end] != "就打":
+        return False
+    tail = _longest_word_len(root, text, start + 1)
+    return tail >= 2 and start + 1 + tail > end
+
+
 def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
+    if _sinopec_air_petrify(text, step.start, step.end):
+        return True
     if _swallows_protected_name(root, text, step.start, step.end, step.pri, step.value):
         return True
     if _is_protected_name(step.pri, step.value):
@@ -1292,8 +1353,12 @@ def _reject_trie_span(root: _Node, text: str, step: _Step) -> bool:
         or _zonghe_sowa(text, start, end)
         or _zong_de_swallows(text, start, end)
         or _nuzi_de_swallows(text, start, end)
-        or _shenren_de_swallows(text, start, end)
-        or _zai_zhongren_before_gaze(text, start, end)
+            or _shenren_de_swallows(text, start, end)
+            or _zai_zhongren_before_gaze(text, start, end)
+            or _deyi_typo(text, start, end)
+            or _splits_zuijiao_chouchu(text, start, end)
+            or _henduo_shen_before_yuan(text, start, end)
+            or _jiuda_steals_da(root, text, start, end)
     )
 
 

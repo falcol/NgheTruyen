@@ -12,6 +12,8 @@ Sites:
     iqiyi        - wenxue.iqiyi.com (fills missing chapters into --dest)
     piaotia      - piaotia.com (飘天文学, Tor + GBK, follow next_page)
     sstruyen     - sstruyen.pics (JSON API, story URL or chapter URL)
+    vivutruyen   - vivutruyen.com (story URL or chapter URL)
+    uukanshu     - uukanshu.cc (book URL or chapter URL)
 
 Options:
     --start INDEX   Starting chapter index (default: 0)
@@ -43,6 +45,12 @@ Examples:
 
     # sstruyen: story page (resolves novel id, then chapter API)
     python -m crawler.run sstruyen "https://sstruyen.pics/truyen/<slug>" --parallel
+
+    # vivutruyen: story page or chapter URL
+    python -m crawler.run vivutruyen "https://vivutruyen.com/truyen/<slug>" --parallel
+
+    # uukanshu: book page or chapter URL
+    python -m crawler.run uukanshu "https://uukanshu.cc/book/<id>/" --parallel
 """
 import argparse
 import sys
@@ -57,6 +65,8 @@ from .xtruyen import XtruyenCrawler
 from .iqiyi import IqiyiCrawler
 from .piaotia import PiaotiaCrawler
 from .sstruyen import SstruyenCrawler
+from .vivutruyen import VivutruyenCrawler
+from .uukanshu import UukanshuCrawler
 
 CRAWLERS = {
     "truyenqq": TruyenQQCrawler,
@@ -68,6 +78,8 @@ CRAWLERS = {
     "iqiyi": IqiyiCrawler,
     "piaotia": PiaotiaCrawler,
     "sstruyen": SstruyenCrawler,
+    "vivutruyen": VivutruyenCrawler,
+    "uukanshu": UukanshuCrawler,
 }
 
 # Preset for --aggressive: maximize throughput, accept higher 429 risk.
