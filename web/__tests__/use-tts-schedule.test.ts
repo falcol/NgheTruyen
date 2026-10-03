@@ -192,4 +192,47 @@ describe("useTTS schedule", () => {
     expect(calls.filter((text) => text === chunks[0].text)).toHaveLength(1);
     expect(calls.filter((text) => text === chunks[1].text)).toHaveLength(1);
   });
+
+  it("keeps the playback rate after remount", async () => {
+    await act(async () => {
+      slot.api?.setRate(2.5);
+    });
+    expect(slot.api?.rate).toBe(2.5);
+    expect(localStorage.getItem("nghetruyen-tts-rate")).toBe("2.5");
+
+    await act(async () => {
+      root?.unmount();
+    });
+    slot.api = null;
+    root = createRoot(host!);
+    await act(async () => {
+      root?.render(createElement(Harness));
+    });
+
+    expect(slot.api?.rate).toBe(2.5);
+  });
+
+  it("clamps a stored rate into 1–6 and ignores junk", async () => {
+    localStorage.setItem("nghetruyen-tts-rate", "9");
+    await act(async () => {
+      root?.unmount();
+    });
+    slot.api = null;
+    root = createRoot(host!);
+    await act(async () => {
+      root?.render(createElement(Harness));
+    });
+    expect(slot.api?.rate).toBe(6);
+
+    localStorage.setItem("nghetruyen-tts-rate", "nope");
+    await act(async () => {
+      root?.unmount();
+    });
+    slot.api = null;
+    root = createRoot(host!);
+    await act(async () => {
+      root?.render(createElement(Harness));
+    });
+    expect(slot.api?.rate).toBe(1);
+  });
 });

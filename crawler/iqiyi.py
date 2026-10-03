@@ -130,9 +130,9 @@ def parse_local_title_num(title: str) -> int | None:
     zh = parse_zh_title_num(t)
     if zh:
         return zh
-    m = re.match(r"^(?:Chương|Chuong|C)\s+(\d+)\b", t, re.I)
+    m = re.match(r"^(?:Chương|Chuong|C)\s+(?:thứ\s+)?(\d[\d.,]*)\b", t, re.I)
     if m:
-        return int(m.group(1))
+        return int(m.group(1).replace(",", "").rstrip("."))
     m = re.match(r"^Đệ\s+(\d+)\s*chương", t, re.I)
     if m:
         return int(m.group(1))

@@ -20,7 +20,7 @@ import os
 import pickle
 import shutil
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .config import LOADER_VERSION, RENDERER_VERSION
@@ -36,6 +36,7 @@ from .vietphrase.loader import (
     TRUST_BY_FILE,
     Dictionary,
     TrieNode,
+    _cow_insert,
     _insert,
     iter_global_glossary_files,
     load_dictionary,
@@ -277,12 +278,18 @@ def build_revision(
         global_glossary=global_glossary,
         patterns=patterns,
     )
-    for i, a in enumerate(autos):
-        prec = (int(a.layer), AUTO_TRUST, i)
-        _insert(dic.root, a.source, a.target, prec, default_policy(a.layer))
-        simp = to_simplified(a.source, dic.trad_simp)
-        if simp != a.source:
-            _insert(dic.root, simp, a.target, prec, default_policy(a.layer))
+    # [Note] load_dictionary tra ve instance share trong _MEMO theo fingerprint.
+    # _insert truc tiep se nhiem doc cache cho moi publish sau (auto leak) —
+    # dung _cow_insert de tach root rieng (glossary overlay lam tuong tu).
+    if autos:
+        root = dic.root
+        for i, a in enumerate(autos):
+            prec = (int(a.layer), AUTO_TRUST, i)
+            root = _cow_insert(root, a.source, a.target, prec, default_policy(a.layer))
+            simp = to_simplified(a.source, dic.trad_simp)
+            if simp != a.source:
+                root = _cow_insert(root, simp, a.target, prec, default_policy(a.layer))
+        dic = replace(dic, root=root)
     dic = _rebuild_canonical(dic, revision_id)
 
     tmp_out = _materialize_bundle(project, canonical, revision_id, dic)

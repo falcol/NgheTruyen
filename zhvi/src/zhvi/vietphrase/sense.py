@@ -54,6 +54,26 @@ _DRAGON_ANIMAL_LEFT = frozenset("条頭头只隻條")
 _DRAGON_ANIMAL_TAIL = ("一条", "一頭", "一头", "一只", "一隻")
 # *道 thoai (说道/笑道): cat "rằng" — khong dung 知道.
 _SPEECH_DAO_SKIP = frozenset({"知道", "霸道", "王道", "正道", "大道", "人道", "天道"})
+# Dong tu ngon ngu dung truoc 道 speech (VD 说道/笑道/疑惑道).
+# _ends_speech_verb check ve trai cua edge 道 — tranh 武道/天道/走道.
+_SPEECH_VERB_TAILS = (
+    "说", "问", "笑", "答", "叹", "吼", "骂", "喝", "喊", "劝", "求",
+    "哭", "怨", "嗔", "疑惑", "冷笑", "沉声", "开口",
+    "轻", "喜", "怒", "疑", "淡", "重", "幽", "涩", "颤", "哑", "柔",
+    "哽", "喃", "嚷", "嘟", "嘀咕", "呻吟", "大笑", "微笑", "苦笑",
+    "讥", "嘲", "讽", "斥", "咆哮", "哼",
+)
+# Dau ket menh de sau 道 don (dict moi chi co 道"/道：/道，/道。).
+_DAO_END_PUNCT = frozenset("。！？，,、；;：:”’\"'」』）\n")
+# Edge 道 + dau cau trong dict (VietPhrase_4) — dung de nhan dien drop.
+_DAO_PUNCT_SRC = frozenset({"道。", "道，", "道:", "道：", "道;", "道；"})
+
+
+def _ends_speech_verb(left: str) -> bool:
+    """Ve trai ket bang dong tu ngon ngu (再说/疑惑/冷笑...)."""
+    return bool(left) and left.endswith(_SPEECH_VERB_TAILS)
+
+
 # Dong tu menh de (rong hon VERBS {v} nam/nem).
 _CLAUSE_VERBS = VERBS | frozenset(
     "来去到说問问听想用做打开吃坐站被让讓逼叫走看"
@@ -343,6 +363,10 @@ def _sense_target(
     if src == "多少" and clause_is_question(text, clause_pos):
         return "bao nhiêu"
     if src == "道" and nxt in _SPEECH_AFTER_DAO:
+        return "nói"
+    # 道 don truoc dau ket cau (dict chua co 道！/道？/道」...): noi khi ve
+    # trai la dong tu noi (VD 迟疑道？). 武道/天道/走道 giu (ve trai khac).
+    if src == "道" and (not rest or nxt in _DAO_END_PUNCT) and _ends_speech_verb(left):
         return "nói"
     if src in ("打过来", "打过来了") and _clause_has(text, clause_pos, ("电话", "電話")):
         return "gọi tới"

@@ -1091,6 +1091,31 @@ def test_shenhuangjing_power_is_not_reversed():
     assert _low(rows, "凌天一辈子") == "cả đời lăng thiên"
 
 
+def test_jinjue_shenzun_is_name_not_feeling():
+    """金觉神尊 is Kim Giác Thần Tôn. 觉=cảm giác must not split the title.
+
+    金觉神尊的徒孙 was «kim cảm giác đồ tôn của Thần Tôn».
+    的衣领 is one dict span «cổ áo của», so the collar stays with the name.
+    """
+    rows = [
+        ("金觉神尊", "Kim Giác Thần Tôn", 999, "Custom.txt"),
+        ("觉", "cảm giác", 10, "VietPhrase_2.txt"),
+        ("金", "kim", 10, "VietPhrase_2.txt"),
+        ("神尊", "Thần Tôn", 999, "Custom.txt"),
+        ("徒孙", "đồ tôn", 10, "VietPhrase_2.txt"),
+        ("的", "của", 10, "VietPhrase_2.txt"),
+        ("衣领", "cổ áo", 10, "VietPhrase_2.txt"),
+        ("的衣领", "cổ áo của", 10, "VietPhrase_2.txt"),
+        ("大棒", "đại bổng", 10, "VietPhrase_2.txt"),
+        ("我", "ta", 10, "VietPhrase_1.txt"),
+        ("抓住", "bắt lấy", 10, "VietPhrase_2.txt"),
+    ]
+    assert _low(rows, "我金觉神尊的徒孙") == "ta đồ tôn của kim giác thần tôn"
+    assert "cảm giác" not in _low(rows, "金觉神尊的大棒")
+    assert _low(rows, "金觉神尊的大棒") == "đại bổng của kim giác thần tôn"
+    assert _low(rows, "抓住金觉神尊的衣领") == "bắt lấy cổ áo của kim giác thần tôn"
+
+
 def test_shiyongle_de_keeps_possessive():
     """使用了{0}的 must not swallow 的 before the owned noun.
 
@@ -1253,3 +1278,19 @@ def test_jiuda_not_eating_daqu():
     assert "trêu ghẹo nói" in got
     assert "đánh liền" not in got
     assert "liền định" in _low(rows, "就打算离开")
+
+
+def test_zhaoqi_not_vetoed_by_pinyin_junk_qidan():
+    rows = [
+        ("说是", "nói là", 10, "VietPhrase_2.txt"),
+        ("找齐", "tìm đủ", 10, "VietPhrase_2.txt"),
+        ("找", "tìm", 10, "VietPhrase_1.txt"),
+        ("齐丹", "Zidan", 10, "VietPhrase_4.txt"),
+        ("丹方", "toa thuốc", 10, "VietPhrase_2.txt"),
+        ("记载", "ghi lại", 10, "VietPhrase_2.txt"),
+        ("灵药", "linh dược", 10, "VietPhrase_2.txt"),
+    ]
+    got = _low(rows, "说是找齐丹方上记载的灵药")
+    assert "tìm đủ" in got
+    assert "toa thuốc" in got
+    assert "zidan" not in got

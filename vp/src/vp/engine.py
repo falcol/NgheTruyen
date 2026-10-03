@@ -944,6 +944,10 @@ def _stolen_compound(root: _Node, text: str, start: int, end: int) -> bool:
             word_end = j + 1
             if not node.has or wlen < 2 or word_end <= end:
                 continue
+            # 齐丹=Zidan in VietPhrase_4 is pinyin junk. A Latin reading
+            # below Names priority must not veto 找齐-style common spans.
+            if node.p < 20 and node.v.isascii() and node.v[:1].isupper():
+                continue
             if text[word_end - 1] not in _BOUND_COMPOUND_TAILS:
                 continue
             # 着气=xả giận is a noisy bigram. It must not veto 看着/跟着
@@ -1684,6 +1688,39 @@ def _merge_nuzi_de_noun(out: list[_Tok], tok: _Tok) -> bool:
     return True
 
 
+def _merge_glued_de_cua(out: list[_Tok], tok: _Tok) -> bool:
+    """Name + 的衣领 when the dict already glued 的 into «cổ áo của».
+
+    Bare 的 stays on the normal possessive pass. 的确 does not end in «của».
+    """
+    if not out or not tok.value or tok.drop:
+        return False
+    if not tok.zh.startswith("的") or len(tok.zh) < 2 or "的" in tok.zh[1:]:
+        return False
+    if tok.zh[1:] in _DE_SKIP_RIGHT:
+        return False
+    if not tok.value.casefold().endswith(" của"):
+        return False
+    left = out[-1]
+    if left.end != tok.start or not left.value or left.drop:
+        return False
+    if not _is_possessive_head(left):
+        return False
+    noun = _strip_trailing_cua(tok.value)
+    if not noun:
+        return False
+    out[-1] = _Tok(
+        left.start,
+        tok.end,
+        left.zh + tok.zh,
+        f"{noun} của {left.value}",
+        tok.pri,
+        False,
+        "trie",
+    )
+    return True
+
+
 def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
     """Name or pronoun + 的 + noun -> 'noun của name'. Time nouns use ở."""
     out: list[_Tok] = []
@@ -1691,7 +1728,7 @@ def _merge_possessive(toks: list[_Tok]) -> list[_Tok]:
     n = len(toks)
     while i < n:
         tok = toks[i]
-        if _merge_nuzi_de_noun(out, tok):
+        if _merge_nuzi_de_noun(out, tok) or _merge_glued_de_cua(out, tok):
             i += 1
             continue
         if tok.zh in ("的", "旳") and tok.end - tok.start == 1 and out and i + 1 < n:

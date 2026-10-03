@@ -441,6 +441,52 @@ def _travel_dao_before_speech(dic: Dictionary, text: str, edge: Edge) -> bool:
     return bool(rest) and rest[0] in _SPEECH_AFTER_DAO
 
 
+_DAO_CLAUSE_AFTER = frozenset("。！？，,、；;：:”’\"'」』\n")
+
+
+def _shuo_before_dao(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Edge generic ket thuc bang 说 (VD 师说/再说/撒谎说) cuop 说 cua 说道
+    khi sau la 道 + dau cau (墨师说道 -> 'Sư Thuyết nói'). Drop de X | 说道.
+
+    Hep: chi truoc 道 + dau ket cau hoac het block — 再说吧 / 《师说》
+    khong cham. Ten/glossary bao ve nhu _swallows_name.
+    """
+    if edge.is_pattern or edge.end - edge.start < 2:
+        return False
+    if not text[edge.start : edge.end].endswith("说"):
+        return False
+    if _span_is_protected(dic, text, edge.start, edge.end):
+        return False
+    if _is_name_prec(edge.precedence):
+        return False
+    rest = text[edge.end :]
+    if not rest.startswith("道"):
+        return False
+    after = rest[1:]
+    if after and after[0] not in _DAO_CLAUSE_AFTER:
+        return False
+    # 说道 phai co that trong trie — khong drop neu re-segment khong ra 说道.
+    return _has_entry(dic, "说道")
+
+
+def _yijinghuai_before_zhe(dic: Dictionary, text: str, edge: Edge) -> bool:
+    """Edge 已经怀 (=đã mang thai, VietPhrase_4) cuop 怀 cua 怀着 khi sau la
+    着 (已经怀着必死的心 -> 'đã mang thai...'). Drop de 已经 | 怀着.
+
+    Hep: chi dung edge 已经怀 (glue cho 已经怀孕) — 心怀/怀孕 khong cham.
+    已经怀孕 giu nguyen (已经怀孕 dai hon thang, khong phai 着 sau edge).
+    """
+    if edge.is_pattern or text[edge.start : edge.end] != "已经怀":
+        return False
+    if _span_is_protected(dic, text, edge.start, edge.end):
+        return False
+    rest = text[edge.end :]
+    if not rest.startswith("着"):
+        return False
+    # 怀着 phai co that trong trie — khong drop neu re-segment khong ra.
+    return _has_entry(dic, "怀着")
+
+
 _QI_PRONOUN_LAI = frozenset({"我来", "你来", "他来", "她来", "它来"})
 _KIN_TITLES = ("姐姐", "哥哥", "妹妹", "弟弟")
 _PRONOUN_DE_TAILS = tuple(p + "的" for p in sorted(PRONOUNS)) + ("自己的",)
@@ -570,6 +616,8 @@ def _candidates_at(dic: Dictionary, text: str, pos: int, *, patterns: bool) -> l
         candidates = [e for e in candidates if not _kin_before_de_zhuren(dic, text, e)]
         candidates = [e for e in candidates if not _pronoun_de_before_noun(dic, text, e)]
         candidates = [e for e in candidates if not _jiu_da_before_guolai(dic, text, e)]
+        candidates = [e for e in candidates if not _shuo_before_dao(dic, text, e)]
+        candidates = [e for e in candidates if not _yijinghuai_before_zhe(dic, text, e)]
         if not candidates:
             candidates = [
                 Edge(pos, pos + 1, text[pos], (int(Layer.BASE_SINGLE), 0.0, -2), "CONTEXTUAL", None, -W_UNKNOWN)
@@ -958,6 +1006,17 @@ def _source_has_reduplication(text: str, start: int, end: int) -> bool:
     return False
 
 
+def _strip_end_punct(target: str) -> str:
+    """Bo dau cau cuoi de so sanh trung (VD 'nói.' vs 'nói láo')."""
+    return target.rstrip(".,!?;:\"'”’»…—- ").lower()
+
+
+# Dong tu tuong thuat don: 'nói láo' + 'nói.' / 'lại nói' + 'nói.' — e day
+# du hon thi bo j (nguoc huong collapse artifact thuong). Genuine lap
+# nguon (说说) do guard reduplication giu lai nhu cu.
+_SPEECH_DUP_VERBS = frozenset({"nói", "hỏi"})
+
+
 def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int, list[tuple[int, int]]]:
     """Chong lap tu phia target (artifact cua greedy/luat Han-Viet).
 
@@ -969,6 +1028,7 @@ def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int,
     Tra (edges con lai, so lan collapse, offsets (start, end) tung span bi bo —
     AD-18: transformation kem source-offset trace).
     """
+    edges = list(edges)  # speech-dup blanking thay target — khong mutate input caller.
     out: list[Edge] = []
     collapsed = 0
     dropped: list[tuple[int, int]] = []
@@ -988,6 +1048,16 @@ def collapse_repetitions(edges: list[Edge], text: str) -> tuple[list[Edge], int,
                 dropped.append((e.start, e.end))
                 i += 1  # bo e dau, giu e sau
                 continue
+            n1, n2 = _strip_end_punct(t1), _strip_end_punct(t2)
+            if (
+                n1 != n2
+                and n2 in _SPEECH_DUP_VERBS
+                and n2 in n1.split(" ")
+                and not _source_has_reduplication(text, e.start, edges[j].end)
+            ):
+                collapsed += 1
+                dropped.append((edges[j].start, edges[j].end))
+                edges[j] = replace(edges[j], target="")  # bo j sau, giu e truoc
         out.append(e)
         i += 1
     return out, collapsed, dropped

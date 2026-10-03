@@ -3749,3 +3749,126 @@ def test_naying_qingkuang_inverts():
     t = vp_plan(dic, "到底是哪一种情况").text.lower()
     assert "tình huống nào" in t
     assert "loại nào tình huống" not in t
+
+
+def test_dao_single_before_bang_after_speech_is_noi():
+    """道 đơn trước ！(dict chưa có 道！): sau động từ nói -> 'nói'."""
+    dic = mini(
+        [
+            ("迟疑", "chần chừ", Layer.BASE_MULTI),
+            ("道", "đạo", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "迟疑道！").text.lower()
+    assert "nói" in t
+    assert "đạo" not in t
+
+
+def test_dao_single_before_bang_keeps_philosophy():
+    """武道！không phải speech — vế trái không phải động từ nói -> giữ."""
+    dic = mini(
+        [
+            ("武道", "võ đạo", Layer.BASE_MULTI),
+            ("道", "đạo", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "武道！").text.lower()
+    assert "võ đạo" in t
+    assert "nói" not in t
+
+
+def test_shuo_edge_before_dao_dropped():
+    """师说 + 道。: 师说 nuốt 说 của 说道 -> drop để 师 | 说道."""
+    dic = mini(
+        [
+            ("王", "Vương", Layer.BASE_SINGLE),
+            ("师", "sư", Layer.BASE_SINGLE),
+            ("师说", "Sư Thuyết", Layer.BASE_MULTI),
+            ("说道", "nói", Layer.GLOBAL_MANUAL),
+            ("道。", "nói.", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "王师说道。").text.lower()
+    assert "thuyết" not in t
+    assert "sư nói" in t
+
+
+def test_zaishuo_before_dao_dropped():
+    """再说 + 道。: drop để 再 | 说道, tránh 'lại nói nói'."""
+    dic = mini(
+        [
+            ("再", "lại", Layer.BASE_SINGLE),
+            ("再说", "lại nói", Layer.BASE_MULTI),
+            ("说道", "nói", Layer.GLOBAL_MANUAL),
+            ("道。", "nói.", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "再说道。").text.lower()
+    assert "lại nói" in t
+    assert "nói nói" not in t
+
+
+def test_speech_dup_collapse_keeps_first():
+    """撒谎 (nói láo) + 说道 (nói): giữ vế đầy đủ, bỏ vế sau."""
+    dic = mini(
+        [
+            ("撒谎", "nói láo", Layer.BASE_MULTI),
+            ("说道", "nói", Layer.GLOBAL_MANUAL),
+        ]
+    )
+    t = vp_plan(dic, "撒谎说道。").text.lower()
+    assert "nói láo" in t
+    assert "nói láo nói" not in t
+
+
+def test_speech_dup_keeps_genuine_reduplication():
+    """Nguồn lặp thật (说说) không bị collapse nuốt."""
+    dic = mini(
+        [
+            ("说", "nói", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "说说").text
+    assert t.lower().count("nói") == 2
+
+
+def test_yijinghuai_before_zhe_dropped():
+    """已经怀 + 着: drop để 已经 | 怀着, tránh 'đã mang thai đang...'."""
+    dic = mini(
+        [
+            ("已经", "đã", Layer.BASE_MULTI),
+            ("已经怀", "đã mang thai", Layer.BASE_MULTI),
+            ("怀着", "mang", Layer.BASE_MULTI),
+            ("孩子", "hài tử", Layer.BASE_MULTI),
+        ]
+    )
+    t = vp_plan(dic, "已经怀着孩子。").text.lower()
+    assert "mang thai" not in t
+    assert "mang" in t
+
+
+def test_yijinghuaiyun_kept():
+    """已经怀孕 (dài hơn) không bị drop — vẫn 'đã mang thai'."""
+    dic = mini(
+        [
+            ("已经", "đã", Layer.BASE_MULTI),
+            ("已经怀", "đã mang thai", Layer.BASE_MULTI),
+            ("已经怀孕", "đã mang thai", Layer.BASE_MULTI),
+            ("了", "", Layer.BASE_SINGLE),
+        ]
+    )
+    t = vp_plan(dic, "她已经怀孕了。").text.lower()
+    assert "đã mang thai" in t
+
+
+def test_huaizhe_bisi_full_phrase():
+    """怀着必死的心 (Custom) — 'ôm quyết tâm phải chết'."""
+    dic = mini(
+        [
+            ("已经", "đã", Layer.BASE_MULTI),
+            ("怀着必死的心", "ôm quyết tâm phải chết", Layer.GLOBAL_MANUAL),
+        ]
+    )
+    t = vp_plan(dic, "已经怀着必死的心。").text.lower()
+    assert "ôm quyết tâm phải chết" in t
+    assert "mang thai" not in t

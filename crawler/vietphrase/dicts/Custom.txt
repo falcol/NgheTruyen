@@ -135,12 +135,13 @@
 小天哥哥=Tiểu Thiên Ca Ca
 萬寶宗=Vạn Bảo Tông
 劍宗=Kiếm Tông
-逍遙宗=Tiêu Diêu Tông
+逍遙宗=Tiêu Dao Tông
 輪迴道=Luân Hồi đạo
 混沌道體=hỗn độn đạo thể
 先天道體=tiên thiên đạo thể
 神祖=Thần Tổ
 神尊=Thần Tôn
+金覺神尊=Kim Giác Thần Tôn
 戰神尊=chiến thần tôn
 神皇=Thần Hoàng
 神帝=Thần Đế
@@ -939,11 +940,20 @@
 躯干的意识=ý thức của thân thể
 # 2026-10-01 manh-nhat l.44275: VietPhrase_4 魂魄出窍=Imperio. Cùng lớp 灵魂出窍/神魂出窍 là xuất khiếu.
 魂魄出窍=hồn phách xuất khiếu
+# 2026-10-03 manh-nhat l.46461: VietPhrase_4 我家里有=trong nhà có của ta (dịch ngược). Key 4 chữ đè 我家里 nên phải override đúng key dài.
+我家里有=nhà ta có
+# 2026-10-03 manh-nhat l.46464: VietPhrase_3 怎么会没人=ủa sao không có ai vậy. Key 5 chữ đè 怎么会/没人.
+怎么会没人=sao lại không có ai
+# 2026-10-03 manh-nhat l.46464 (22 chỗ): VietPhrase_2 才对啊=mới đúng a — 啊 trong entry dài không bị drop; 才对=mới đúng đã có trong QualityOverrides.
+才对啊=mới đúng
+# 2026-10-03 cùng họ Đạo triết lý: VietPhrase_2 无情道=vô tình nói (sai); sibling 有情道=Hữu Tình Đạo đúng.
+无情道=vô tình đạo
+# 2026-10-03 manh-nhat l.29847/46484: 怀着必死的心=ôm quyết tâm phải chết (không phải mang thai). Key 6 chữ đè 怀着/怀.
+怀着必死的心=ôm quyết tâm phải chết
+# 2026-10-03 cùng họ: VietPhrase_4 怀着孩子=mang thai (sai — 怀孩子 là bế con); 怀着孕=mang thai giữ đúng.
+怀着孩子=bế hài tử
 
-
-
-
-
-
-
-
+# 2026-10-03 manh-nhat l.46484 vp: 已经怀=đã mang thai (3 chữ) nuốt 怀 của 怀着必死的心. Key 7 chữ thắng longest-match.
+已经怀着必死的心=đã ôm quyết tâm phải chết
+# 2026-10-03 manh-nhat: Names_2 逍遥神=Tiêu Diêu Thần sai reading (chuẩn 逍遥=tiêu dao). Override cho 逍遥神帝/神尊 lẻ.
+逍遥神=Tiêu Dao Thần

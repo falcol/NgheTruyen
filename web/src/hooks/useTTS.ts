@@ -13,6 +13,9 @@ import {
 } from "@/lib/tts-voices";
 
 const VOICE_STORAGE_KEY = "nghetruyen-tts-voice";
+const RATE_STORAGE_KEY = "nghetruyen-tts-rate";
+const MIN_RATE = 1;
+const MAX_RATE = 6;
 /** Warm ahead while playing — Read Aloud prefetches next; keep pipeline short so chunk 0 wins TTS slots */
 const PREFETCH_AHEAD = 2;
 const WARM_ON_PREPARE = 2;
@@ -109,6 +112,20 @@ function getSavedVoiceName(): string {
   const saved = localStorage.getItem(VOICE_STORAGE_KEY);
   if (saved && TTS_VOICES.some((v) => v.name === saved)) return saved;
   return DEFAULT_TTS_VOICE;
+}
+
+/** Slider step is 0.1. Non-numeric values are dropped; others clamp to 1–6. */
+function clampRate(value: number): number | null {
+  if (!Number.isFinite(value)) return null;
+  const stepped = Math.round(value * 10) / 10;
+  return Math.min(MAX_RATE, Math.max(MIN_RATE, stepped));
+}
+
+function getSavedRate(): number {
+  if (typeof window === "undefined") return MIN_RATE;
+  const saved = localStorage.getItem(RATE_STORAGE_KEY);
+  if (saved == null || saved === "") return MIN_RATE;
+  return clampRate(Number(saved)) ?? MIN_RATE;
 }
 
 function cacheKey(text: string, voice: string): string {
@@ -269,6 +286,10 @@ export function useTTS() {
     const saved = getSavedVoiceName();
     voiceRef.current = saved;
     setSelectedVoiceName(saved);
+
+    const savedRate = getSavedRate();
+    rateRef.current = savedRate;
+    setRateState(savedRate);
   }, []);
 
   const getPrimary = useCallback((): HTMLAudioElement => {
@@ -903,11 +924,12 @@ export function useTTS() {
   }, [playChunkAt, stopAudio]);
 
   const setRate = useCallback((newRate: number) => {
-    if (!Number.isFinite(newRate)) return;
-    const clamped = Math.min(6, Math.max(1, Math.round(newRate * 10) / 10));
+    const clamped = clampRate(newRate);
+    if (clamped == null) return;
     if (rateRef.current === clamped) return;
     rateRef.current = clamped;
     setRateState(clamped);
+    localStorage.setItem(RATE_STORAGE_KEY, String(clamped));
     if (primaryRef.current) primaryRef.current.playbackRate = clamped;
     if (secondaryRef.current) secondaryRef.current.playbackRate = clamped;
   }, []);
