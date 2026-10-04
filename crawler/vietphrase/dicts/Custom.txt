@@ -957,3 +957,10 @@
 已经怀着必死的心=đã ôm quyết tâm phải chết
 # 2026-10-03 manh-nhat: Names_2 逍遥神=Tiêu Diêu Thần sai reading (chuẩn 逍遥=tiêu dao). Override cho 逍遥神帝/神尊 lẻ.
 逍遥神=Tiêu Dao Thần
+# 2026-10-04 manh-nhat l.47267 vp: 能把人气=có thể đem độ hot (4 chữ, VietPhrase_2) nuốt 把人气, tách 气得半死 lẻ. Key 7 chữ thắng longest-match.
+能把人气得半死=có thể khiến người ta tức gần chết
+把人气得半死=khiến người ta tức gần chết
+# 2026-10-04 manh-nhat l.47267 vp: 一生=cả đời (VietPhrase_2) thắng khi 怒气一生 tách lẻ. Ở đây 一生 là động từ "nảy sinh", không phải "cả đời".
+怒气一生=nộ khí bốc lên
+# 2026-10-04 manh-nhat l.47280/55027 vp: biến thể rút gọn của 没有规矩不成方圆 (Mạnh Tử) không có trong từ điển nên greedy tách lẻ 无+规矩+不+方圆=phương viên (Hán-Việt sai nghĩa). Key 6 chữ thắng longest-match.
+无规矩不方圆=vô quy củ bất thành phương viên

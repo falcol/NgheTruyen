@@ -211,6 +211,17 @@
 六点四十多=6 giờ 40 phút
 姗姗来迟=thong thả tới muộn
 无语着=cạn lời
+# 2026-10-04 manh-nhat l.47267-47268: tên nhân vật chưa có entry nên VP tách lẻ (方=phương + 火=lửa, 洪 + 银花=ngân hoa).
+水龙王=Thủy Long Vương
+方火=Phương Hỏa
+洪银花=Hồng Ngân Hoa
+# 2026-10-04 manh-nhat l.47268: 当初=lúc trước đúng theo từ điển nhưng vô nghĩa trong ngữ cảnh (thuẫn lửa hiện ra để chặn kiếm khí — nguồn likely typo của 挡住). Fix bằng key dài scope trong truyện, không đụng universal 当初.
+当初洪银花的剑气=chặn đứng kiếm khí của Hồng Ngân Hoa
+# 2026-10-04 manh-nhat 15x 弦家: 弦 lẻ=dây cung đúng trong thành ngữ (箭在弦上) nên không đụng; 弦 họ người luôn đọc Huyền (弦一敏=Huyền Nhất Mẫn GT đã đúng). Key 弦家 fix tách lẻ; key 和弦家 đè 和弦=hợp âm (VietPhrase_2, nhạc lý) theo longest-match — chắc ăn cho cả greedy engine cũ không có _swallows_name.
+弦家=Huyền gia
+和弦家=và Huyền gia
+弦一敏=Huyền Nhất Mẫn
+和弦一敏=và Huyền Nhất Mẫn
 
 
 
