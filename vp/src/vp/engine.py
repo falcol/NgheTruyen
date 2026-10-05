@@ -1185,6 +1185,11 @@ def _protected_name_steals_word(root: _Node, text: str, start: int, end: int) ->
     """
     if end - start != 2 or start + 1 >= len(text):
         return False
+    # 昙花=Đàm Hoa is one word (flower/character name), never 昙 + 花-"spend".
+    # Junk tails like 花没=xài hết must not split it: 昙花没想到 is
+    # "Đàm Hoa không nghĩ tới", not "Đàm xài hết nghĩ đến".
+    if text[start:end] == "昙花":
+        return False
     # 绣剑 is the same sword as 锈剑. 剑灵 is its spirit.
     # 剑的/灵能/灵隐 must not split those names.
     if text[start:end] in {"绣剑", "剑灵"}:

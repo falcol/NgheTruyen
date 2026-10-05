@@ -293,16 +293,17 @@ function ReaderClientInner({
   useLayoutEffect(() => {
     if (paragraphsProp || !activeChapterContentUrl) return;
     const resume = resumeReaderChapter(slug, activeChapterIdx, activeChapterContentUrl);
-    if (resume.paragraphs) {
+    const resumed = resume.paragraphs;
+    if (resumed) {
       setChapterState((prev) => {
         if (
           prev.status === "ready" &&
           prev.idx === activeChapterIdx &&
-          prev.paragraphs === resume.paragraphs
+          prev.paragraphs === resumed
         ) {
           return prev;
         }
-        return { status: "ready", paragraphs: resume.paragraphs, idx: activeChapterIdx };
+        return { status: "ready", paragraphs: resumed, idx: activeChapterIdx };
       });
       return;
     }

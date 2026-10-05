@@ -219,6 +219,26 @@ def test_protected_name_does_not_eat_yi_measure_word():
     assert engine.translate("和一些") == "Cùng một chút"
 
 
+def test_tanhua_name_not_split_by_hua_spend():
+    engine = _engine(
+        [
+            ("昙", "đàm", 0, "dict-default.json"),
+            ("昙花", "Đàm Hoa", 20, "Names_2.txt"),
+            ("花没", "xài hết", 10, "VietPhrase_4.txt"),
+            ("花这么快", "xài mau như vậy", 10, "VietPhrase_3.txt"),
+            ("没想到", "không nghĩ tới", 10, "VietPhrase_1.txt"),
+            ("没有办法", "không có cách nào", 10, "VietPhrase_2.txt"),
+            ("这么快", "nhanh như vậy", 10, "VietPhrase_2.txt"),
+            ("让", "để", 10, "VietPhrase_1.txt"),
+            ("那", "kia", 10, "VietPhrase_1.txt"),
+            ("朵", "đóa", 10, "VietPhrase_1.txt"),
+        ]
+    )
+    assert engine.translate("昙花没想到") == "Đàm Hoa không nghĩ tới"
+    assert engine.translate("让昙花没有办法") == "Để Đàm Hoa không có cách nào"
+    assert engine.translate("那朵昙花这么快") == "Kia đóa Đàm Hoa nhanh như vậy"
+
+
 def test_custom_overrides_junk_corpus_glosses():
     engine = _engine(
         [
