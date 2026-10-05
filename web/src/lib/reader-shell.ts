@@ -8,10 +8,6 @@ export function readerFirstChapters(current: ReaderChapterRef): ReaderChapterRef
   return [{ index: current.index, title: current.title }];
 }
 
-export function crawlChapterIndexUrl(slug: string): string {
-  return `/api/chapter-index/${encodeURIComponent(slug)}`;
-}
-
 function unwrapChapterList(data: unknown): unknown[] {
   if (Array.isArray(data)) return data;
   if (!data || typeof data !== "object") return [];

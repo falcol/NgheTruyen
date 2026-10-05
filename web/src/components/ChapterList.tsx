@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   adjacentChapterContentUrls,
-  crawlChapterApiPath,
+  volUrlForChapter,
 } from "@/lib/chapter-nav";
 import {
   CHAPTER_LIST_PAGE,
@@ -15,6 +15,8 @@ import {
 } from "@/lib/chapter-list";
 import { prefetchChapterContent } from "@/lib/chapter-prefetch";
 import { chapterCacheUrlPath, epubFilenameFromReaderSlug } from "@/lib/epub-urls";
+import { prefetchVolChapter } from "@/lib/vol-content";
+import type { VolumeRange } from "@/lib/data";
 import { useProgress } from "@/hooks/useProgress";
 import { MagnifyingGlass, CaretDown, CircleNotch, PlayCircle, X } from "@/components/icons";
 
@@ -23,19 +25,16 @@ interface ChapterMeta {
   title: string;
 }
 
-function chapterContentUrl(slug: string, chapterIdx: number): string | null {
-  const epubFile = epubFilenameFromReaderSlug(slug);
-  if (epubFile) return chapterCacheUrlPath(epubFile, chapterIdx);
-  return crawlChapterApiPath(slug, chapterIdx);
-}
-
 export default function ChapterList({
   slug,
   chapters,
+  chapterVols,
   readHref,
 }: {
   slug: string;
   chapters: ChapterMeta[];
+  /** Static volume ranges for crawler stories; absent for epub stories. */
+  chapterVols?: VolumeRange[];
   readHref?: string;
 }) {
   const router = useRouter();
@@ -130,14 +129,23 @@ export default function ChapterList({
     (chapterIdx: number) => {
       router.prefetch(href(chapterIdx));
 
-      const main = chapterContentUrl(slug, chapterIdx);
-      if (main) prefetchChapterContent(main).catch(() => {});
+      const prefetchContent = (url: string | null, idx: number) => {
+        if (!url) return;
+        if (chapterVols) prefetchVolChapter(url, idx).catch(() => {});
+        else prefetchChapterContent(url).catch(() => {});
+      };
 
-      const { prev, next } = adjacentChapterContentUrls(slug, chapters, chapterIdx);
-      if (prev) prefetchChapterContent(prev).catch(() => {});
-      if (next) prefetchChapterContent(next).catch(() => {});
+      const epubFile = epubFilenameFromReaderSlug(slug);
+      const main = epubFile
+        ? chapterCacheUrlPath(epubFile, chapterIdx)
+        : volUrlForChapter(chapterVols ?? [], chapterIdx);
+      prefetchContent(main, chapterIdx);
+
+      const { prev, next } = adjacentChapterContentUrls(slug, chapters, chapterIdx, chapterVols);
+      if (prev) prefetchContent(prev.url, prev.chapterIdx);
+      if (next) prefetchContent(next.url, next.chapterIdx);
     },
-    [slug, chapters, router, readHref],
+    [slug, chapters, chapterVols, router, readHref],
   );
   /* eslint-enable react-hooks/preserve-manual-memoization, react-hooks/exhaustive-deps */
 

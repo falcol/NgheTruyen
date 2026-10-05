@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { estimateReadingTime, getChapterIndex, getStoryTitle, listStories } from "@/lib/data";
+import { estimateReadingTime, getChapterIndex, getStoryTitle, getVolumeManifest, listStories } from "@/lib/data";
 import ChapterList from "@/components/ChapterList";
 import ReadCTA from "@/components/ReadCTA";
 import { getGradientFromString } from "@/lib/color";
@@ -87,7 +87,7 @@ export default async function StoryPage({
             </span>
           </span>
         </div>
-        <ChapterList slug={slug} chapters={chapters} />
+        <ChapterList slug={slug} chapters={chapters} chapterVols={getVolumeManifest(slug)?.vols} />
       </div>
 
       <SiteFooter />

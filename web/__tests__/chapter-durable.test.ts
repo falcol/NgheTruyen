@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import zlib from "node:zlib";
 import { loadProgress } from "@/hooks/useProgress";
 import {
   durableChapterKey,
@@ -7,6 +8,7 @@ import {
   rememberDurableChapter,
   type ChapterPayload,
 } from "@/lib/chapter-prefetch";
+import { prefetchVolChapter, volChapterKey } from "@/lib/vol-content";
 import { resumeReaderChapter } from "@/lib/reader-resume";
 
 const crawlUrl = "/api/chapter/durable-story/4";
@@ -102,5 +104,34 @@ describe("durable chapter resume", () => {
     expect(loaded.paragraphs).toEqual(network.paragraphs);
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(resumeReaderChapter("corrupt-story", 2, url).scrollY).toBe(0);
+  });
+
+  it("resumes a same-volume chapter from RAM without storage or network", async () => {
+    const volUrl = "/data/vol-story/vol-001-ch001-050.json.gz";
+    const gz = zlib.gzipSync(
+      JSON.stringify({
+        chapters: [
+          { index: 7, title: "C7", paragraphs: ["p7a", "p7b"] },
+          { index: 8, title: "C8", paragraphs: ["p8a"] },
+        ],
+      }),
+    );
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(new Uint8Array(gz), {
+          status: 200,
+          headers: { "Content-Type": "application/gzip" },
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await prefetchVolChapter(volUrl, 7);
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    // Same-volume next chapter: no durable entry, no network — RAM volume hit.
+    localStorage.clear();
+    const resume = resumeReaderChapter("vol-story", 8, volChapterKey(volUrl, 8));
+    expect(resume.paragraphs).toEqual(["p8a"]);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

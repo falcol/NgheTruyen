@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { crawlChapterApiPath } from "@/lib/chapter-nav";
 import {
   getChapterIndex,
   getStoryTitle,
   getTotalChapters,
+  getVolumeManifest,
 } from "@/lib/data";
-import { crawlChapterIndexUrl, readerFirstChapters } from "@/lib/reader-shell";
+import { readerFirstChapters } from "@/lib/reader-shell";
 import ReaderClient from "@/components/ReaderClient";
 
 export const revalidate = 3600;
@@ -29,6 +29,11 @@ export default async function ReaderPage({
   const storyTitle = getStoryTitle(slug);
   const totalChapters = getTotalChapters(slug);
 
+  // Chapters are fetched client-side from static volume files; without a
+  // manifest there is nothing to serve, so treat it as a missing story.
+  const manifest = getVolumeManifest(slug);
+  if (!manifest) return notFound();
+
   return (
     <ReaderClient
       slug={slug}
@@ -36,9 +41,9 @@ export default async function ReaderPage({
       chapterIdx={chapterIdx}
       totalChapters={totalChapters}
       title={chapterMeta.title}
-      chapterContentUrl={crawlChapterApiPath(slug, chapterIdx)}
+      chapterVols={manifest.vols}
       chapters={readerFirstChapters(chapterMeta)}
-      chapterIndexUrl={crawlChapterIndexUrl(slug)}
+      chapterIndexUrl={manifest.indexUrl}
     />
   );
 }

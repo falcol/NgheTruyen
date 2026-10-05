@@ -64,8 +64,26 @@ export interface Volume {
   chapters: Chapter[];
 }
 
+/** One static volume file under /data, addressable by chapter index range. */
+export interface VolumeRange {
+  /** Static CDN URL of the volume .json.gz, e.g. /data/xtruyen/<slug>/vol-001-ch001-050.json.gz */
+  url: string;
+  /** 1-based chapter numbers as encoded in the filename (chapter.index + 1). */
+  first: number;
+  last: number;
+}
+
+export interface VolumeManifest {
+  /** Static URL of the gzipped chapter index for the picker. */
+  indexUrl: string;
+  vols: VolumeRange[];
+}
+
 export function makeDataDir(baseDir: string) {
   const dataDir = path.join(/* turbopackIgnore: true */ process.cwd(), baseDir);
+  // baseDir always starts with "public/..." — the same path is served
+  // statically from the site root (public/data/x → /data/x).
+  const urlBase = baseDir.replace(/^public/, "");
 
   function isSafeSlug(slug: string): boolean {
     return !slug.includes("/") && !slug.includes("\\") && !slug.includes("..");
@@ -85,6 +103,46 @@ export function makeDataDir(baseDir: string) {
         const hasMetadata = existsAny(path.join(storyDir, "metadata.json"));
         return hasChapterIndex || hasMetadata;
       });
+  }
+
+  function listVolumeFiles(storyDir: string): string[] {
+    let files = volFileCache.get(storyDir);
+    if (!files) {
+      files = fs
+        .readdirSync(storyDir)
+        .filter(
+          (f) =>
+            f.startsWith("vol-") &&
+            (f.endsWith(".json") || f.endsWith(".json.gz"))
+        );
+      volFileCache.set(storyDir, files);
+    }
+    return files;
+  }
+
+  // Vol filenames follow vol-NNN-chAAA-BBB.json(.gz), where AAA-BBB are
+  // 1-based chapter numbers. The manifest lets the client fetch volumes
+  // straight from the static CDN instead of going through an API route.
+  function getVolumeManifest(slug: string): VolumeManifest | null {
+    if (!isSafeSlug(slug)) return null;
+    const storyDir = path.join(/* turbopackIgnore: true */ dataDir, slug);
+    if (!fs.existsSync(storyDir)) return null;
+
+    const vols: VolumeRange[] = [];
+    for (const f of listVolumeFiles(storyDir)) {
+      const m = /^vol-\d+-ch(\d+)-(\d+)\.json(?:\.gz)?$/.exec(f);
+      if (!m) continue;
+      vols.push({
+        url: `${urlBase}/${encodeURIComponent(slug)}/${f}`,
+        first: Number(m[1]),
+        last: Number(m[2]),
+      });
+    }
+    if (vols.length === 0) return null;
+    return {
+      indexUrl: `${urlBase}/${encodeURIComponent(slug)}/chapters_index.json.gz`,
+      vols,
+    };
   }
 
   function getChapterIndex(slug: string): ChapterMeta[] | null {
@@ -137,17 +195,7 @@ export function makeDataDir(baseDir: string) {
     if (!fs.existsSync(storyDir)) return null;
 
     // Match both vol-NNN-*.json and vol-NNN-*.json.gz (cached per storyDir)
-    let files = volFileCache.get(storyDir);
-    if (!files) {
-      files = fs
-        .readdirSync(storyDir)
-        .filter(
-          (f) =>
-            f.startsWith("vol-") &&
-            (f.endsWith(".json") || f.endsWith(".json.gz"))
-        );
-      volFileCache.set(storyDir, files);
-    }
+    const files = listVolumeFiles(storyDir);
 
     for (let delta = 0; delta <= 2; delta++) {
       const candidates =
@@ -203,6 +251,7 @@ export function makeDataDir(baseDir: string) {
     getStoryTitle,
     getChapter,
     getTotalChapters,
+    getVolumeManifest,
   };
 }
 
@@ -229,6 +278,7 @@ function makeAllSources() {
       getStoryTitle: (slug: string) => slugMap.get(slug)?.getStoryTitle(slug) ?? slug,
       getChapter: (slug: string, chapterIdx: number) => slugMap.get(slug)?.getChapter(slug, chapterIdx) ?? null,
       getTotalChapters: (slug: string) => slugMap.get(slug)?.getTotalChapters(slug) ?? 0,
+      getVolumeManifest: (slug: string) => slugMap.get(slug)?.getVolumeManifest(slug) ?? null,
     };
   }
 
@@ -274,6 +324,9 @@ function makeAllSources() {
   function getTotalChapters(slug: string) {
     return findInstance(slug)?.getTotalChapters(slug) ?? 0;
   }
+  function getVolumeManifest(slug: string) {
+    return findInstance(slug)?.getVolumeManifest(slug) ?? null;
+  }
 
   return {
     listStories,
@@ -282,6 +335,7 @@ function makeAllSources() {
     getStoryTitle,
     getChapter,
     getTotalChapters,
+    getVolumeManifest,
   };
 }
 
@@ -302,4 +356,5 @@ export const getStoryMetadata = defaultData.getStoryMetadata;
 export const getStoryTitle = defaultData.getStoryTitle;
 export const getChapter = defaultData.getChapter;
 export const getTotalChapters = defaultData.getTotalChapters;
+export const getVolumeManifest = defaultData.getVolumeManifest;
 

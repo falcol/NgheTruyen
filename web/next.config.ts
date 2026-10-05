@@ -9,11 +9,23 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@smoores/epub"],
   },
   // Server fs reads these; dynamic path.join is turbopackIgnored so NFT
-  // does not swallow the whole project. Chapter .json.gz is CDN-static.
+  // does not swallow the whole project. Only the small index/metadata files
+  // are needed at runtime — chapter volumes are fetched client-side from
+  // the static /data files, which keeps every function far below the
+  // 250MB bundle limit.
   outputFileTracingIncludes: {
-    "/api/chapter/**": ["./public/data/**/*"],
-    "/story/**": ["./public/data/**/*"],
-    "/read/**": ["./public/data/**/*"],
+    "/story/**": [
+      "./public/data/*/*/chapters_index.json",
+      "./public/data/*/*/chapters_index.json.gz",
+      "./public/data/*/*/metadata.json",
+      "./public/data/*/*/metadata.json.gz",
+    ],
+    "/read/**": [
+      "./public/data/*/*/chapters_index.json",
+      "./public/data/*/*/chapters_index.json.gz",
+      "./public/data/*/*/metadata.json",
+      "./public/data/*/*/metadata.json.gz",
+    ],
     "/epub/**": ["./public/epub-cache/*.json"],
   },
   outputFileTracingExcludes: {
@@ -24,6 +36,13 @@ const nextConfig: NextConfig = {
       source: "/epub-cache/:path*",
       headers: [
         { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+      ],
+    },
+    {
+      // Volume/index files can be rewritten by a recrawl, so no immutable.
+      source: "/data/:path*",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=604800" },
       ],
     },
   ],
