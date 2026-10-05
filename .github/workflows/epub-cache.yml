@@ -37,8 +37,21 @@ jobs:
 
       - name: Prepare publish dir
         run: |
-          mkdir -p publish/epub-cache
+          mkdir -p publish/epub-cache publish/web
           cp -r web/public/epub-cache/* publish/epub-cache/
+          # [skip vercel] không được Vercel đọc. deploymentEnabled chỉ có hiệu lực
+          # khi file nằm trên chính commit của epub-data. Root Directory của project
+          # có thể là repo gốc hoặc web/.
+          cat > publish/vercel.json << 'EOF'
+          {
+            "git": {
+              "deploymentEnabled": {
+                "epub-data": false
+              }
+            }
+          }
+          EOF
+          cp publish/vercel.json publish/web/vercel.json
 
       - name: Deploy to epub-data branch
         uses: peaceiris/actions-gh-pages@v4
