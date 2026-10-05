@@ -28,8 +28,17 @@ const nextConfig: NextConfig = {
     ],
     "/epub/**": ["./public/epub-cache/*.json"],
   },
+  // `outputFileTracingIncludes` is ADDITIVE — it cannot shrink NFT's automatic
+  // trace, which follows fs.readdirSync(dataDir) and swallows all of
+  // public/data (~289MB) into every function using data.ts. No server code
+  // reads volume bodies anymore (API routes deleted; chapter text is fetched
+  // client-side from static /data), so carve them out via Excludes.
   outputFileTracingExcludes: {
-    "/*": ["./public/epub-cache/**/ch/**"],
+    "/*": [
+      "./public/epub-cache/**/ch/**",
+      "./public/data/**/vol-*.json",
+      "./public/data/**/vol-*.json.gz",
+    ],
   },
   headers: async () => [
     {
