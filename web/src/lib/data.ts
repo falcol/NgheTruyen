@@ -64,6 +64,30 @@ export interface Volume {
   chapters: Chapter[];
 }
 
+/** Prebuilt by scripts/write-volume-manifests.ts (see `data:manifests`). */
+export const VOLUME_MANIFEST_FILENAME = "volumes_manifest.json";
+
+function parseVolumeManifest(raw: unknown): VolumeManifest | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.indexUrl !== "string" || !Array.isArray(o.vols)) return null;
+  const vols: VolumeRange[] = [];
+  for (const v of o.vols) {
+    if (!v || typeof v !== "object") return null;
+    const r = v as Record<string, unknown>;
+    if (
+      typeof r.url !== "string" ||
+      typeof r.first !== "number" ||
+      typeof r.last !== "number"
+    ) {
+      return null;
+    }
+    vols.push({ url: r.url, first: r.first, last: r.last });
+  }
+  if (vols.length === 0) return null;
+  return { indexUrl: o.indexUrl, vols };
+}
+
 /** One static volume file under /data, addressable by chapter index range. */
 export interface VolumeRange {
   /** Static CDN URL of the volume .json.gz, e.g. /data/xtruyen/<slug>/vol-001-ch001-050.json.gz */
@@ -127,6 +151,13 @@ export function makeDataDir(baseDir: string) {
     if (!isSafeSlug(slug)) return null;
     const storyDir = path.join(/* turbopackIgnore: true */ dataDir, slug);
     if (!fs.existsSync(storyDir)) return null;
+
+    // Prebuilt file first: in a serverless bundle only NFT-traced files exist,
+    // so a directory scan finds nothing. Falls back to scanning (local dev).
+    const prebuilt = parseVolumeManifest(
+      readJsonAny(path.join(storyDir, VOLUME_MANIFEST_FILENAME)),
+    );
+    if (prebuilt) return prebuilt;
 
     const vols: VolumeRange[] = [];
     for (const f of listVolumeFiles(storyDir)) {

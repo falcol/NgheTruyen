@@ -47,4 +47,49 @@ describe("data layer", () => {
     const stories = data.listStories();
     expect(stories).toContain("test-story");
   });
+
+  it("getVolumeManifest scans the directory without a prebuilt manifest", () => {
+    expect(data.getVolumeManifest("test-story")).toEqual({
+      indexUrl: "__tests__/fixtures/test-story/chapters_index.json.gz",
+      vols: [
+        {
+          url: "__tests__/fixtures/test-story/vol-001-ch001-002.json",
+          first: 1,
+          last: 2,
+        },
+      ],
+    });
+  });
+
+  it("getVolumeManifest prefers the prebuilt manifest file over the scan", () => {
+    // Disk holds vol-009 (first:999); the file must win.
+    expect(data.getVolumeManifest("manifest-story")).toEqual({
+      indexUrl: "/data/fx/manifest-story/chapters_index.json.gz",
+      vols: [
+        {
+          url: "/data/fx/manifest-story/vol-001-ch001-002.json",
+          first: 1,
+          last: 2,
+        },
+      ],
+    });
+  });
+
+  it("getVolumeManifest falls back to the scan when the manifest is corrupt", () => {
+    expect(data.getVolumeManifest("corrupt-manifest-story")).toEqual({
+      indexUrl:
+        "__tests__/fixtures/corrupt-manifest-story/chapters_index.json.gz",
+      vols: [
+        {
+          url: "__tests__/fixtures/corrupt-manifest-story/vol-001-ch001-002.json",
+          first: 1,
+          last: 2,
+        },
+      ],
+    });
+  });
+
+  it("getVolumeManifest returns null for non-existent slug", () => {
+    expect(data.getVolumeManifest("non-existent")).toBeNull();
+  });
 });
