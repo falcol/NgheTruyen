@@ -16,7 +16,7 @@ export default async function EpubBookPage({
 }) {
   const { filename } = await params;
   const decodedFilename = decodeURIComponent(filename);
-  const meta = getEpubMeta(decodedFilename);
+  const meta = await getEpubMeta(decodedFilename);
   if (!meta) return notFound();
 
   const readHref = `/epub/${encodeURIComponent(decodedFilename)}/read`;

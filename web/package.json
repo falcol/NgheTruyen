@@ -10,8 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "data:copy": "rm -rf public/data && mkdir -p public/data && cp -r ../crawler/data/. public/data/ && rm -rf public/data/iqiyi",
+    "data:manifest": "npx tsx scripts/build-data-manifest.ts",
     "epub:cache": "npx tsx scripts/warm-epub-cache.ts",
-    "prebuild": "npm run data:copy && npm run epub:cache"
+    "prebuild": "if [ -z \"$NEXT_PUBLIC_DATA_URL\" ]; then npm run data:copy && npm run data:manifest; fi; if [ -z \"$NEXT_PUBLIC_EPUB_CACHE_URL\" ]; then npm run epub:cache; fi"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

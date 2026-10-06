@@ -10,8 +10,8 @@ import ContinueReadingSection, {
 
 export const revalidate = 3600;
 
-export default function EpubListPage() {
-  const books = listEpubSummaries();
+export default async function EpubListPage() {
+  const books = await listEpubSummaries();
 
   const storyMetas: StoryMeta[] = books.map((book) => ({
     slug: `epub-${book.filename}`,

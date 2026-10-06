@@ -20,14 +20,14 @@ export default async function ReaderPage({
 
   if (isNaN(chapterIdx)) return notFound();
 
-  const chapters = getChapterIndex(slug);
+  const chapters = await getChapterIndex(slug);
   if (!chapters) return notFound();
 
   const chapterMeta = chapters.find((c) => c.index === chapterIdx);
   if (!chapterMeta) return notFound();
 
-  const storyTitle = getStoryTitle(slug);
-  const totalChapters = getTotalChapters(slug);
+  const storyTitle = await getStoryTitle(slug);
+  const totalChapters = await getTotalChapters(slug);
 
   return (
     <ReaderClient

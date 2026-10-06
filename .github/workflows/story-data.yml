@@ -1,0 +1,80 @@
+name: Build and Deploy Story Data
+
+# Publishes the crawl dataset as static assets to the orphan branch
+# `story-data` (same pattern as epub-cache.yml -> epub-data branch).
+# The web app reads it over CDN when NEXT_PUBLIC_DATA_URL is set, e.g.
+#   NEXT_PUBLIC_DATA_URL=https://cdn.jsdelivr.net/gh/<owner>/<repo>@story-data
+# so serverless functions no longer bundle ~200MB of vol-*.json.gz
+# (Vercel 250MB function limit).
+#
+# NOTE: jsDelivr caches aggressively — after this runs, purge changed files:
+#   https://purge.jsdelivr.net/gh/<owner>/<repo>@story-data/data/manifest.json
+# Run `npm run data:manifest` locally after recrawling to refresh
+# web/public/data/manifest.json for local dev.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'crawler/data/**'
+      - 'web/scripts/build-data-manifest.ts'
+      - '.github/workflows/story-data.yml'
+  workflow_dispatch: # Cho phép chạy thủ công (cần cho lần publish đầu tiên)
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Cho phép đẩy code lên nhánh story-data
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm install
+
+      - name: Generate data manifest
+        working-directory: ./web
+        run: npx tsx scripts/build-data-manifest.ts --src ../crawler/data --out ../publish/data/manifest.json
+
+      - name: Prepare publish dir
+        run: |
+          mkdir -p publish/data publish/web
+          cp -r crawler/data/. publish/data/
+          # Không publish dữ liệu thô / nháp (giữ branch nhẹ, cùng rule với next.config excludes)
+          rm -rf publish/data/iqiyi
+          find publish/data -name '_preview*' -delete
+          find publish/data -name '_missing*' -delete
+          find publish/data -name 'book.*.txt' -delete
+          find publish/data -name '.cookies.json' -delete
+          find publish/data -name '_progress.json' -delete
+          # [skip vercel] không được Vercel đọc. deploymentEnabled chỉ có hiệu lực
+          # khi file nằm trên chính commit của story-data. Root Directory của project
+          # có thể là repo gốc hoặc web/.
+          cat > publish/vercel.json << 'EOF'
+          {
+            "git": {
+              "deploymentEnabled": {
+                "story-data": false
+              }
+            }
+          }
+          EOF
+          cp publish/vercel.json publish/web/vercel.json
+
+      - name: Deploy to story-data branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./publish
+          publish_branch: story-data
+          force_orphan: true
+          commit_message: "chore: update story data [skip ci] [skip vercel]"

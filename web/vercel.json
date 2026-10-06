@@ -1,7 +1,8 @@
 {
   "git": {
     "deploymentEnabled": {
-      "epub-data": false
+      "epub-data": false,
+      "story-data": false
     }
   },
   "buildCommand": "npm run build",

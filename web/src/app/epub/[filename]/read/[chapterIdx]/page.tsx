@@ -16,7 +16,7 @@ export default async function EpubReaderPage({
   const chapterIdx = parseInt(idxStr, 10);
   if (isNaN(chapterIdx)) return notFound();
 
-  const meta = getEpubMeta(decodedFilename);
+  const meta = await getEpubMeta(decodedFilename);
   if (!meta) return notFound();
 
   const chapter = meta.chapters.find((c) => c.index === chapterIdx);

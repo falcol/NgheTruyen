@@ -1,11 +1,11 @@
 import type { NextConfig } from "next";
 
-// Only the files data.ts reads at runtime. `./public/data/**/*` also dragged
-// in crawl leftovers (book dumps, previews), and Excludes cannot remove files
-// that an Include added.
+// Only the small files data.ts reads at runtime in local mode
+// (chapters_index + metadata ≈ 1.4MB total). Volume files (~202MB) are NOT
+// traced: in external mode (NEXT_PUBLIC_DATA_URL) API routes fetch them as
+// static assets from the story-data branch; in local dev they are read from
+// public/data on disk, which never goes through serverless tracing.
 const STORY_DATA_FILES = [
-  "./public/data/*/*/vol-*.json",
-  "./public/data/*/*/vol-*.json.gz",
   "./public/data/*/*/chapters_index.json",
   "./public/data/*/*/chapters_index.json.gz",
   "./public/data/*/*/metadata.json",
@@ -31,6 +31,12 @@ const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     "/*": [
       "./public/epub-cache/**/ch/**",
+      // Volume files (~202MB) must never ride inside a serverless function:
+      // external mode fetches them over CDN, local dev reads them from disk.
+      // (Kept out of Includes above AND excluded here because @vercel/nft
+      // auto-traces the whole public/data tree via fs.readdirSync analysis.)
+      "./public/data/*/*/vol-*.json",
+      "./public/data/*/*/vol-*.json.gz",
       // Crawl leftovers (raw book dumps, previews, cookies) are never read at
       // runtime; they alone were ~90MB of the 250MB function budget.
       "./public/data/**/book.*.txt",

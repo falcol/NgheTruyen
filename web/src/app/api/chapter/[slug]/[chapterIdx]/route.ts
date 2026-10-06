@@ -12,7 +12,7 @@ export async function GET(
     return new Response("Invalid chapter index", { status: 400 });
   }
 
-  const chapter = getChapter(slug, chapterIdx);
+  const chapter = await getChapter(slug, chapterIdx);
   if (!chapter) {
     return new Response("Not found", { status: 404 });
   }

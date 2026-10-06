@@ -7,7 +7,7 @@ export async function GET(
   context: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await context.params;
-  const chapters = getChapterIndex(slug);
+  const chapters = await getChapterIndex(slug);
   if (!chapters) return new Response("Not found", { status: 404 });
 
   const titles = chapters.map((chapter) => ({

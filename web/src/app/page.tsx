@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listStories, getChapterIndex, getStoryTitle } from "@/lib/data";
+import { listStorySummaries } from "@/lib/data";
 import { getGradientFromString } from "@/lib/color";
 import CardProgressOverlay from "@/components/CardProgressOverlay";
 import { BookOpen, CaretRight } from "@/components/icons";
@@ -9,27 +9,17 @@ import ContinueReadingSection, {
 
 import SiteFooter from "@/components/SiteFooter";
 
-export default function HomePage() {
-  const stories = listStories();
+export default async function HomePage() {
+  const summaries = await listStorySummaries();
 
-  const storyMetas: StoryMeta[] = stories.map((slug) => {
-    let title = slug;
-    let totalChapters = 0;
-    try {
-      title = getStoryTitle(slug);
-      const idx = getChapterIndex(slug);
-      if (idx) totalChapters = idx.length;
-    } catch {
-      // fallback
-    }
-    return {
-      slug,
-      title,
-      totalChapters,
-      readHref: `/read/${slug}`,
-      detailHref: `/story/${slug}`,
-    };
-  });
+  const storyMetas: StoryMeta[] = summaries.map((s) => ({
+    slug: s.slug,
+    title: s.title,
+    totalChapters: s.totalChapters,
+    readHref: `/read/${s.slug}`,
+    detailHref: `/story/${s.slug}`,
+  }));
+  const stories = storyMetas;
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-12 md:py-16">

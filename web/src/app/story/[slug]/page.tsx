@@ -7,8 +7,8 @@ import { getGradientFromString } from "@/lib/color";
 import SiteFooter from "@/components/SiteFooter";
 import { ArrowLeft, Clock } from "@/components/icons";
 
-export function generateStaticParams() {
-  return listStories().map((slug) => ({ slug }));
+export async function generateStaticParams() {
+  return (await listStories()).map((slug) => ({ slug }));
 }
 
 export default async function StoryPage({
@@ -17,9 +17,9 @@ export default async function StoryPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const chapters = getChapterIndex(slug);
+  const chapters = await getChapterIndex(slug);
   if (!chapters) return notFound();
-  const storyTitle = getStoryTitle(slug);
+  const storyTitle = await getStoryTitle(slug);
   const gradient = getGradientFromString(slug);
 
   return (

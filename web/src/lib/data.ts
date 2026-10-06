@@ -1,6 +1,17 @@
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
+import {
+  isExternalDataMode,
+  isSafeSlug,
+  remoteGetChapter,
+  remoteGetChapterIndex,
+  remoteGetStoryMetadata,
+  remoteGetStoryTitle,
+  remoteGetTotalChapters,
+  remoteListStories,
+  remoteListSummaries,
+} from "./data-source";
 
 // In-memory caches for static files. Stale if the .json.gz mtime changes
 // (local overlay / recrawl while `next dev` keeps running).
@@ -66,10 +77,6 @@ export interface Volume {
 
 export function makeDataDir(baseDir: string) {
   const dataDir = path.join(/* turbopackIgnore: true */ process.cwd(), baseDir);
-
-  function isSafeSlug(slug: string): boolean {
-    return !slug.includes("/") && !slug.includes("\\") && !slug.includes("..");
-  }
 
   function listStories(): string[] {
     if (!fs.existsSync(dataDir)) return [];
@@ -296,10 +303,65 @@ export function estimateReadingTime(chapterCount: number): string {
   return `~${days} ngày đọc`;
 }
 
-export const listStories = defaultData.listStories;
-export const getChapterIndex = defaultData.getChapterIndex;
-export const getStoryMetadata = defaultData.getStoryMetadata;
-export const getStoryTitle = defaultData.getStoryTitle;
-export const getChapter = defaultData.getChapter;
-export const getTotalChapters = defaultData.getTotalChapters;
+export async function listStories(): Promise<string[]> {
+  if (isExternalDataMode()) return remoteListStories();
+  return defaultData.listStories();
+}
+
+export async function getChapterIndex(
+  slug: string,
+): Promise<ChapterMeta[] | null> {
+  if (isExternalDataMode()) return remoteGetChapterIndex(slug);
+  return defaultData.getChapterIndex(slug);
+}
+
+export async function getStoryMetadata(
+  slug: string,
+): Promise<StoryMetadata | null> {
+  if (isExternalDataMode()) return remoteGetStoryMetadata(slug);
+  return defaultData.getStoryMetadata(slug);
+}
+
+export async function getStoryTitle(slug: string): Promise<string> {
+  if (isExternalDataMode()) return remoteGetStoryTitle(slug);
+  return defaultData.getStoryTitle(slug);
+}
+
+export async function getChapter(
+  slug: string,
+  chapterIdx: number,
+): Promise<Chapter | null> {
+  if (isExternalDataMode()) return remoteGetChapter(slug, chapterIdx);
+  return defaultData.getChapter(slug, chapterIdx);
+}
+
+export async function getTotalChapters(slug: string): Promise<number> {
+  if (isExternalDataMode()) return remoteGetTotalChapters(slug);
+  return defaultData.getTotalChapters(slug);
+}
+
+export interface StorySummary {
+  slug: string;
+  title: string;
+  totalChapters: number;
+}
+
+// Single-fetch homepage listing. Local mode derives the same values the
+// homepage computed before (title via metadata, count via index length);
+// external mode reads them from data/manifest.json (no per-story fetch).
+export async function listStorySummaries(): Promise<StorySummary[]> {
+  if (isExternalDataMode()) return remoteListSummaries();
+  return defaultData.listStories().map((slug) => {
+    let title = slug;
+    let totalChapters = 0;
+    try {
+      title = defaultData.getStoryTitle(slug);
+      const idx = defaultData.getChapterIndex(slug);
+      if (idx) totalChapters = idx.length;
+    } catch {
+      // fallback
+    }
+    return { slug, title, totalChapters };
+  });
+}
 
