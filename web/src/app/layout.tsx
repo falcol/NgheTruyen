@@ -1,29 +1,46 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Be_Vietnam_Pro,
-  Literata,
-  Lora,
-} from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import NavWrapper from "@/components/NavWrapper";
 
-const beVietnam = Be_Vietnam_Pro({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "700"],
+// Self-hosted Google Fonts (latin + vietnamese, 400/500/700).
+// next/font/google downloads at build time and breaks Turbopack builds when
+// fonts.googleapis.com is unreachable — local files build deterministically.
+const beVietnam = localFont({
+  src: [
+    { path: "../fonts/BeVietnamPro-400-latin.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/BeVietnamPro-400-vietnamese.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/BeVietnamPro-500-latin.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/BeVietnamPro-500-vietnamese.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/BeVietnamPro-700-latin.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/BeVietnamPro-700-vietnamese.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-be-vietnam",
   display: "swap",
 });
 
-const literata = Literata({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "700"],
+const literata = localFont({
+  src: [
+    { path: "../fonts/Literata-400-latin.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Literata-400-vietnamese.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Literata-500-latin.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Literata-500-vietnamese.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Literata-700-latin.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/Literata-700-vietnamese.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-literata",
   display: "swap",
 });
 
-const lora = Lora({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "700"],
+const lora = localFont({
+  src: [
+    { path: "../fonts/Lora-400-latin.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Lora-400-vietnamese.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/Lora-500-latin.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Lora-500-vietnamese.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/Lora-700-latin.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/Lora-700-vietnamese.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-lora",
   display: "swap",
 });
