@@ -1,5 +1,17 @@
 import type { NextConfig } from "next";
 
+// Only the files data.ts reads at runtime. `./public/data/**/*` also dragged
+// in crawl leftovers (book dumps, previews), and Excludes cannot remove files
+// that an Include added.
+const STORY_DATA_FILES = [
+  "./public/data/*/*/vol-*.json",
+  "./public/data/*/*/vol-*.json.gz",
+  "./public/data/*/*/chapters_index.json",
+  "./public/data/*/*/chapters_index.json.gz",
+  "./public/data/*/*/metadata.json",
+  "./public/data/*/*/metadata.json.gz",
+];
+
 const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
@@ -9,37 +21,21 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@smoores/epub"],
   },
   // Server fs reads these; dynamic path.join is turbopackIgnored so NFT
-  // does not swallow the whole project. Only the small index/metadata files
-  // are needed at runtime — chapter volumes are fetched client-side from
-  // the static /data files, which keeps every function far below the
-  // 250MB bundle limit.
+  // does not swallow the whole project. Chapter .json.gz is CDN-static.
   outputFileTracingIncludes: {
-    "/story/**": [
-      "./public/data/*/*/chapters_index.json",
-      "./public/data/*/*/chapters_index.json.gz",
-      "./public/data/*/*/metadata.json",
-      "./public/data/*/*/metadata.json.gz",
-      "./public/data/*/*/volumes_manifest.json",
-    ],
-    "/read/**": [
-      "./public/data/*/*/chapters_index.json",
-      "./public/data/*/*/chapters_index.json.gz",
-      "./public/data/*/*/metadata.json",
-      "./public/data/*/*/metadata.json.gz",
-      "./public/data/*/*/volumes_manifest.json",
-    ],
+    "/api/chapter/**": STORY_DATA_FILES,
+    "/story/**": STORY_DATA_FILES,
+    "/read/**": STORY_DATA_FILES,
     "/epub/**": ["./public/epub-cache/*.json"],
   },
-  // `outputFileTracingIncludes` is ADDITIVE — it cannot shrink NFT's automatic
-  // trace, which follows fs.readdirSync(dataDir) and swallows all of
-  // public/data (~289MB) into every function using data.ts. No server code
-  // reads volume bodies anymore (API routes deleted; chapter text is fetched
-  // client-side from static /data), so carve them out via Excludes.
   outputFileTracingExcludes: {
     "/*": [
       "./public/epub-cache/**/ch/**",
-      "./public/data/**/vol-*.json",
-      "./public/data/**/vol-*.json.gz",
+      // Crawl leftovers (raw book dumps, previews, cookies) are never read at
+      // runtime; they alone were ~90MB of the 250MB function budget.
+      "./public/data/**/book.*.txt",
+      "./public/data/**/_preview*",
+      "./public/data/**/.cookies.json",
     ],
   },
   headers: async () => [
@@ -47,13 +43,6 @@ const nextConfig: NextConfig = {
       source: "/epub-cache/:path*",
       headers: [
         { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-      ],
-    },
-    {
-      // Volume/index files can be rewritten by a recrawl, so no immutable.
-      source: "/data/:path*",
-      headers: [
-        { key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=604800" },
       ],
     },
   ],

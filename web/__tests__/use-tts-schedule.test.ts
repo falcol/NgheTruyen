@@ -1,4 +1,4 @@
-import { act, createElement, useEffect } from "react";
+import { act, createElement } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTTS } from "@/hooks/useTTS";
@@ -89,10 +89,7 @@ describe("useTTS schedule", () => {
   }
 
   function Harness() {
-    const api = useTTS();
-    useEffect(() => {
-      slot.api = api;
-    }, [api]);
+    slot.api = useTTS();
     return null;
   }
 
@@ -140,7 +137,7 @@ describe("useTTS schedule", () => {
     host?.remove();
     root = null;
     host = null;
-    slot.api = null as typeof slot.api;
+    slot.api = null;
     for (const done of release.values()) done();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -206,7 +203,7 @@ describe("useTTS schedule", () => {
     await act(async () => {
       root?.unmount();
     });
-    slot.api = null as typeof slot.api;
+    slot.api = null;
     root = createRoot(host!);
     await act(async () => {
       root?.render(createElement(Harness));
@@ -220,7 +217,7 @@ describe("useTTS schedule", () => {
     await act(async () => {
       root?.unmount();
     });
-    slot.api = null as typeof slot.api;
+    slot.api = null;
     root = createRoot(host!);
     await act(async () => {
       root?.render(createElement(Harness));
@@ -231,7 +228,7 @@ describe("useTTS schedule", () => {
     await act(async () => {
       root?.unmount();
     });
-    slot.api = null as typeof slot.api;
+    slot.api = null;
     root = createRoot(host!);
     await act(async () => {
       root?.render(createElement(Harness));

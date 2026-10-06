@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { adjacentChapterContentUrls, adjacentChapterContentUrlsByIndex, volUrlForChapter } from "@/lib/chapter-nav";
+import { adjacentChapterContentUrls, crawlChapterApiPath } from "@/lib/chapter-nav";
 import { filterChapters } from "@/lib/chapter-list";
 import { epubFilenameFromReaderSlug, chapterCacheUrlPath } from "@/lib/epub-urls";
 import {
@@ -11,13 +12,6 @@ import {
   loadChapterContent,
   prefetchChapterContent,
 } from "@/lib/chapter-prefetch";
-import type { VolumeRange } from "@/lib/data";
-import {
-  loadVolChapter,
-  peekVolChapter,
-  prefetchVolChapter,
-  volChapterKey,
-} from "@/lib/vol-content";
 import { parseChapterIndex } from "@/lib/reader-shell";
 import { resumeReaderChapter } from "@/lib/reader-resume";
 import { shouldUseChapterMotion } from "@/lib/reader-settings";
@@ -53,11 +47,10 @@ type ChapterState =
 const PICKER_WINDOW_HALF = 40;
 const PICKER_LOAD_STEP = 40;
 
-// Three content modes:
+// Two content modes:
 //  - `paragraphs` (sync): caller already has the chapter text, render immediately.
-//  - `chapterContentUrl` (async, epub): fetch a per-chapter gzipped payload client-side.
-//  - `chapterVols` (async, crawler): resolve chapters inside static volume .json.gz files.
-// Exactly one content source should be provided per page.
+//  - `chapterContentUrl` (async): fetch a gzipped JSON payload client-side.
+// Exactly one should be provided per page.
 type ReaderClientProps = {
   slug: string;
   storyTitle: string;
@@ -70,14 +63,14 @@ type ReaderClientProps = {
   backHref?: string;
   readHref?: string;
 } & (
-  | { paragraphs: string[]; chapterContentUrl?: never; chapterVols?: never }
-  | { chapterContentUrl: string; paragraphs?: never; chapterVols?: never }
-  | { chapterVols: VolumeRange[]; chapterContentUrl?: string; paragraphs?: never }
+  | { paragraphs: string[]; chapterContentUrl?: never }
+  | { chapterContentUrl: string; paragraphs?: never }
 );
 
 export default function ReaderClient(props: ReaderClientProps) {
   return (
     <ReaderSettingsProvider>
+      {/* eslint-disable-next-line no-use-before-define -- hoisted function declaration, defined below */}
       <ReaderClientInner {...props} />
     </ReaderSettingsProvider>
   );
@@ -91,18 +84,17 @@ function ReaderClientInner({
   title,
   paragraphs: paragraphsProp,
   chapterContentUrl,
-  chapterVols,
   chapters,
   chapterIndexUrl,
   backHref,
   readHref,
 }: ReaderClientProps) {
   const { shellStyle } = useReaderSettingsContext();
+  const router = useRouter();
   const { saveChapter, saveScroll } = useProgress(slug);
   const scrollSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tts = useTTS();
   const { prepare, setOnChapterComplete } = tts;
-  const ttsStop = tts.stop;
 
   const [activeChapterIdx, setActiveChapterIdx] = useState(chapterIdx);
   const [autoPlayNext, setAutoPlayNext] = useState(false);
@@ -169,6 +161,14 @@ function ReaderClientInner({
     [slug, readHref]
   );
 
+  const prevHref = useMemo(
+    () => href(activeChapterIdx - 1),
+    [activeChapterIdx, href],
+  );
+  const nextHref = useMemo(
+    () => href(activeChapterIdx + 1),
+    [activeChapterIdx, href],
+  );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const pickerRef = useRef<HTMLDivElement>(null);
@@ -262,34 +262,19 @@ function ReaderClientInner({
   }, [paragraphsProp, activeChapterIdx]);
 
   const activeChapterContentUrl = useMemo(() => {
-    if (chapterVols) {
-      return volUrlForChapter(chapterVols, activeChapterIdx) ?? undefined;
-    }
     if (!chapterContentUrl) return undefined;
     const epubFile = epubFilenameFromReaderSlug(slug);
     if (epubFile) {
       return chapterCacheUrlPath(epubFile, activeChapterIdx);
     }
-    return undefined;
-  }, [chapterVols, chapterContentUrl, slug, activeChapterIdx]);
-
-  // Cache/resume key for the open chapter: the vol URL is shared by ~50
-  // chapters, so crawler mode keys by URL + chapter index.
-  const activeChapterCacheKey = chapterVols && activeChapterContentUrl
-    ? volChapterKey(activeChapterContentUrl, activeChapterIdx)
-    : activeChapterContentUrl;
+    return crawlChapterApiPath(slug, activeChapterIdx);
+  }, [slug, activeChapterIdx, chapterContentUrl]);
 
   const showChapter = useCallback((paragraphs: string[], idx: number, animate: boolean) => {
     const apply = () =>
       setChapterState({ status: "ready", paragraphs, idx });
-    // ViewTransition snapshots the whole DOM: on long chapters the snapshot
-    // alone freezes the UI, so only animate short chapters.
-    const cheapEnough =
-      paragraphs.length <= 300 &&
-      paragraphs.reduce((n, p) => n + p.length, 0) <= 100_000;
     if (
       animate &&
-      cheapEnough &&
       shouldUseChapterMotion() &&
       typeof document !== "undefined" &&
       typeof document.startViewTransition === "function"
@@ -306,8 +291,8 @@ function ReaderClientInner({
 
   // Paint stored text before the browser paints and before any body request.
   useLayoutEffect(() => {
-    if (paragraphsProp || !activeChapterCacheKey) return;
-    const resume = resumeReaderChapter(slug, activeChapterIdx, activeChapterCacheKey);
+    if (paragraphsProp || !activeChapterContentUrl) return;
+    const resume = resumeReaderChapter(slug, activeChapterIdx, activeChapterContentUrl);
     const resumed = resume.paragraphs;
     if (resumed) {
       setChapterState((prev) => {
@@ -327,39 +312,30 @@ function ReaderClientInner({
       if (prev.status === "loading") return prev;
       return { status: "loading" };
     });
-  }, [paragraphsProp, activeChapterContentUrl, activeChapterCacheKey, slug, activeChapterIdx]);
+  }, [paragraphsProp, activeChapterContentUrl, slug, activeChapterIdx]);
 
   // Fetch chapter content (async mode) whenever URL changes or user retries.
   useEffect(() => {
     if (!activeChapterContentUrl) return;
     const controller = new AbortController();
 
-    const peekCached = () =>
-      chapterVols
-        ? peekVolChapter(activeChapterContentUrl, activeChapterIdx)
-        : getCachedChapter(activeChapterContentUrl);
-
-    const cached = peekCached();
+    const cached = getCachedChapter(activeChapterContentUrl);
     if (!cached) setChapterState({ status: "loading" });
 
-    const loading = chapterVols
-      ? loadVolChapter(activeChapterContentUrl, activeChapterIdx, controller.signal)
-      : loadChapterContent(activeChapterContentUrl, controller.signal);
-
-    loading
+    loadChapterContent(activeChapterContentUrl, controller.signal)
       .then((payload) => {
         if (cached && cached.paragraphs === payload.paragraphs) return;
         showChapter(payload.paragraphs, activeChapterIdx, !cached);
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return;
-        if (peekCached()) return;
+        if (getCachedChapter(activeChapterContentUrl)) return;
         const message = err instanceof Error ? err.message : "Unknown error";
         setChapterState({ status: "error", message });
       });
 
     return () => controller.abort();
-  }, [chapterVols, activeChapterContentUrl, retryNonce, activeChapterIdx, showChapter]);
+  }, [activeChapterContentUrl, retryNonce, activeChapterIdx, showChapter]);
 
   // Titles for the picker arrive after the open chapter can render.
   useEffect(() => {
@@ -369,14 +345,7 @@ function ReaderClientInner({
     fetch(chapterIndexUrl, { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        // The static chapters_index is a .gz file the browser will not
-        // transparently decompress — unwrap it ourselves.
-        if (!chapterIndexUrl.endsWith(".gz")) {
-          return res.json() as Promise<unknown>;
-        }
-        if (!res.body) throw new Error("Empty response body");
-        const decompressed = res.body.pipeThrough(new DecompressionStream("gzip"));
-        return new Response(decompressed).json() as Promise<unknown>;
+        return res.json() as Promise<unknown>;
       })
       .then((data) => {
         const list = parseChapterIndex(data);
@@ -386,24 +355,13 @@ function ReaderClientInner({
     return () => controller.abort();
   }, [chapterIndexUrl, chapterState.status]);
 
-  // Neighbor bodies start only after this chapter is on screen. The catalog
-  // arrives after first paint (chapterIndexUrl), so fall back to idx ± 1 —
-  // otherwise early navigation never prefetches and always pays a cold fetch.
+  // Neighbor bodies start only after this chapter is on screen.
   useEffect(() => {
     if (chapterState.status !== "ready" || chapterState.idx !== activeChapterIdx) return;
-    const catalogHit = adjacentChapterContentUrls(slug, chapterCatalog, activeChapterIdx, chapterVols);
-    let { prev, next } = catalogHit;
-    if (!prev || !next) {
-      const fallback = adjacentChapterContentUrlsByIndex(slug, activeChapterIdx, totalChapters, chapterVols);
-      prev ??= fallback.prev;
-      next ??= fallback.next;
-    }
-    for (const entry of [prev, next]) {
-      if (!entry) continue;
-      if (chapterVols) prefetchVolChapter(entry.url, entry.chapterIdx).catch(() => {});
-      else prefetchChapterContent(entry.url).catch(() => {});
-    }
-  }, [slug, chapterCatalog, activeChapterIdx, chapterState, chapterVols, totalChapters]);
+    const { prev, next } = adjacentChapterContentUrls(slug, chapterCatalog, activeChapterIdx);
+    if (prev) prefetchChapterContent(prev).catch(() => {});
+    if (next) prefetchChapterContent(next).catch(() => {});
+  }, [slug, chapterCatalog, activeChapterIdx, chapterState]);
 
   // paragraphs is non-null only when the loaded content belongs to the active
   // chapter (idx match). This kills the stale-content flash on navigation: during
@@ -429,11 +387,8 @@ function ReaderClientInner({
   // Restore scroll only after content renders (otherwise the page is empty).
   useLayoutEffect(() => {
     if (!paragraphs) return;
-    // Drop refs of unmounted tail nodes when the new chapter is shorter;
-    // otherwise detached DOM nodes are retained until a longer chapter lands.
-    paragraphRefs.current.length = paragraphs.length;
-    const scrollY = activeChapterCacheKey
-      ? resumeReaderChapter(slug, activeChapterIdx, activeChapterCacheKey).scrollY
+    const scrollY = activeChapterContentUrl
+      ? resumeReaderChapter(slug, activeChapterIdx, activeChapterContentUrl).scrollY
       : getChapterScrollY(loadProgress(slug), activeChapterIdx);
     // instant: skip smooth-scroll CSS animation between chapters
     window.scrollTo({ top: scrollY, left: 0, behavior: "instant" });
@@ -451,7 +406,7 @@ function ReaderClientInner({
       setIsScrollingDown(false);
       overscrollNavigating.current = false;
     });
-  }, [slug, activeChapterIdx, paragraphs, activeChapterContentUrl, activeChapterCacheKey]);
+  }, [slug, activeChapterIdx, paragraphs, activeChapterContentUrl]);
 
   useEffect(() => {
     const flushScroll = () => {
@@ -494,23 +449,8 @@ function ReaderClientInner({
     };
   }, [activeChapterIdx, saveScroll]);
 
-  // TTS warm-up (chunk split + first audio fetches) is deferred to idle so it
-  // never contends with chapter paint on navigation. Safe to defer: play paths
-  // build chunks synchronously on demand via ensureChunks/beginPlayback.
   useEffect(() => {
-    if (!paragraphs) return;
-    const run = () => prepare(chapterKey, paragraphs);
-    if (typeof window === "undefined") return;
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    if (typeof idleWindow.requestIdleCallback === "function") {
-      const id = idleWindow.requestIdleCallback(run, { timeout: 2000 });
-      return () => idleWindow.cancelIdleCallback?.(id);
-    }
-    const timer = setTimeout(run, 0);
-    return () => clearTimeout(timer);
+    if (paragraphs) prepare(chapterKey, paragraphs);
   }, [chapterKey, paragraphs, prepare]);
 
   // Manual chapter change must kill in-flight TTS. Auto-next (end of chapter)
@@ -520,8 +460,8 @@ function ReaderClientInner({
     if (prevChapterIdxRef.current === activeChapterIdx) return;
     prevChapterIdxRef.current = activeChapterIdx;
     if (autoPlayNext) return;
-    ttsStop();
-  }, [activeChapterIdx, autoPlayNext, ttsStop]);
+    tts.stop();
+  }, [activeChapterIdx, autoPlayNext, tts.stop]);
 
   // Keep latest values for the keyboard handler without re-binding listeners.
   useEffect(() => {
@@ -634,10 +574,11 @@ function ReaderClientInner({
     }
   }, [paragraphs, autoPlayNext, chapterKey, tts]);
 
-  // Navigation is SPA-style via history.pushState (content loads client-side
-  // from static files), so router.prefetch would warm an RSC cache entry that
-  // is never read — pure waste of a server render per neighbour chapter.
-  // Content prefetching is handled by the prefetchChapterContent effect above.
+  // Prefetch adjacent chapters so navigation feels instant
+  useEffect(() => {
+    if (hasNext) router.prefetch(nextHref);
+    if (hasPrev) router.prefetch(prevHref);
+  }, [hasNext, hasPrev, nextHref, prevHref, router]);
 
   // Tracks picker visibility for the global keyboard handler without rebinding it.
   const pickerOpenRef = useRef(pickerOpen);
