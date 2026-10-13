@@ -436,6 +436,17 @@ def _sense_target(
             return ""
         if src == "了" and left.endswith("接起") and rest.startswith("电话"):
             return ""
+        if src == "了":
+            # 了 lẻ cuối mệnh đề (sau nó chỉ còn dấu đóng câu/quote) -> "rồi",
+            # tránh artifact "…đã." cuối câu. Chỉ xét tới hết mệnh đề hiện tại
+            # (cắt ở _STOP_AFTER) để không bị câu sau làm nhiễu.
+            seg: list[str] = []
+            for ch in rest:
+                if ch in _STOP_AFTER:
+                    break
+                seg.append(ch)
+            if not any(_is_cjk(ch) or ch.isalpha() for ch in seg):
+                return "rồi"
         if src in ("着", "著") and any(left.endswith(w) for w in _ZHE_DROP_AFTER):
             return ""
         return _ASPECT[src]

@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Must equal turbopack.root — Next infers the repo parent (where .git
+  // lives) otherwise and fails with "must have the same value".
+  outputFileTracingRoot: __dirname,
   compress: true,
   experimental: {
     optimizePackageImports: ["@smoores/epub"],

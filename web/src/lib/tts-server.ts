@@ -77,32 +77,76 @@ const withSlot = createLimiter(MAX_CONCURRENT);
 // ── Connection pool ─────────────────────────────────────────────────────────
 // setMetadata() performs the WebSocket handshake — the dominant latency per
 // chunk. Reuse idle connections per voice instead of dialing per request.
-const idlePool = new Map<string, MsEdgeTTS[]>();
+//
+// Edge closes idle websockets server-side (and NATs kill half-open ones).
+// Reusing such a dead socket makes _send() fire into a black hole: onclose
+// ends the audio stream with zero chunks → "Empty TTS audio". So pooled
+// entries carry an idle timestamp + use count, and acquireConn() drops
+// anything stale / half-closed / overused before reuse.
+const idlePool = new Map<string, PooledConn[]>();
 const POOL_MAX_PER_VOICE = 2;
+/** Drop pooled sockets idle longer than this (Edge/NAT idle close). */
+const POOL_IDLE_TTL_MS = 20_000;
+/** Recycle sockets after this many syntheses (server-side throttle). */
+const POOL_MAX_USES = 10;
+/** Per-attempt cap: a hung Edge stream must not hold a slot for seconds. */
+const SYNTH_TIMEOUT_MS = 9_000;
 
-async function acquireConn(voice: string): Promise<MsEdgeTTS> {
+interface PooledConn {
+  conn: MsEdgeTTS;
+  idleSince: number;
+  uses: number;
+}
+
+function isSocketOpen(conn: MsEdgeTTS): boolean {
+  try {
+    const ws = (conn as unknown as { _ws?: { readyState?: number } })._ws;
+    // WebSocket.OPEN === 1
+    return !!ws && ws.readyState === 1;
+  } catch {
+    return false;
+  }
+}
+
+function closeQuietly(conn: MsEdgeTTS) {
+  try { conn.close(); } catch { /* already closed */ }
+}
+
+async function acquireConn(voice: string): Promise<PooledConn> {
   const idle = idlePool.get(voice);
-  const reused = idle?.pop();
-  if (reused) return reused;
+  while (idle && idle.length > 0) {
+    const entry = idle.pop()!;
+    const fresh = Date.now() - entry.idleSince < POOL_IDLE_TTL_MS;
+    if (fresh && entry.uses < POOL_MAX_USES && isSocketOpen(entry.conn)) {
+      return entry;
+    }
+    closeQuietly(entry.conn);
+  }
   const fresh = new MsEdgeTTS();
   await fresh.setMetadata(
     voice,
     OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3,
   );
-  return fresh;
+  return { conn: fresh, idleSince: 0, uses: 0 };
 }
 
-function releaseConn(voice: string, conn: MsEdgeTTS, healthy: boolean) {
+function releaseConn(voice: string, entry: PooledConn, healthy: boolean) {
   if (!healthy) {
-    try { conn.close(); } catch { /* already closed */ }
+    closeQuietly(entry.conn);
     return;
   }
+  entry.uses += 1;
+  if (entry.uses >= POOL_MAX_USES || !isSocketOpen(entry.conn)) {
+    closeQuietly(entry.conn);
+    return;
+  }
+  entry.idleSince = Date.now();
   const idle = idlePool.get(voice) ?? [];
   if (idle.length >= POOL_MAX_PER_VOICE) {
-    try { conn.close(); } catch { /* ignore */ }
+    closeQuietly(entry.conn);
     return;
   }
-  idle.push(conn);
+  idle.push(entry);
   idlePool.set(voice, idle);
 }
 
@@ -111,24 +155,39 @@ function sleep(ms: number) {
 }
 
 async function synthesizeOnce(text: string, voiceName: string): Promise<Buffer> {
-  const conn = await acquireConn(voiceName);
+  const entry = await acquireConn(voiceName);
+  const { conn } = entry;
   let healthy = false;
   try {
     const { audioStream } = conn.toStream(escapeXml(text), { rate: 1 });
 
     const chunks: Buffer[] = [];
-    for await (const chunk of audioStream) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    let totalBytes = 0;
+    const timeout = AbortSignal.timeout(SYNTH_TIMEOUT_MS);
+    if (timeout.aborted) throw new Error("TTS synthesis timed out");
+    const onTimeout = () => {
+      try { audioStream.destroy(new Error("TTS synthesis timed out")); } catch { /* ignore */ }
+    };
+    timeout.addEventListener("abort", onTimeout, { once: true });
+    try {
+      for await (const chunk of audioStream) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        totalBytes += chunks[chunks.length - 1].length;
+      }
+    } finally {
+      timeout.removeEventListener("abort", onTimeout);
     }
 
-    if (chunks.length === 0) {
-      throw new Error("Empty TTS audio");
+    if (chunks.length === 0 || totalBytes === 0) {
+      throw new Error(
+        `Empty TTS audio (voice=${voiceName}, chars=${text.length})`,
+      );
     }
 
     healthy = true;
     return Buffer.concat(chunks);
   } finally {
-    releaseConn(voiceName, conn, healthy);
+    releaseConn(voiceName, entry, healthy);
   }
 }
 

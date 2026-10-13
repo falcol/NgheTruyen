@@ -562,7 +562,7 @@ def test_kenenghui_keeps_span():
 
 
 def test_le_aspect_da_not_dropped():
-    """了 1 chu: đã, khong boc QT, khong phien am liễu."""
+    """了 1 chu cuoi menh de: rồi, khong boc QT, khong phien am liễu."""
     dic = mini(
         [
             ("来", "tới", Layer.BASE_SINGLE),
@@ -571,11 +571,11 @@ def test_le_aspect_da_not_dropped():
     )
     draft = vp_plan(dic, "来了")
     low = draft.text.lower()
-    assert "đã" in low
+    assert "rồi" in low
     assert "liễu" not in low
     edges = greedy_path(dic, "来了")
     assert edges[-1].end - edges[-1].start == 1
-    assert edges[-1].target == "đã"
+    assert edges[-1].target == "rồi"
 
 
 def test_zhe_aspect_dang():
@@ -642,7 +642,7 @@ def test_le_after_locative_zai_dropped():
             ("了", "đã", Layer.GLOBAL_MANUAL),
         ]
     )
-    assert "đã" in vp_plan(lai, "来了").text.lower()
+    assert "rồi" in vp_plan(lai, "来了").text.lower()  # 了 lẻ cuối mệnh đề -> rồi
 
 
 def test_le_after_de_modal_dropped():
@@ -684,7 +684,7 @@ def test_le_after_yijing_dropped_lai_kept():
             ("了", "đã", Layer.GLOBAL_MANUAL),
         ]
     )
-    assert "đã" in vp_plan(lai, "来了").text.lower()
+    assert "rồi" in vp_plan(lai, "来了").text.lower()  # 了 lẻ cuối mệnh đề -> rồi
 
 
 def test_le_after_locative_dao_gei_dropped():
@@ -708,7 +708,7 @@ def test_le_after_locative_dao_gei_dropped():
             ("了", "đã", Layer.GLOBAL_MANUAL),
         ]
     )
-    assert "đã" in vp_plan(lai, "来了").text.lower()
+    assert "rồi" in vp_plan(lai, "来了").text.lower()  # 了 lẻ cuối mệnh đề -> rồi
 
 
 def test_long_name_vs_animal():
@@ -2454,7 +2454,7 @@ def test_le_after_dao_place_dropped():
         ]
     )
     assert "đã" not in vp_plan(dic, "到水月了").text.lower()
-    assert "đã" in vp_plan(dic, "来了").text.lower()
+    assert "rồi" in vp_plan(dic, "来了").text.lower()  # 了 lẻ cuối mệnh đề -> rồi
 
 
 def test_deren_nguoi_not_nhan():
