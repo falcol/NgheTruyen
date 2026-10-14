@@ -59,8 +59,11 @@ def test_preprocess_version_in_cache_key_and_fingerprint(tmp_path, monkeypatch):
         source_revision_hash="a", encoding="utf-8", dictionary_fingerprint="r", cfg=cfg
     )
     k1 = block_cache_key("src", "rev", cfg)
-    monkeypatch.setattr("zhvi.pipeline.PREPROCESS_VERSION", "zhvi-preprocess-3")
-    monkeypatch.setattr("zhvi.fingerprint.PREPROCESS_VERSION", "zhvi-preprocess-3")
+    from zhvi import config as config_mod
+
+    bumped = config_mod.PREPROCESS_VERSION + "-test"
+    monkeypatch.setattr("zhvi.pipeline.PREPROCESS_VERSION", bumped)
+    monkeypatch.setattr("zhvi.fingerprint.PREPROCESS_VERSION", bumped)
     fp2 = build_run_fingerprint(
         source_revision_hash="a", encoding="utf-8", dictionary_fingerprint="r", cfg=cfg
     )

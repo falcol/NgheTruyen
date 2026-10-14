@@ -1,4 +1,8 @@
-"""Tests CLI-level: exit codes (muc 34) + happy path 1 lenh (muc 3.1)."""
+"""Tests CLI-level: exit codes (muc 34) + happy path stateless (story 5.4).
+
+`translate` la stateless (khong SQLite): doc dict hien tai, ghi file. Trang thai
+project (status/inspect/export/review) duoc dung bang API translate_project.
+"""
 from __future__ import annotations
 
 import json
@@ -6,8 +10,6 @@ import subprocess
 from pathlib import Path
 
 import pytest
-
-from zhvi.project import default_workspace
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DICT_DIR = REPO_ROOT / "crawler" / "vietphrase" / "dicts"
@@ -22,6 +24,21 @@ def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
     )
 
 
+def _translate_project_api(tmp_path: Path, text: str):
+    """Dung state run qua API (translate CLI khong ghi SQLite)."""
+    from zhvi.pipeline import TranslateRequest, translate_project
+    from zhvi.project import create_project
+
+    src = tmp_path / "truyen.txt"
+    src.write_text(text, encoding="utf-8")
+    proj = create_project(tmp_path / "book")
+    res = translate_project(
+        proj, TranslateRequest(source=src, output=tmp_path / "vi.txt", dict_dir=str(DICT_DIR))
+    )
+    assert res.exit_code == 0
+    return proj
+
+
 def test_usage_error_exit_2(tmp_path):
     r = run_cli("translate")  # thieu ca file lan --project
     assert r.returncode == 2
@@ -34,7 +51,7 @@ def test_input_error_exit_3(tmp_path):
 
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
 def test_happy_path_one_command(tmp_path):
-    """zhvi translate <txt> -o <out> — workspace dung chung (ZHVI_PROJECT)."""
+    """zhvi translate <txt> -o <out>: stateless, khong tao .zhvi."""
     src = tmp_path / "truyen.txt"
     src.write_text("第一章\n\n凌天看着前方。\n", encoding="utf-8")
     out = tmp_path / "truyen.vi.txt"
@@ -42,26 +59,28 @@ def test_happy_path_one_command(tmp_path):
     assert r.returncode == 0, r.stderr
     report = json.loads(r.stdout)
     assert report["blocks"] == 2
-    assert out.read_text(encoding="utf-8").startswith("Chương 1") or "Lăng Thiên" in out.read_text(encoding="utf-8")
-    assert (default_workspace() / ".zhvi" / "state.sqlite3").is_file()
-    # no-op lan 2
-    r2 = run_cli("translate", str(src), "-o", str(out), "--dict-dir", str(DICT_DIR), "--no-learn", "--json")
+    assert report.get("stateless") is True
+    text = out.read_text(encoding="utf-8")
+    assert text.startswith("Chương 1") or "Lăng Thiên" in text
+    assert not (tmp_path / ".zhvi").exists()
+    # dich lai: deterministic, cung noi dung
+    out2 = tmp_path / "truyen2.vi.txt"
+    r2 = run_cli("translate", str(src), "-o", str(out2), "--dict-dir", str(DICT_DIR), "--no-learn", "--json")
     assert r2.returncode == 0
-    assert json.loads(r2.stdout).get("noop") is True
+    assert out2.read_text(encoding="utf-8") == text
 
 
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
 def test_status_and_inspect(tmp_path):
-    src = tmp_path / "truyen.txt"
-    src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
-    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR), "--no-learn")
-    assert r.returncode == 0
-    proj = default_workspace()
-    st = run_cli("status", "--project", str(proj))
+    proj = _translate_project_api(tmp_path, "第一章\n\n凌天。\n")
+    out2 = tmp_path / "re-export.txt"
+    r_exp = run_cli("export", "--project", str(proj.root), "-o", str(out2))
+    assert r_exp.returncode == 0, r_exp.stderr
+    st = run_cli("status", "--project", str(proj.root))
     assert st.returncode == 0
     info = json.loads(st.stdout)
     assert info["status"] == "exported"
-    insp = run_cli("inspect", "--project", str(proj))
+    insp = run_cli("inspect", "--project", str(proj.root))
     assert insp.returncode == 0
     rep = json.loads(insp.stdout)
     assert rep["heading_count"] == 1
@@ -80,13 +99,9 @@ def test_doctor_exit_4_missing_dict(tmp_path):
 
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
 def test_export_command(tmp_path):
-    src = tmp_path / "truyen.txt"
-    src.write_text("第一章\n\n凌天。\n", encoding="utf-8")
-    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"), "--dict-dir", str(DICT_DIR), "--no-learn")
-    assert r.returncode == 0
-    proj = default_workspace()
+    proj = _translate_project_api(tmp_path, "第一章\n\n凌天。\n")
     out2 = tmp_path / "re-export.txt"
-    r2 = run_cli("export", "--project", str(proj), "-o", str(out2))
+    r2 = run_cli("export", "--project", str(proj.root), "-o", str(out2))
     assert r2.returncode == 0, r2.stderr
     payload = json.loads(r2.stdout)
     assert Path(payload["output"]).read_bytes() == out2.read_bytes()
@@ -94,7 +109,7 @@ def test_export_command(tmp_path):
 
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
 def test_vp_only_route_stats(tmp_path):
-    """Story 1.1/1.3: pipeline VP-only — moi block route VIETPHRASE, khong model digest."""
+    """Story 1.1/1.3: pipeline VP-only — stateless, vp_ratio 100%, khong model digest."""
     src = tmp_path / "truyen.txt"
     # Mot block sach (khong Han) + mot block co chu Han.
     src.write_text("第一章\n\nHello world.\n\n凌天看着远方。\n", encoding="utf-8")
@@ -105,8 +120,8 @@ def test_vp_only_route_stats(tmp_path):
                 "--dict-dir", str(DICT_DIR), "--project", str(proj), "--no-learn", "--json")
     assert r.returncode == 0, r.stderr
     report = json.loads(r.stdout)
-    assert "routes" in report
-    assert report["routes"] == {"VIETPHRASE": report["blocks"]}
+    assert report.get("stateless") is True
+    assert report["vp_ratio"] == 1.0
     # VP-only: khong con truong model digest nao trong report
     assert not any("digest" in key for key in report)
 
@@ -114,15 +129,8 @@ def test_vp_only_route_stats(tmp_path):
 @pytest.mark.skipif(not DICT_DIR.is_dir(), reason="can tu dien nen")
 def test_review_command(tmp_path):
     """M2: `zhvi review --list` in ra block can review (fallback/abstain)."""
-    src = tmp_path / "truyen.txt"
-    src.write_text("第一章\n\n天地不仁以万物为刍狗。\n", encoding="utf-8")
-    proj = tmp_path / "truyen.zhvi"
-    r0 = run_cli("init", str(proj))
-    assert r0.returncode == 0, r0.stderr
-    r = run_cli("translate", str(src), "-o", str(tmp_path / "vi.txt"),
-                "--dict-dir", str(DICT_DIR), "--project", str(proj), "--no-learn", "--json")
-    assert r.returncode == 0, r.stderr
-    rv = run_cli("review", "--project", str(proj), "--list")
+    proj = _translate_project_api(tmp_path, "第一章\n\n天地不仁以万物为刍狗。\n")
+    rv = run_cli("review", "--project", str(proj.root), "--list")
     assert rv.returncode == 0, rv.stderr
     payload = json.loads(rv.stdout)
     assert "count" in payload

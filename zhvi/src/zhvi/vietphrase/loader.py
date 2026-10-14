@@ -159,6 +159,13 @@ def dict_files_fingerprint(
         h.update(b"global:")
         h.update(gpath.name.encode())
         h.update(gpath.read_bytes())
+    # trad-simp anh huong truc tiep output (to_simplified) — phai tham gia
+    # fingerprint, neu khong hai dict_dir giong nhau chi khac trad-simp se
+    # dung chung instance _MEMO (test_metamorphic trad/simp flaky).
+    trad = dict_dir / TRAD_SIMP_FILE
+    if trad.is_file():
+        h.update(b"trad-simp:")
+        h.update(trad.read_bytes())
     if manual_glossary is not None and manual_glossary.is_file():
         h.update(b"manual:")
         h.update(manual_glossary.read_bytes())

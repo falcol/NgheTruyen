@@ -258,6 +258,9 @@ def test_cli_terms_and_explain(tmp_path):
         "--dict-dir", str(dict_dir), "--json",
     ])
     assert r0.exit_code == 0, r0.output
+    # translate hien stateless (khong ghi SQLite) — learn can source revision
+    rimp = runner.invoke(app, ["import-", str(src), "-p", str(project.root)])
+    assert rimp.exit_code == 0, rimp.output
     # learn sinh candidates
     rl = runner.invoke(app, [
         "learn", "-p", str(project.root), "--dict-dir", str(dict_dir),

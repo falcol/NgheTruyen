@@ -222,8 +222,6 @@ def terms_reject(
             st.close()
     except typer.Exit:
         raise
-    except TermsError as e:
-        _fail(EXIT_STATE, str(e))
     except ProjectError as e:
         _fail(EXIT_STATE, str(e))
     except Exception as e:  # noqa: BLE001 — controller bat fatal
@@ -699,6 +697,8 @@ def translate(
         _fail(EXIT_STATE, str(e))
     except SnapshotError as e:
         _fail(EXIT_INPUT, str(e))
+    except FileNotFoundError as e:
+        _fail(EXIT_INPUT, f"Khong doc duoc file: {e.filename or file}")
     except StaleActiveError as e:
         _fail(EXIT_RUN_FAILED, str(e))
     except (RegistryError, PromotionError, GoldenError) as e:

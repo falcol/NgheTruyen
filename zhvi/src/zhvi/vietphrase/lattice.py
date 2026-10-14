@@ -872,11 +872,37 @@ _TIME_AFTER_DE = frozenset(
 )
 
 
-def _possessive_de(edges: list[Edge], text: str) -> list[Edge]:
+def _right_continues_compound(dic: Dictionary | None, text: str, right: Edge) -> bool:
+    """right.src + ky tu CJK ke tiep tao thanh entry trong trie (VD 大+魂=đại hồn):
+    right moi la nua dau compound (thuong la tinh tu nhu 強大), dao X的Y se
+    che lam doi, bo lai head noun (VD 47: 'cường đại của Thần Tôn Cảnh hồn lực').
+    Fragment X的 (VD 师的=sư) khong phai compound that — bo qua."""
+    if dic is None:
+        return False
+    rsrc = text[right.start : right.end]
+    nxt_pos = right.end
+    if not rsrc or nxt_pos >= len(text):
+        return False
+    nxt = text[nxt_pos]
+    if not CJK_RE.match(nxt) or nxt in ("的", "旳"):
+        return False
+    node = dic.root
+    for ch in rsrc[-1] + nxt:
+        node = node.children.get(ch)
+        if node is None:
+            return False
+    return bool(node.entries)
+
+
+def _possessive_de(
+    edges: list[Edge], text: str, dic: Dictionary | None = None
+) -> list[Edge]:
     """Ten/dai tu + 的 (boc) + NP -> 'NP của ten' (花少的耻辱).
 
     Thoi diem (晚上): 'buổi tối ở Đồng Thành', khong 'của'.
     Khong dao 新的老师 / 打不晕的凌天 (ve trai khong phai ten).
+    Khong tach compound: right + CJK ke tiep co entry (VD 神尊境的強大魂力,
+    大+魂=đại hồn) thi giu nguyen trat tu Trung, khong 'cường đại của...'.
     """
     out: list[Edge] = []
     i = 0
@@ -895,6 +921,7 @@ def _possessive_de(edges: list[Edge], text: str) -> list[Edge]:
                 and right.target
                 and _is_possessive_head(left, lsrc)
                 and CJK_RE.match(text[right.start])
+                and not _right_continues_compound(dic, text, right)
             ):
                 if rsrc in _TIME_AFTER_DE:
                     joined = f"{right.target} ở {left.target}"
@@ -1103,7 +1130,7 @@ def vp_plan(
     # margin/entropy chi can cho router M2 / explain.
     greedy_edges = greedy_path(dic, text)
     greedy_edges = _possessive_clan(greedy_edges, text)
-    greedy_edges = _possessive_de(greedy_edges, text)
+    greedy_edges = _possessive_de(greedy_edges, text, dic)
     greedy_edges = _dui_before_name(greedy_edges, text)
     # Rule chong lap: loai artifact trung target giua hai edge ke nhau khi
     # nguon khong lap lai that (VD 'có chút'+'có chút lo lắng' -> giu cai sau).
