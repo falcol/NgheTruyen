@@ -29,6 +29,7 @@ Mặc định: chế độ `vietphrase`, luật nhân cấp 2, đổi phồn th�
 | `--overlay file.txt` | Tên và cụm của truyện, xem bên dưới |
 | `--dict manifest` | Tải từ điển vietphrase.app vào `~/.cache/vp-dicts` |
 | `--deep-scan` | Quét tên bằng NER trên GPU, gắn tên đã duyệt rồi dịch luôn. Ghi thêm `<tên>.ner.txt` |
+| `--jobs N` | Số tiến trình dịch. `0` = tự chọn theo RAM (mỗi tiến trình nạp riêng ~1.8 GB từ điển), `1` = tuần tự. Bỏ qua khi `--deep-scan` |
 
 `--deep-scan` chỉ chốt tên người lặp lại. Không ghi file cần xem / bỏ.
 
@@ -93,7 +94,8 @@ Dịch:
 PYTHONPATH=vp/src python -m vp file \
   zhvi/workspace/manh-nhat-from-1012.zh.txt \
   -o zhvi/workspace/manh-nhat-from-1012.zh.vi.gt05.txt \
-  --overlay zhvi/workspace/manh-nhat-from-1012.novel-review.gt05.txt
+  --overlay zhvi/workspace/manh-nhat-from-1012.novel-review.gt05.txt \
+  --jobs 4
 ```
 
 Hai bản phải cùng số dòng. Rồi đổ lên JSON reader. Script `crawler/overlay_manh_nhat_1012.py` mặc định đọc `manh-nhat-from-1012.zh.vi.txt`. Không sửa dòng `VI` trong script. Gán đường dẫn rồi chạy:

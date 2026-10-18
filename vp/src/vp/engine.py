@@ -495,7 +495,10 @@ class Engine:
                 trie = _trie_match(self.root, text, pos, strong)
                 over = _overlay_match(text, pos, strong, overlay)
                 best = _better(over, trie)
-        while best and _eats_jianling(text, best.start, best.end):
+        while best and (
+            _eats_jianling(text, best.start, best.end)
+            or _eats_clan_leader(text, best.start, best.end)
+        ):
             cut = best.end - 1
             if cut <= pos:
                 best = None
@@ -562,10 +565,17 @@ class Engine:
                     and toks[-1].end == step.start
                 ):
                     prev = toks[-1]
-                    if not _dehua_conditional(toks) and (
-                        _is_possessive_head(prev) or _dehua_say(prev.zh)
-                    ):
-                        if _is_possessive_head(prev):
+                    if not _dehua_conditional(toks) and _dehua_speech(toks):
+                        # 的话 is 'words', not 'if': 听它的话 / 打断小太妹的话.
+                        merged = _speech_pronoun_head(self, prev)
+                        if merged is not None:
+                            toks[-1] = merged[0]
+                            value = f"lời của {merged[1]}"
+                        elif _dehua_quantified(toks):
+                            # 说出一句…轰动的话: the 'một câu' gloss already
+                            # carries the noun, drop the particle.
+                            value = ""
+                        elif _is_possessive_head(prev) or _noun_head(prev):
                             toks[-1] = _Tok(
                                 prev.start,
                                 step.end,
@@ -577,8 +587,12 @@ class Engine:
                             )
                             i += step.length
                             continue
-                        value = "lời"
-                    elif _dehua_conditional(toks):
+                        else:
+                            value = "lời"
+                    else:
+                        # Conditional 的话 is dropped: 如果 already gave
+                        # 'nếu', and a bare 过手的话， clause reads as
+                        # conditional without a trailing 'nếu'.
                         value = ""
                 elif (
                     zh == "在意"
@@ -1190,6 +1204,11 @@ def _protected_name_steals_word(root: _Node, text: str, start: int, end: int) ->
     # "Đàm Hoa không nghĩ tới", not "Đàm xài hết nghĩ đến".
     if text[start:end] == "昙花":
         return False
+    # 神帝都打不过: 都 is the adverb 'đều', not the head of 帝都='Đế Đô'.
+    # No 神帝都城/神帝都市 in this corpus, so the city reading never
+    # follows a protected name here.
+    if end < len(text) and text[end] == "都":
+        return False
     # 绣剑 is the same sword as 锈剑. 剑灵 is its spirit.
     # 剑的/灵能/灵隐 must not split those names.
     if text[start:end] in {"绣剑", "剑灵"}:
@@ -1212,6 +1231,22 @@ def _eats_jianling(text: str, start: int, end: int) -> bool:
         and text[end - 1] == "剑"
         and end < len(text)
         and text[end] == "灵"
+    )
+
+
+def _eats_clan_leader(text: str, start: int, end: int) -> bool:
+    """辛家族长: 辛家族 takes 族 away from 族长 (clan leader), leaving 长=dài.
+
+    Trim the span to 辛家 so 族长 matches. 家族长老/长久/长远/长期 keep the
+    span: there 长 is not the leader word.
+    """
+    return (
+        end - start >= 2
+        and end <= len(text)
+        and text[end - 1] == "族"
+        and end < len(text)
+        and text[end] == "长"
+        and text[end + 1 : end + 2] not in ("老", "久", "远", "期", "辈", "安", "盛", "存")
     )
 
 
@@ -1990,21 +2025,77 @@ _QUOTE_LEAD = frozenset({"", "\n", "\r", "“", '"', "「", "『"})
 _QUOTE_SENSE = {"恩": "ừ", "嗯": "ừ", "喂": "alo"}
 _DEHUA_COND = ("如果", "要是", "假如", "倘若", "若是", "万一", "如若", "就算", "即使", "哪怕")
 _DEHUA_SAY = frozenset({"说", "讲", "道", "问", "喊", "叫", "言"})
+_DEHUA_SPEECH_VERBS = frozenset({"听", "听到", "听见", "打断", "念叨", "说出", "嘱咐", "叮嘱", "回答"})
+_SPEECH_PRONOUN_VI = {"它": "nó", "她": "nàng", "他": "hắn", "你": "ngươi", "我": "ta"}
+_DEHUA_QUANT = ("一句", "一番", "半句", "几句")
 
 
 def _dehua_say(zh: str) -> bool:
     return zh in _DEHUA_SAY or zh.endswith("说") or zh.endswith("讲")
 
 
-def _dehua_conditional(toks: list[_Tok]) -> bool:
-    """如果/要是 in the same clause keeps 的话 as 'nếu'."""
+def _clause_zh(toks: list[_Tok]) -> str:
+    """Zh chars of the current clause, stopping at the last clause boundary."""
     parts: list[str] = []
     for tok in reversed(toks):
         if tok.value and _CLAUSE_BOUNDARY_RE.search(tok.value):
             break
         parts.append(tok.zh)
-    blob = "".join(reversed(parts))
-    return any(mark in blob for mark in _DEHUA_COND)
+    return "".join(reversed(parts))
+
+
+def _dehua_conditional(toks: list[_Tok]) -> bool:
+    """如果/要是 in the same clause makes 的话 a conditional particle."""
+    return any(mark in _clause_zh(toks) for mark in _DEHUA_COND)
+
+
+def _dehua_speech(toks: list[_Tok]) -> bool:
+    """A speech verb in the clause makes sentence 的话 'words', not 'if'."""
+    for tok in reversed(toks):
+        if tok.value and _CLAUSE_BOUNDARY_RE.search(tok.value):
+            break
+        stripped = tok.zh.rstrip("了着过的")
+        if stripped in _DEHUA_SPEECH_VERBS or _dehua_say(tok.zh):
+            return True
+        # 听它 as one span still counts: the verb is its first char.
+        if len(stripped) == 2 and stripped[0] in "听问喊叫" and stripped[1] in _SPEECH_PRONOUN_VI:
+            return True
+    return False
+
+
+def _dehua_quantified(toks: list[_Tok]) -> bool:
+    """一句/一番 before 的话 already counts the words, drop the particle."""
+    blob = _clause_zh(toks)
+    return any(q in blob for q in _DEHUA_QUANT)
+
+
+def _speech_pronoun_head(engine: Engine, prev: _Tok) -> tuple[_Tok, str] | None:
+    """听它 is one trie span 'nghe nó'. Split it so 的话 gives 'lời của nó'."""
+    if prev.kind != "trie" or len(prev.zh) != 2 or prev.zh[1] not in _SPEECH_PRONOUN_VI:
+        return None
+    if prev.zh[0] not in "听问喊叫":
+        return None
+    verb = engine.exact_entry(prev.zh[0])
+    if not verb or not verb[0]:
+        return None
+    return (
+        _Tok(prev.start, prev.start + 1, prev.zh[0], verb[0], prev.pri, False, "trie"),
+        _SPEECH_PRONOUN_VI[prev.zh[1]],
+    )
+
+
+def _noun_head(tok: _Tok) -> bool:
+    """tiểu thái muội: lowercase common-noun owner of 的话 in a speech clause."""
+    if not tok.value or tok.kind == "pattern":
+        return False
+    if tok.zh.rstrip("了着过的") in _DEHUA_SPEECH_VERBS or _dehua_say(tok.zh):
+        return False
+    # 先天中期 / 内劲巅峰 / 先天境界 are realms, not owners.
+    if tok.zh.endswith("期") or tok.zh.endswith("巅峰") or _STAGE_HEAD_RE.search(tok.value):
+        return False
+    if "cảnh giới" in tok.value.casefold():
+        return False
+    return 2 <= len(tok.zh) <= 4
 
 
 def _capital_name_follows(engine: Engine, text: str, end: int) -> bool:

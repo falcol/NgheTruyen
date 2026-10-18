@@ -1,5 +1,13 @@
+from functools import partial
+
 from vp.engine import Engine
-from vp.filetrans import build_file_chunks, split_oversized, translate_file, translate_piecewise
+from vp.filetrans import (
+    build_file_chunks,
+    split_oversized,
+    translate_file,
+    translate_file_parallel,
+    translate_piecewise,
+)
 
 
 def _engine():
@@ -48,3 +56,21 @@ def test_heading_is_not_split_and_soft_limit_cuts_on_period():
 def test_hanviet_file_mode():
     engine = _engine()
     assert translate_file("你好。", engine, mode="hanviet") == "Nhân hảo."
+
+
+def test_parallel_matches_sequential_output():
+    rows = [
+        ("一", "nhất", 5, "ChinesePhienAmWords.txt"),
+        ("你好", "xin chào", 10, "VietPhrase_1.txt"),
+        ("世界", "thế giới", 10, "VietPhrase_1.txt"),
+        ("再见", "tạm biệt", 10, "VietPhrase_1.txt"),
+        ("第{0}章", "chương thứ {0}", 15, "LuatNhan.txt"),
+    ]
+    text = "第一章\n你好。世界。\n\n再见。你好。”世界。"
+    sequential = translate_file(text, _engine())
+    parallel = translate_file_parallel(
+        text,
+        partial(Engine.build, rows, {}, simplified=True, luat_nhan=2),
+        jobs=2,
+    )
+    assert parallel == sequential

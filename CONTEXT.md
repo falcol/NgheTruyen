@@ -7,3 +7,4 @@
 **Đã làm:** sửa tay VI 1012–1024 (tạm, sẽ bị bản zhvi full thay). Hán local không đủ.
 
 **Không làm:** đè JSON Việt khi crawl; LLM sửa mù; chỉ merge từ 1012; trộn piaotia / convert-sense W1–W7.
+

@@ -983,8 +983,55 @@ def test_name_dehua_is_words_unless_conditional():
     assert cond.count("nếu") == 1
     assert "lời của" not in cond
     hypo = _low(rows, "有介入的话")
-    assert "nếu" in hypo
+    assert "nếu" not in hypo
     assert "lời" not in hypo
+
+
+def test_dehua_bare_conditional_and_speech_heads():
+    rows = [
+        ("的话", "nếu", 19, "QualityOverrides.txt"),
+        ("听它", "nghe nó", 10, "VietPhrase_1.txt"),
+        ("听", "nghe", 10, "VietPhrase_1.txt"),
+        ("打断了", "đã cắt đứt", 10, "VietPhrase_1.txt"),
+        ("小太妹", "tiểu thái muội", 10, "VietPhrase_3.txt"),
+        ("说出", "nói ra", 10, "VietPhrase_1.txt"),
+        ("一句", "một câu", 10, "VietPhrase_1.txt"),
+        ("让", "để", 999, "Custom.txt"),
+        ("全场", "toàn trường", 10, "VietPhrase_2.txt"),
+        ("轰动", "oanh động", 10, "VietPhrase_2.txt"),
+        ("与你过手", "giao thủ với ngươi", 10, "VietPhrase_3.txt"),
+    ]
+    heard = _low(rows, "都得听它的话")
+    assert "nghe lời của nó" in heard
+    assert "nếu" not in heard
+    cut = _low(rows, "打断了小太妹的话")
+    assert "lời của tiểu thái muội" in cut
+    assert "nếu" not in cut
+    said = _low(rows, "说出一句让全场轰动的话")
+    assert "oanh động" in said
+    assert "nếu" not in said
+    bare = _low(rows, "与你过手的话，")
+    assert "giao thủ với ngươi" in bare
+    assert "nếu" not in bare
+
+
+def test_clan_span_does_not_steal_zuzhang():
+    rows = [
+        ("辛家族", "Tân gia tộc", 10, "VietPhrase_3.txt"),
+        ("辛家", "Tân gia", 10, "VietPhrase_2.txt"),
+        ("族长", "tộc trưởng", 20, "Names.txt"),
+        ("族", "tộc", 10, "VietPhrase_1.txt"),
+        ("长", "dài", 10, "VietPhrase_1.txt"),
+        ("辛巴", "Simba", 20, "Names.txt"),
+        ("长老", "trưởng lão", 20, "Names.txt"),
+        ("家族", "gia tộc", 10, "VietPhrase_1.txt"),
+        ("家", "gia", 10, "VietPhrase_1.txt"),
+    ]
+    leader = _low(rows, "辛家族长辛巴")
+    assert "tân gia tộc trưởng" in leader
+    assert "tộc dài" not in leader
+    elder = _low(rows, "辛家族长老")
+    assert "gia tộc trưởng lão" in elder
 
 
 def test_corrupt_gloss_and_stolen_spans_fall_back():

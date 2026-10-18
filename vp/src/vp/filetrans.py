@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import multiprocessing as mp
 import re
 from collections.abc import Callable
+from functools import partial
 
 from vp.engine import Engine
 
@@ -161,6 +163,17 @@ def translate_piecewise(text: str, translate: Callable[[str], str]) -> str:
     return "".join(translated)
 
 
+def _append_piece(out: list[str], index: int, chunk: dict[str, str], piece: str) -> None:
+    if index > 0:
+        glue = chunk.get("glue")
+        if not isinstance(glue, str):
+            glue = "\n"
+        if glue == "" and _needs_gap(out, piece):
+            glue = " "
+        out.append(glue)
+    out.append(piece)
+
+
 def translate_chunks(
     chunks: list[dict[str, str]],
     translate: Callable[[str], str],
@@ -170,14 +183,7 @@ def translate_chunks(
     total = len(chunks)
     for i, chunk in enumerate(chunks):
         piece = translate_piecewise(chunk.get("text") or "", translate) if chunk.get("text") else ""
-        if i > 0:
-            glue = chunk.get("glue")
-            if not isinstance(glue, str):
-                glue = "\n"
-            if glue == "" and _needs_gap(out, piece):
-                glue = " "
-            out.append(glue)
-        out.append(piece)
+        _append_piece(out, i, chunk, piece)
         if on_progress:
             on_progress(i + 1, total)
     return "".join(out)
@@ -201,3 +207,56 @@ def translate_file(
         def translate(part: str) -> str:
             return engine.translate(part, overlay)
     return translate_chunks(chunks, translate, on_progress)
+
+
+_WORKER: dict[str, Callable[[str], str]] = {}
+
+
+def _worker_init(
+    engine_factory: Callable[[], Engine],
+    mode: str,
+    overlay: list[tuple[str, str, int]] | None,
+) -> None:
+    engine = engine_factory()
+    if mode == "hanviet":
+        _WORKER["translate"] = engine.hanviet
+    else:
+        _WORKER["translate"] = partial(engine.translate, overlay=overlay)
+
+
+def _worker_translate(chunk: dict[str, str]) -> str:
+    text = chunk.get("text")
+    if not text:
+        return ""
+    return translate_piecewise(text, _WORKER["translate"])
+
+
+def translate_file_parallel(
+    text: str,
+    engine_factory: Callable[[], Engine],
+    *,
+    mode: str = "vietphrase",
+    overlay: list[tuple[str, str, int]] | None = None,
+    jobs: int = 2,
+    on_progress: Callable[[int, int], None] | None = None,
+    soft: int = SOFT_LIMIT,
+    hard: int = HARD_LIMIT,
+) -> str:
+    """Same output as translate_file, chunks spread over worker processes.
+
+    Each worker builds its own engine from engine_factory (about 1.8 GB RAM,
+    16 s load for the local dicts), so jobs is bound by memory, not cores.
+    """
+    engine = engine_factory()
+    source = engine.convert(text or "")
+    chunks = build_file_chunks(source, soft=soft, hard=hard)
+    total = len(chunks)
+    chunksize = max(1, min(64, total // (jobs * 8) or 1))
+    out: list[str] = []
+    ctx = mp.get_context("spawn")
+    with ctx.Pool(jobs, _worker_init, (engine_factory, mode, overlay)) as pool:
+        for i, piece in enumerate(pool.imap(_worker_translate, chunks, chunksize)):
+            _append_piece(out, i, chunks[i], piece)
+            if on_progress:
+                on_progress(i + 1, total)
+    return "".join(out)

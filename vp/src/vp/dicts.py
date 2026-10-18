@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import pickle
 import urllib.request
 from pathlib import Path
 
@@ -143,27 +144,92 @@ def records_from_files(
     return records
 
 
+_ENGINE_PICKLE_VERSION = 1
+_DEFAULT_ENGINE_CACHE = Path.home() / ".cache" / "vp-dicts"
+
+
+def _engine_fingerprint(
+    present: list[tuple[Path, str, int]],
+    trad_path: Path,
+    simplified: bool,
+    luat_nhan: int,
+    custom: list[tuple[str, str]] | None,
+) -> str:
+    """Hash of everything the built engine depends on: files + build knobs."""
+    h = hashlib.sha1()
+    h.update(f"v{_ENGINE_PICKLE_VERSION}:{simplified}:{luat_nhan}".encode())
+    for path, _kind, _pri in present:
+        st = path.stat()
+        h.update(f"{path.name}:{st.st_size}:{st.st_mtime_ns};".encode())
+    if trad_path.is_file():
+        st = trad_path.stat()
+        h.update(f"trad:{st.st_size}:{st.st_mtime_ns};".encode())
+    for zh, vi in custom or ():
+        h.update(f"{zh}={vi};".encode())
+    return h.hexdigest()[:16]
+
+
+def _load_cached_engine(path: Path) -> Engine | None:
+    if not path.is_file():
+        return None
+    # Pickle is safe here: the cache is written by this tool itself into the
+    # user's own cache dir, never received from outside.
+    try:
+        with path.open("rb") as fh:
+            engine = pickle.load(fh)
+    except Exception:
+        # Corrupt or written by older code: drop it and rebuild from text.
+        path.unlink(missing_ok=True)
+        return None
+    return engine if isinstance(engine, Engine) else None
+
+
+def _save_cached_engine(path: Path, engine: Engine) -> None:
+    tmp = path.with_name(path.name + ".tmp")
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with tmp.open("wb") as fh:
+            pickle.dump(engine, fh, protocol=pickle.HIGHEST_PROTOCOL)
+        tmp.replace(path)
+    except OSError:
+        # Read-only cache dir or full disk: translation still works.
+        tmp.unlink(missing_ok=True)
+        return
+    for stale in path.parent.glob("engine-*.pkl"):
+        if stale != path:
+            stale.unlink(missing_ok=True)
+
+
 def load_local_engine(
     dict_dir: Path,
     *,
     simplified: bool,
     luat_nhan: int,
     custom: list[tuple[str, str]] | None = None,
+    cache_dir: Path | None = None,
 ) -> Engine:
     files = [(dict_dir / name, kind, pri) for name, kind, pri in LOCAL_STACK]
     present = [item for item in files if item[0].is_file()]
     if not present:
         raise FileNotFoundError(f"Thư mục không có từ điển VietPhrase: {dict_dir}")
-    records = records_from_files(present)
     trad_path = dict_dir / "trad-simp.txt"
+    cache_path = (cache_dir or _DEFAULT_ENGINE_CACHE) / (
+        "engine-" + _engine_fingerprint(present, trad_path, simplified, luat_nhan, custom) + ".pkl"
+    )
+    cached = _load_cached_engine(cache_path)
+    if cached is not None:
+        return cached
+    records = records_from_files(present)
     trad = load_trad_simp(_read(trad_path)) if trad_path.is_file() else {}
-    return Engine.build(
+    engine = Engine.build(
         records,
         trad,
         simplified=simplified,
         luat_nhan=luat_nhan,
         custom=custom,
     )
+    _save_cached_engine(cache_path, engine)
+    return engine
 
 
 def _download(url: str, timeout: int = 120) -> bytes:

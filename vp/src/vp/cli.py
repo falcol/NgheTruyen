@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+from functools import partial
 from pathlib import Path
 
 from vp.dicts import (
@@ -13,10 +15,24 @@ from vp.dicts import (
     read_custom,
     read_overlay,
 )
-from vp.filetrans import translate_file
+from vp.filetrans import translate_file, translate_file_parallel
 from vp.ner_model import scan_file
 from vp.novel_scan import scan_file as novel_scan_file
 from vp.textutil import decode_source
+
+
+def _auto_jobs() -> int:
+    """Workers fit for RAM: one engine is about 1.8 GB, reserve 2 GB each."""
+    cpus = os.cpu_count() or 1
+    try:
+        with open("/proc/meminfo", encoding="ascii") as fh:
+            for line in fh:
+                if line.startswith("MemAvailable:"):
+                    avail_gb = int(line.split()[1]) / (1024 * 1024)
+                    return max(1, min(8, cpus, int(avail_gb // 2)))
+    except OSError:
+        pass
+    return max(1, min(4, cpus))
 
 
 def _default_output(src: Path) -> Path:
@@ -57,6 +73,12 @@ def _build_parser() -> argparse.ArgumentParser:
         "--deep-scan",
         action="store_true",
         help="Một lệnh: quét tên trên GPU rồi dịch luôn bằng các tên đã duyệt",
+    )
+    file_cmd.add_argument(
+        "--jobs",
+        type=int,
+        default=0,
+        help="Số tiến trình dịch. 0 = tự chọn theo RAM, 1 = tuần tự. Bỏ qua khi --deep-scan",
     )
     file_cmd.add_argument(
         "--encoding",
@@ -123,10 +145,12 @@ def translate_path(args: argparse.Namespace) -> int:
     custom = read_custom(args.custom) if args.custom else None
     overlay = read_overlay(args.overlay) if args.overlay else None
     simplified = not args.no_simplified
+    jobs = args.jobs if args.jobs else _auto_jobs()
     print("Đang nạp từ điển...", file=sys.stderr, flush=True)
     try:
         if args.dict == "manifest":
-            engine = load_manifest_engine(
+            engine_factory = partial(
+                load_manifest_engine,
                 cache_dir=args.cache_dir,
                 simplified=simplified,
                 luat_nhan=args.luat_nhan,
@@ -134,12 +158,16 @@ def translate_path(args: argparse.Namespace) -> int:
                 refresh=args.refresh_dict,
             )
         else:
-            engine = load_local_engine(
+            engine_factory = partial(
+                load_local_engine,
                 find_local_dict_dir(args.dict_dir),
                 simplified=simplified,
                 luat_nhan=args.luat_nhan,
                 custom=custom,
+                cache_dir=args.cache_dir,
             )
+        # --deep-scan needs the engine in this process; so does 1 job.
+        engine = engine_factory() if args.deep_scan or jobs == 1 else None
     except (OSError, RuntimeError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
@@ -170,13 +198,23 @@ def translate_path(args: argparse.Namespace) -> int:
             f"NER sâu: {stats.approved} tên duyệt · {stats.pending} đang chờ · {stats.entities} entity",
             file=sys.stderr,
         )
-    output = translate_file(
-        text,
-        engine,
-        mode=args.mode,
-        overlay=overlay,
-        on_progress=_progress,
-    )
+    if engine is None:
+        output = translate_file_parallel(
+            text,
+            engine_factory,
+            mode=args.mode,
+            overlay=overlay,
+            jobs=jobs,
+            on_progress=_progress,
+        )
+    else:
+        output = translate_file(
+            text,
+            engine,
+            mode=args.mode,
+            overlay=overlay,
+            on_progress=_progress,
+        )
     dest = args.output
     if dest is None:
         dest = _default_output(src)
