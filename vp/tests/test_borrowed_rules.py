@@ -406,7 +406,7 @@ def test_zonghe_sowa_is_not_and_between_sects():
         ("大", "đại", 10, "VietPhrase_1.txt"),
         ("妖族", "Yêu Tộc", 20, "Names.txt"),
         ("时空", "thời không", 10, "VietPhrase_1.txt"),
-        ("时空帝君", "Thì Không Đế Quân", 20, "Names.txt"),
+        ("时空帝君", "Thời Không Đế Quân", 20, "Names.txt"),
         ("万宝宗", "Vạn Bảo Tông", 20, "Names.txt"),
         ("叫", "gọi", 10, "VietPhrase_1.txt"),
         ("过来", "qua đây", 10, "VietPhrase_1.txt"),
