@@ -7,6 +7,9 @@ atomic export -> bao cao. Khong goi model. Ctrl-C lan 1: checkpoint + PAUSED.
 from __future__ import annotations
 
 import json
+import multiprocessing as mp
+import os
+import signal
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -112,14 +115,58 @@ def resolve_global_glossary(cfg: Config) -> Path | None:
     return None
 
 
+# Parallel plain translate: parent dat dict + cfg vao day TRUOC fork, worker
+# ke thua copy-on-write (khong pickle Dictionary).
+_PARENT_DIC: Dictionary | None = None
+_PARENT_CFG: Config | None = None
+# Duoi nguong nay pool startup lon hon loi ich -> chay tuan tu.
+_PARALLEL_MIN_BLOCKS = 400
+
+
+def _auto_jobs() -> int:
+    """Worker theo RAM: moi process ~1.7 GB, chua 2 GB moi worker."""
+    cpus = os.cpu_count() or 1
+    try:
+        with open("/proc/meminfo", encoding="ascii") as fh:
+            for line in fh:
+                if line.startswith("MemAvailable:"):
+                    avail_gb = int(line.split()[1]) / (1024 * 1024)
+                    return max(1, min(8, cpus, int(avail_gb // 2)))
+    except OSError:
+        pass
+    return max(1, min(4, cpus))
+
+
+def _worker_init() -> None:
+    # Ctrl-C do parent xu ly; worker bo qua de pool terminate sach.
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def _worker_translate(content: str) -> tuple[str, int]:
+    cfg = _PARENT_CFG
+    vp_input, junk_spans = sanitize_source(content) if cfg.qa_strip_junk else (content, [])
+    draft = vp_plan(
+        _PARENT_DIC,
+        vp_input,
+        beam=1,
+        collapse_reps=cfg.collapse_repetitions,
+    )
+    return draft.text, len(draft.warnings) + len(junk_spans)
+
+
 def translate_plain(
     source: Path,
     output: Path,
     *,
     cfg: Config,
     book_glossary: Path | None = None,
+    jobs: int = 1,
 ) -> PipelineResult:
-    """Dich TXT bang VietPhrase, ghi file. Khong SQLite / revision / resume."""
+    """Dich TXT bang VietPhrase, ghi file. Khong SQLite / revision / resume.
+
+    jobs: 1 = tuan tu, 0 = tu chon theo RAM, >1 = so worker fork.
+    """
+    global _PARENT_DIC, _PARENT_CFG
     t0 = time.monotonic()
     dict_dir = resolve_dict_dir(cfg)
     manual = book_glossary if book_glossary is not None and book_glossary.is_file() else None
@@ -140,24 +187,49 @@ def translate_plain(
     parts: list[str] = []
     n_warn = 0
     done = 0
+    if jobs == 0:
+        jobs = _auto_jobs()
+    if jobs > 1 and (
+        len(trans) < _PARALLEL_MIN_BLOCKS or "fork" not in mp.get_all_start_methods()
+    ):
+        jobs = 1
     try:
-        for node in doc.nodes:
-            if not node.is_translatable:
-                parts.append(node.raw_text)
-                continue
-            vp_input, junk_spans = (
-                sanitize_source(node.content) if cfg.qa_strip_junk else (node.content, [])
-            )
-            draft = vp_plan(
-                dic,
-                vp_input,
-                beam=1,
-                collapse_reps=cfg.collapse_repetitions,
-            )
-            n_warn += len(draft.warnings) + len(junk_spans)
-            parts.append(node.prefix + draft.text + node.suffix)
-            done += 1
-            prog.update(done, done, n_warn)
+        if jobs > 1:
+            _PARENT_DIC, _PARENT_CFG = dic, cfg
+            chunksize = max(1, min(64, len(trans) // (jobs * 8) or 1))
+            contents = [n.content for n in trans]
+            try:
+                with mp.get_context("fork").Pool(jobs, _worker_init) as pool:
+                    results = pool.imap(_worker_translate, contents, chunksize)
+                    for node in doc.nodes:
+                        if not node.is_translatable:
+                            parts.append(node.raw_text)
+                            continue
+                        text_out, w = next(results)
+                        n_warn += w
+                        parts.append(node.prefix + text_out + node.suffix)
+                        done += 1
+                        prog.update(done, done, n_warn)
+            finally:
+                _PARENT_DIC = _PARENT_CFG = None
+        else:
+            for node in doc.nodes:
+                if not node.is_translatable:
+                    parts.append(node.raw_text)
+                    continue
+                vp_input, junk_spans = (
+                    sanitize_source(node.content) if cfg.qa_strip_junk else (node.content, [])
+                )
+                draft = vp_plan(
+                    dic,
+                    vp_input,
+                    beam=1,
+                    collapse_reps=cfg.collapse_repetitions,
+                )
+                n_warn += len(draft.warnings) + len(junk_spans)
+                parts.append(node.prefix + draft.text + node.suffix)
+                done += 1
+                prog.update(done, done, n_warn)
     except KeyboardInterrupt:
         prog.finish()
         raise

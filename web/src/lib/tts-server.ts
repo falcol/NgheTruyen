@@ -214,9 +214,13 @@ export async function synthesizeMp3(
         }
       }
     }
+    // msedge-tts rejects with bare strings ("Connect Error: {}") — keep them
+    // in the message so endpoint breakage is visible in logs.
     throw lastErr instanceof Error
       ? lastErr
-      : new Error("TTS synthesis failed");
+      : new Error(`TTS synthesis failed: ${String(lastErr)}`, {
+          cause: lastErr,
+        });
   })().finally(() => {
     inflightSynth.delete(key);
   });

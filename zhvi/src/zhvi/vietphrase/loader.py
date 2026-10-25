@@ -6,6 +6,7 @@ co tinh margin; greedy cu chi giu 1.
 """
 from __future__ import annotations
 
+import gc
 import hashlib
 import pickle
 import re
@@ -43,8 +44,13 @@ class TrieNode:
         self.entries: list[tuple[str, tuple, str]] = []  # (target, precedence, policy)
 
 
+_TRAILING_PRIORITY_RE = re.compile(r"\t\d+\s*$")
+
+
 def _first_meaning(raw: str) -> str:
-    raw = re.sub(r"\t\d+\s*$", "", raw).strip()  # LuatNhan trailing priority
+    if "\t" in raw:
+        raw = _TRAILING_PRIORITY_RE.sub("", raw)  # LuatNhan trailing priority
+    raw = raw.strip()
     cut = raw.find("//")
     if cut != -1:
         raw = raw[:cut]
@@ -210,53 +216,62 @@ def _cow_insert(root: TrieNode, key: str, target: str, precedence: tuple, policy
 
 def _build_base_dictionary(dict_dir: Path, patterns: bool, fingerprint: str) -> Dictionary:
     trad_simp = load_trad_simp(dict_dir)
-    root = TrieNode()
-    pattern_rules: list[PatternRule] = []
-    count = 0
-    load_index = 0
-    for name in LOAD_ORDER:
-        path = dict_dir / name
-        if not path.is_file():
-            continue
-        trust = TRUST_BY_FILE[name]
-        # nhu engine cu: chi Custom.txt duoc nap ca key simplified (simp_keys);
-        # file nen giu key nguyen ban — input da duoc simplify truoc khi match.
-        simp_keys = name == "Custom.txt"
-        for line in path.read_text(encoding="utf-8-sig").splitlines():
-            parsed = parse_dict_line(line)
-            if parsed is None:
+    # tat GC khi build trie (tranh quet lap ~8M node), roi freeze vao permanent gen
+    gc_was_enabled = gc.isenabled()
+    gc.disable()
+    try:
+        root = TrieNode()
+        pattern_rules: list[PatternRule] = []
+        count = 0
+        load_index = 0
+        for name in LOAD_ORDER:
+            path = dict_dir / name
+            if not path.is_file():
                 continue
-            zh, vi = parsed
-            load_index += 1
-            layer = Layer.BASE_SINGLE if len(zh) == 1 else Layer.BASE_MULTI
-            if name.startswith("Names") and len(zh) == 1:
-                continue  # Names chi co da tu ( nhu engine cu)
-            if name in ("QualityOverrides.txt", "ContextPatterns.txt", "Custom.txt"):
-                layer = Layer.GLOBAL_MANUAL
-            prec = (int(layer), trust, load_index)
-            if SLOT_RE.search(zh):
-                # luat nhan {s}/{n}: compile thanh pattern rule (khong nap trie
-                # literal — key chua '{' khong bao gio khop van ban that)
-                if not patterns:
+            trust = TRUST_BY_FILE[name]
+            # nhu engine cu: chi Custom.txt duoc nap ca key simplified (simp_keys);
+            # file nen giu key nguyen ban — input da duoc simplify truoc khi match.
+            simp_keys = name == "Custom.txt"
+            for line in path.read_text(encoding="utf-8-sig").splitlines():
+                parsed = parse_dict_line(line)
+                if parsed is None:
                     continue
-                rule = compile_rule(to_simplified(zh, trad_simp), vi, prec, _policy_for(layer))
-                if rule is not None:
-                    pattern_rules.append(rule)
-                    count += 1
-                continue
-            _insert(root, zh, vi, prec, _policy_for(layer))
-            if simp_keys:
-                simp = to_simplified(zh, trad_simp)
-                if simp != zh:
-                    _insert(root, simp, vi, prec, _policy_for(layer))
-            count += 1
-    return Dictionary(
-        root=root,
-        trad_simp=trad_simp,
-        entry_count=count,
-        fingerprint=fingerprint,
-        patterns=build_pattern_index(pattern_rules),
-    )
+                zh, vi = parsed
+                load_index += 1
+                layer = Layer.BASE_SINGLE if len(zh) == 1 else Layer.BASE_MULTI
+                if name.startswith("Names") and len(zh) == 1:
+                    continue  # Names chi co da tu ( nhu engine cu)
+                if name in ("QualityOverrides.txt", "ContextPatterns.txt", "Custom.txt"):
+                    layer = Layer.GLOBAL_MANUAL
+                prec = (int(layer), trust, load_index)
+                if SLOT_RE.search(zh):
+                    # luat nhan {s}/{n}: compile thanh pattern rule (khong nap trie
+                    # literal — key chua '{' khong bao gio khop van ban that)
+                    if not patterns:
+                        continue
+                    rule = compile_rule(to_simplified(zh, trad_simp), vi, prec, _policy_for(layer))
+                    if rule is not None:
+                        pattern_rules.append(rule)
+                        count += 1
+                    continue
+                _insert(root, zh, vi, prec, _policy_for(layer))
+                if simp_keys:
+                    simp = to_simplified(zh, trad_simp)
+                    if simp != zh:
+                        _insert(root, simp, vi, prec, _policy_for(layer))
+                count += 1
+        built = Dictionary(
+            root=root,
+            trad_simp=trad_simp,
+            entry_count=count,
+            fingerprint=fingerprint,
+            patterns=build_pattern_index(pattern_rules),
+        )
+        gc.freeze()
+        return built
+    finally:
+        if gc_was_enabled:
+            gc.enable()
 
 
 def _overlay_glossaries(

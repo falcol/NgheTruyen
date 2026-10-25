@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gc
 import multiprocessing as mp
 import re
 from collections.abc import Callable
@@ -210,6 +211,9 @@ def translate_file(
 
 
 _WORKER: dict[str, Callable[[str], str]] = {}
+# Set in the parent right before a fork pool starts. Forked workers inherit
+# it copy-on-write instead of loading their own 1.8 GB engine.
+_PARENT_ENGINE: Engine | None = None
 
 
 def _worker_init(
@@ -217,7 +221,7 @@ def _worker_init(
     mode: str,
     overlay: list[tuple[str, str, int]] | None,
 ) -> None:
-    engine = engine_factory()
+    engine = _PARENT_ENGINE if _PARENT_ENGINE is not None else engine_factory()
     if mode == "hanviet":
         _WORKER["translate"] = engine.hanviet
     else:
@@ -244,19 +248,31 @@ def translate_file_parallel(
 ) -> str:
     """Same output as translate_file, chunks spread over worker processes.
 
-    Each worker builds its own engine from engine_factory (about 1.8 GB RAM,
-    16 s load for the local dicts), so jobs is bound by memory, not cores.
+    Where fork exists, workers share the parent's engine copy-on-write, so
+    the dicts load once. Otherwise (spawn) each worker builds its own engine
+    from engine_factory (about 1.8 GB RAM each).
     """
+    global _PARENT_ENGINE
     engine = engine_factory()
     source = engine.convert(text or "")
     chunks = build_file_chunks(source, soft=soft, hard=hard)
     total = len(chunks)
     chunksize = max(1, min(64, total // (jobs * 8) or 1))
     out: list[str] = []
-    ctx = mp.get_context("spawn")
-    with ctx.Pool(jobs, _worker_init, (engine_factory, mode, overlay)) as pool:
-        for i, piece in enumerate(pool.imap(_worker_translate, chunks, chunksize)):
-            _append_piece(out, i, chunks[i], piece)
-            if on_progress:
-                on_progress(i + 1, total)
+    use_fork = "fork" in mp.get_all_start_methods()
+    ctx = mp.get_context("fork" if use_fork else "spawn")
+    if use_fork:
+        _PARENT_ENGINE = engine
+        # Keep the cyclic GC from touching (and so copying) the engine pages.
+        gc.freeze()
+    try:
+        with ctx.Pool(jobs, _worker_init, (engine_factory, mode, overlay)) as pool:
+            for i, piece in enumerate(pool.imap(_worker_translate, chunks, chunksize)):
+                _append_piece(out, i, chunks[i], piece)
+                if on_progress:
+                    on_progress(i + 1, total)
+    finally:
+        if use_fork:
+            _PARENT_ENGINE = None
+            gc.unfreeze()
     return "".join(out)

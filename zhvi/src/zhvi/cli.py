@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from difflib import SequenceMatcher, unified_diff
 from pathlib import Path
@@ -669,6 +670,10 @@ def translate(
         help="Bo qua — translate luon khong dung SQLite.",
     ),
     json_out: bool = typer.Option(False, "--json", help="Bao cao JSON tren stdout."),
+    jobs: int = typer.Option(
+        0, "--jobs", "-j",
+        help="So tien trinh dich. 0 = tu chon theo RAM, 1 = tuan tu.",
+    ),
 ) -> None:
     """Dich TXT bang VietPhrase, ghi file. Doc dict hien tai, khong SQLite."""
     from .pipeline import translate_plain
@@ -690,7 +695,7 @@ def translate(
                 None, dict_dir=dict_dir, overrides={"encoding": encoding, "style": style}
             )
         out = output or _default_vi_path(file)
-        result = translate_plain(file, out, cfg=cfg, book_glossary=book_gl)
+        result = translate_plain(file, out, cfg=cfg, book_glossary=book_gl, jobs=jobs)
     except typer.Exit:
         raise
     except ProjectError as e:
@@ -861,10 +866,26 @@ def compare(
 
 
 def main() -> None:
+    code = 0
     try:
         app()
+    except SystemExit as e:
+        c = e.code
+        if c is None:
+            code = 0
+        elif isinstance(c, int):
+            code = c
+        else:
+            print(c, file=sys.stderr)
+            code = 1
     except KeyboardInterrupt:
-        sys.exit(EXIT_INTERRUPT)
+        code = EXIT_INTERRUPT
+    # os._exit: bo qua dealloc trie nhieu trieu node luc teardown (~8s)
+    try:
+        sys.stdout.flush()
+        sys.stderr.flush()
+    finally:
+        os._exit(code)
 
 
 if __name__ == "__main__":
