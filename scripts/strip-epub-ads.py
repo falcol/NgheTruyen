@@ -259,6 +259,24 @@ RAW_EBOOK_LINK_RE = re.compile(
 )
 
 
+# Unclosed ad loader tag glued before a paragraph's text (no </script> in the file); it swallows the
+# text in parsers, so drop only the tag and keep the text.
+STRAY_SCRIPT_RE = re.compile(r'<script\b[^>]*src="[^"]*/adx/[^"]*"[^>]*>', re.I)
+
+
+def strip_stray_script(data, counts):
+    if b"</script" in data.lower() or b"<script" not in data.lower():
+        return data
+    text = data.decode("utf-8")
+
+    def repl(m):
+        counts["stray-script-tag"] += 1
+        LOG.append(m.group(0))
+        return ""
+
+    return STRAY_SCRIPT_RE.sub(repl, text).encode("utf-8")
+
+
 def strip_raw(data, counts):
     text = data.decode("utf-8")
 
@@ -289,6 +307,7 @@ def process(src, dst):
         for info in zin.infolist():
             data = zin.read(info.filename)
             if info.filename.endswith((".xhtml", ".html", ".htm")):
+                data = strip_stray_script(data, counts)
                 try:
                     root = etree.fromstring(data, etree.XMLParser(resolve_entities=False))
                 except etree.XMLSyntaxError:
