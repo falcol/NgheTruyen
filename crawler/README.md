@@ -21,6 +21,7 @@ pip install -r requirements.txt
 | `truyenfullmoi` | Truyện Full Mới | `truyenfullmoi.com` |
 | `sitruyencv` | Si Truyện CV | `sitruyencv.com` (JSON API) |
 | `sstruyen` | SSTruyen | `sstruyen.pics` (JSON API) |
+| `truyenc` | Truyện C | `truyenc.net` (Tor) |
 
 ## Chạy
 
@@ -59,6 +60,9 @@ Cuối mỗi lần crawl, log sẽ in tổng thời gian + throughput:
 ## Ví dụ
 
 ```bash
+# Crawl Truyện C qua Tor
+python -m crawler.run truyenc "https://truyenc.net/truyen/pha-quan-menh/chuong-1" --max 3
+
 # Crawl truyện "Thất Nghiệp Về Sau" từ truyenqq
 python -m crawler.run truyenqq \
   "https://truyenqq.vn/doc-convert-that-nghiep-ve-sau-bi-bao-tang-nu-hai-nhat-ve-nha-32158/12992985-0/"

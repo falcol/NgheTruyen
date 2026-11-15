@@ -12,6 +12,7 @@ Sites:
     iqiyi        - wenxue.iqiyi.com (fills missing chapters into --dest)
     piaotia      - piaotia.com (飘天文学, Tor + GBK, follow next_page)
     sstruyen     - sstruyen.pics (JSON API, story URL or chapter URL)
+    truyenc      - truyenc.net (Tor)
     vivutruyen   - vivutruyen.com (story URL or chapter URL)
     uukanshu     - uukanshu.cc (book URL or chapter URL)
 
@@ -67,6 +68,7 @@ from .piaotia import PiaotiaCrawler
 from .sstruyen import SstruyenCrawler
 from .vivutruyen import VivutruyenCrawler
 from .uukanshu import UukanshuCrawler
+from .truyenc import TruyencCrawler
 
 CRAWLERS = {
     "truyenqq": TruyenQQCrawler,
@@ -80,6 +82,7 @@ CRAWLERS = {
     "sstruyen": SstruyenCrawler,
     "vivutruyen": VivutruyenCrawler,
     "uukanshu": UukanshuCrawler,
+    "truyenc": TruyencCrawler,
 }
 
 # Preset for --aggressive: maximize throughput, accept higher 429 risk.
