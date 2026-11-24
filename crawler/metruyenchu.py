@@ -4,13 +4,17 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from .base import BaseCrawler, logger
+from .tor_proxy import TorProxyMixin
 
 BASE_URL = "https://metruyenchu.com.vn/"
 CHAPTER_LIST_API = "https://metruyenchu.com.vn/get/listchap/"
 
 
-class MetruyenchuCrawler(BaseCrawler):
-    """Crawler for metruyenchu.com.vn chapter pages."""
+class MetruyenchuCrawler(TorProxyMixin, BaseCrawler):
+    """Crawler for metruyenchu.com.vn chapter pages.
+
+    Routes through Tor SOCKS :9050 when up (direct otherwise). A 429 rotates that thread's circuit.
+    """
 
     BASE_URL = BASE_URL
 
@@ -23,7 +27,15 @@ class MetruyenchuCrawler(BaseCrawler):
         }
 
     def _extract_chapter(self, soup) -> dict:
-        """Extract chapter title and paragraphs from a chapter page."""
+        """Extract chapter title and paragraphs from a chapter page.
+
+        Nếu chương bị khóa, dùng Paseo browser mở URL chương và làm theo
+        hướng dẫn hiện trên trang: tìm từ khóa bằng Google, mở kết quả tương
+        ứng, xuống cuối trang bấm BÁO GIÁ, chờ hết đếm ngược (có thể 120 giây),
+        rồi nhập mã xuất hiện vào trang truyện. Lấy nội dung div.truyen sau khi
+        mở khóa và bổ sung vào đúng chương trong volume; kiểm tra lại dữ liệu
+        và đồng bộ web/public/data nếu đó là thư mục riêng.
+        """
         h2 = soup.find("h2")
         title = h2.get_text(strip=True) if h2 else "Unknown"
 
@@ -33,6 +45,11 @@ class MetruyenchuCrawler(BaseCrawler):
 
         text = truyen.get_text(separator="\n").strip()
         lines = [line.strip() for line in text.split("\n") if line.strip()]
+        if not lines:
+            raise ValueError(
+                "Nội dung chương trống hoặc bị khóa; xem hướng dẫn Paseo browser "
+                "trong MetruyenchuCrawler._extract_chapter"
+            )
 
         return {"title": title, "paragraphs": lines}
 

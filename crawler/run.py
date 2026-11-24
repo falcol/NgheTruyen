@@ -15,6 +15,7 @@ Sites:
     truyenc      - truyenc.net (Tor)
     vivutruyen   - vivutruyen.com (story URL or chapter URL)
     uukanshu     - uukanshu.cc (book URL or chapter URL)
+    shuba69      - 69shuba.com (book URL)
 
 Options:
     --start INDEX   Starting chapter index (default: 0)
@@ -52,6 +53,9 @@ Examples:
 
     # uukanshu: book page or chapter URL
     python -m crawler.run uukanshu "https://uukanshu.cc/book/<id>/" --parallel
+
+    # 69shuba: numbered chapters, one worker with rate limiting
+    python -m crawler.run shuba69 "https://www.69shuba.com/book/<id>/" --parallel
 """
 import argparse
 import sys
@@ -68,6 +72,7 @@ from .piaotia import PiaotiaCrawler
 from .sstruyen import SstruyenCrawler
 from .vivutruyen import VivutruyenCrawler
 from .uukanshu import UukanshuCrawler
+from .shuba69 import Shuba69Crawler
 from .truyenc import TruyencCrawler
 
 CRAWLERS = {
@@ -82,6 +87,7 @@ CRAWLERS = {
     "sstruyen": SstruyenCrawler,
     "vivutruyen": VivutruyenCrawler,
     "uukanshu": UukanshuCrawler,
+    "shuba69": Shuba69Crawler,
     "truyenc": TruyencCrawler,
 }
 
